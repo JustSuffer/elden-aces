@@ -8,7 +8,7 @@ const Index = () => {
   const menuItems = [
     { label: "Create Account / Login", onClick: () => console.log("Login") },
     { label: "Play Online (1v1 PvP)", onClick: () => console.log("Play Online") },
-    { label: "Play vs Bot", onClick: () => console.log("Play Bot") },
+    { label: "Play vs Bot", onClick: () => navigate("/game") },
     { label: "Deck Builder", onClick: () => console.log("Deck") },
     { label: "Card Library", onClick: () => console.log("Library") },
     { label: "Settings", onClick: () => console.log("Settings") },
