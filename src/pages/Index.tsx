@@ -6,13 +6,13 @@ const Index = () => {
   const navigate = useNavigate();
 
   const menuItems = [
-    { label: "Create Account / Login", onClick: () => console.log("Login") },
+    { label: "Create Account / Login", onClick: () => navigate("/auth") },
     { label: "Play Online (1v1 PvP)", onClick: () => console.log("Play Online") },
     { label: "Play vs Bot", onClick: () => navigate("/game") },
     { label: "Deck Builder", onClick: () => console.log("Deck") },
     { label: "Card Library", onClick: () => console.log("Library") },
-    { label: "Settings", onClick: () => console.log("Settings") },
-    { label: "Credits", onClick: () => console.log("Credits") },
+    { label: "Settings", onClick: () => navigate("/settings") },
+    { label: "Credits", onClick: () => navigate("/credits") },
   ];
 
   return (

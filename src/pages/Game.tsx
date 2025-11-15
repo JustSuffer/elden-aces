@@ -33,7 +33,19 @@ const Game = () => {
     }
 
     const result = rollDice();
-    toast.success(`Dice rolled: ${result}!`);
+    
+    // Show specific message based on dice result
+    if (result >= 1 && result <= 5) {
+      toast.warning("Fate demands: Play only 4 cards this round!");
+    } else if (result >= 6 && result <= 10) {
+      toast.info("2 random cards swapped with deck!");
+    } else if (result >= 11 && result <= 15) {
+      toast.info("2 cards returned to deck, 2 new cards drawn!");
+    } else if (result >= 16 && result <= 18) {
+      toast.success("Dice Result: +1 Twisted (α) added to deck!");
+    } else if (result >= 19 && result <= 20) {
+      toast.success("Dice Result: +1 Gamma (γ) added to deck!");
+    }
   };
 
   const handleEndPlacement = () => {
