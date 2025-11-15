@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { Card, DECK, shuffleDeck, dealCards } from "@/data/cards";
+import { calculateDamage } from "@/utils/damageCalculator";
 
 export interface GameState {
   round: number;
@@ -14,20 +15,28 @@ export interface GameState {
   diceUsed: number;
   phase: "placement" | "reveal" | "damage" | "end";
   opponentMust4Cards: boolean;
+  playerMust4Cards: boolean;
+  damageResult: {
+    playerDamage: number;
+    opponentDamage: number;
+    details: string[];
+  } | null;
 }
 
 export function useGameState() {
   const [gameState, setGameState] = useState<GameState>(() => {
-    const shuffledDeck = shuffleDeck([...DECK]);
-    const { dealt: playerCards, remaining: afterPlayer } = dealCards(shuffledDeck, 6);
-    const { dealt: opponentCards, remaining: remaining } = dealCards(afterPlayer, 6);
+    const playerDeck = shuffleDeck([...DECK]);
+    const opponentDeck = shuffleDeck([...DECK]);
+    
+    const { dealt: playerCards, remaining: playerRemaining } = dealCards(playerDeck, 6);
+    const { dealt: opponentCards, remaining: opponentRemaining } = dealCards(opponentDeck, 6);
 
     return {
       round: 1,
       playerHP: 30,
       opponentHP: 30,
-      playerDeck: remaining,
-      opponentDeck: remaining,
+      playerDeck: playerRemaining,
+      opponentDeck: opponentRemaining,
       playerHand: playerCards,
       opponentHand: opponentCards,
       playerField: [null, null, null, null, null],
@@ -35,6 +44,8 @@ export function useGameState() {
       diceUsed: 0,
       phase: "placement",
       opponentMust4Cards: false,
+      playerMust4Cards: false,
+      damageResult: null,
     };
   });
 
@@ -93,36 +104,109 @@ export function useGameState() {
 
   const rollDice = useCallback(() => {
     const result = Math.floor(Math.random() * 20) + 1;
-    // Implement dice effects based on result
-    // For now, just increment dice used
-    setGameState((prev) => ({
-      ...prev,
-      diceUsed: prev.diceUsed + 1,
-    }));
+    
+    setGameState((prev) => {
+      const newState = { ...prev, diceUsed: prev.diceUsed + 1 };
+
+      if (result >= 1 && result <= 5) {
+        // Must play 4 cards this turn
+        newState.playerMust4Cards = true;
+      } else if (result >= 6 && result <= 10) {
+        // Replace 2 random cards from hand
+        const handIndices = prev.playerHand.map((_, i) => i);
+        const toReplace = handIndices.sort(() => Math.random() - 0.5).slice(0, 2);
+        const { dealt: newCards, remaining } = dealCards(prev.playerDeck, 2);
+        
+        newState.playerHand = prev.playerHand.map((card, i) => 
+          toReplace.includes(i) ? (newCards[toReplace.indexOf(i)] || card) : card
+        );
+        newState.playerDeck = remaining;
+      } else if (result >= 11 && result <= 15) {
+        // Player will choose 2 cards to replace (handled in UI)
+        // For now, mark state to show selection UI
+      } else if (result >= 16 && result <= 18) {
+        // Add 1 Twisted to deck
+        const twisted: Card = {
+          id: `twisted-dice-${Date.now()}`,
+          name: "Twisted",
+          symbol: "α",
+          type: "special",
+          special: "twisted",
+          color: "primary",
+          description: "If opponent's total is higher, damage reverses to them.",
+        };
+        newState.playerDeck = [...prev.playerDeck, twisted];
+      } else if (result >= 19 && result <= 20) {
+        // Add 1 Gamma to deck
+        const gamma: Card = {
+          id: `gamma-dice-${Date.now()}`,
+          name: "Gamma",
+          symbol: "γ",
+          type: "special",
+          special: "gamma",
+          color: "primary",
+          description: "No damage taken, 2x damage dealt. Opponent plays 4 cards next turn.",
+        };
+        newState.playerDeck = [...prev.playerDeck, gamma];
+      }
+
+      return newState;
+    });
 
     return result;
   }, []);
 
+  const calculateRoundDamage = useCallback(() => {
+    setGameState((prev) => {
+      const result = calculateDamage(
+        prev.playerField,
+        prev.opponentField,
+        false,
+        false
+      );
+
+      const newPlayerHP = Math.max(0, prev.playerHP - result.playerDamage);
+      const newOpponentHP = Math.max(0, prev.opponentHP - result.opponentDamage);
+
+      // Check for Gamma effect
+      const opponentHasGamma = prev.opponentField.some(c => c?.special === "gamma");
+      const playerHasGamma = prev.playerField.some(c => c?.special === "gamma");
+
+      return {
+        ...prev,
+        playerHP: newPlayerHP,
+        opponentHP: newOpponentHP,
+        damageResult: result,
+        phase: newPlayerHP <= 0 || newOpponentHP <= 0 ? "end" : "damage",
+        opponentMust4Cards: playerHasGamma,
+        playerMust4Cards: opponentHasGamma,
+      };
+    });
+  }, []);
+
   const nextRound = useCallback(() => {
     setGameState((prev) => {
-      if (prev.round >= 5) {
+      if (prev.round >= 5 || prev.playerHP <= 0 || prev.opponentHP <= 0) {
         return { ...prev, phase: "end" };
       }
 
       // Deal new cards
-      const { dealt: playerCards, remaining: afterPlayer } = dealCards(prev.playerDeck, 6);
-      const { dealt: opponentCards, remaining: remaining } = dealCards(afterPlayer, 6);
+      const cardsNeeded = 6;
+      const { dealt: playerCards, remaining: playerRemaining } = dealCards(prev.playerDeck, cardsNeeded);
+      const { dealt: opponentCards, remaining: opponentRemaining } = dealCards(prev.opponentDeck, cardsNeeded);
 
       return {
         ...prev,
         round: prev.round + 1,
-        playerDeck: remaining,
-        opponentDeck: remaining,
+        playerDeck: playerRemaining,
+        opponentDeck: opponentRemaining,
         playerHand: playerCards,
         opponentHand: opponentCards,
         playerField: [null, null, null, null, null],
         opponentField: [null, null, null, null, null],
         phase: "placement",
+        damageResult: null,
+        diceUsed: 0,
       };
     });
   }, []);
@@ -133,6 +217,7 @@ export function useGameState() {
     removeCardFromField,
     endPlacement,
     rollDice,
+    calculateRoundDamage,
     nextRound,
   };
 }

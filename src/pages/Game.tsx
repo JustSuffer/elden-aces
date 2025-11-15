@@ -9,7 +9,7 @@ import { toast } from "sonner";
 
 const Game = () => {
   const navigate = useNavigate();
-  const { gameState, placeCard, removeCardFromField, endPlacement, rollDice } = useGameState();
+  const { gameState, placeCard, removeCardFromField, endPlacement, rollDice, calculateRoundDamage, nextRound } = useGameState();
 
   const handleCardClick = (cardIndex: number) => {
     if (gameState.phase !== "placement") return;
@@ -37,15 +37,31 @@ const Game = () => {
   };
 
   const handleEndPlacement = () => {
+    const requiredCards = gameState.playerMust4Cards ? 4 : 5;
     const placedCards = gameState.playerField.filter((c) => c !== null).length;
-    if (placedCards < 5) {
-      toast.error("You must place 5 cards!");
+    
+    if (placedCards < requiredCards) {
+      toast.error(`You must place ${requiredCards} cards!`);
       return;
     }
     endPlacement();
+    
+    // Auto-calculate damage after a short delay
+    setTimeout(() => {
+      calculateRoundDamage();
+    }, 1000);
   };
 
-  const canPlaceCards = gameState.playerField.filter((c) => c !== null).length < 5;
+  const handleNextRound = () => {
+    if (gameState.round >= 5 || gameState.playerHP <= 0 || gameState.opponentHP <= 0) {
+      navigate("/");
+      return;
+    }
+    nextRound();
+  };
+
+  const requiredCards = gameState.playerMust4Cards ? 4 : 5;
+  const canPlaceCards = gameState.playerField.filter((c) => c !== null).length < requiredCards;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -80,10 +96,10 @@ const Game = () => {
           <div className="text-center">
             <h1 className="text-5xl font-bold text-primary glow-gold mb-2">Round {gameState.round}/5</h1>
             <p className="text-lg text-muted-foreground tracking-wider">
-              {gameState.phase === "placement" && "Place your cards"}
+              {gameState.phase === "placement" && `Place ${requiredCards} cards`}
               {gameState.phase === "reveal" && "Cards revealed!"}
-              {gameState.phase === "damage" && "Calculating damage..."}
-              {gameState.phase === "end" && "Game Over"}
+              {gameState.phase === "damage" && "Round complete!"}
+              {gameState.phase === "end" && (gameState.playerHP > gameState.opponentHP ? "Victory!" : gameState.playerHP < gameState.opponentHP ? "Defeat!" : "Draw!")}
             </p>
           </div>
 
@@ -104,12 +120,40 @@ const Game = () => {
                 variant="default"
                 size="lg"
                 onClick={handleEndPlacement}
-                disabled={gameState.playerField.filter((c) => c !== null).length < 5}
+                disabled={gameState.playerField.filter((c) => c !== null).length < requiredCards}
                 className="gap-2"
               >
                 End Placement
               </Button>
             </div>
+          )}
+
+          {(gameState.phase === "damage" || gameState.phase === "reveal") && gameState.damageResult && (
+            <div className="bg-card/50 backdrop-blur-sm border border-primary/30 rounded-lg p-6 max-w-2xl">
+              <div className="space-y-3">
+                <div className="flex justify-between text-lg font-bold">
+                  <span className="text-theta">Player: -{gameState.damageResult.playerDamage} HP</span>
+                  <span className="text-omega">Opponent: -{gameState.damageResult.opponentDamage} HP</span>
+                </div>
+                {gameState.damageResult.details.map((detail, i) => (
+                  <p key={i} className="text-sm text-muted-foreground">{detail}</p>
+                ))}
+              </div>
+              <Button
+                variant="default"
+                size="lg"
+                onClick={handleNextRound}
+                className="w-full mt-4"
+              >
+                {gameState.round >= 5 || gameState.playerHP <= 0 || gameState.opponentHP <= 0 ? "Return to Menu" : "Next Round"}
+              </Button>
+            </div>
+          )}
+
+          {gameState.phase === "end" && (
+            <Button variant="default" size="lg" onClick={() => navigate("/")} className="gap-2">
+              Return to Menu
+            </Button>
           )}
         </div>
 
