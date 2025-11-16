@@ -1,23 +1,36 @@
-import { GameCard } from "@/components/game/GameCard";
+import { DraggableCard } from "@/components/game/DraggableCard";
+import { DroppableSlot } from "@/components/game/DroppableSlot";
 import { HPBar } from "@/components/game/HPBar";
 import { DeckCounter } from "@/components/game/DeckCounter";
+import { DiceRollPopup } from "@/components/game/DiceRollPopup";
+import { VictoryPopup } from "@/components/game/VictoryPopup";
 import { Button } from "@/components/ui/button";
 import { useGameState } from "@/hooks/useGameState";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Dices } from "lucide-react";
 import { toast } from "sonner";
+import { DndContext, DragEndEvent } from "@dnd-kit/core";
+import { useState } from "react";
+import { GameCard } from "@/components/game/GameCard";
 
 const Game = () => {
   const navigate = useNavigate();
   const { gameState, placeCard, removeCardFromField, endPlacement, rollDice, calculateRoundDamage, nextRound } = useGameState();
+  const [dicePopup, setDicePopup] = useState<{ open: boolean; result: number; effect: string }>({
+    open: false,
+    result: 0,
+    effect: "",
+  });
 
-  const handleCardClick = (cardIndex: number) => {
-    if (gameState.phase !== "placement") return;
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || gameState.phase !== "placement") return;
 
-    // Find first empty slot
-    const emptySlot = gameState.playerField.findIndex((c) => c === null);
-    if (emptySlot !== -1) {
-      placeCard(cardIndex, emptySlot);
+    const cardIndex = parseInt(active.id.toString().replace("card-", ""));
+    const fieldIndex = parseInt(over.id.toString().replace("field-", ""));
+
+    if (!isNaN(cardIndex) && !isNaN(fieldIndex)) {
+      placeCard(cardIndex, fieldIndex);
     }
   };
 
@@ -28,24 +41,28 @@ const Game = () => {
 
   const handleRollDice = () => {
     if (gameState.diceUsed >= 2) {
-      toast.error("No dice rolls remaining!");
+      toast.error("No dice rolls remaining! (2 per match)");
       return;
     }
 
     const result = rollDice();
     
-    // Show specific message based on dice result
+    // Determine effect message
+    let effect = "";
     if (result >= 1 && result <= 5) {
-      toast.warning("Fate demands: Play only 4 cards this round!");
+      effect = "Fate demands: Play only 4 cards this round!";
     } else if (result >= 6 && result <= 10) {
-      toast.info("2 random cards swapped with deck!");
+      effect = "2 random cards swapped with deck!";
     } else if (result >= 11 && result <= 15) {
-      toast.info("2 cards returned to deck, 2 new cards drawn!");
+      effect = "2 cards returned to deck, 2 new cards drawn!";
     } else if (result >= 16 && result <= 18) {
-      toast.success("Dice Result: +1 Twisted (α) added to deck!");
+      effect = "+1 Twisted (α) added to deck!";
     } else if (result >= 19 && result <= 20) {
-      toast.success("Dice Result: +1 Gamma (γ) added to deck!");
+      effect = "+1 Gamma (γ) added to deck!";
     }
+
+    // Show dice animation popup
+    setDicePopup({ open: true, result, effect });
   };
 
   const handleEndPlacement = () => {
@@ -76,7 +93,8 @@ const Game = () => {
   const canPlaceCards = gameState.playerField.filter((c) => c !== null).length < requiredCards;
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <DndContext onDragEnd={handleDragEnd}>
+      <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-border">
         <Button variant="ghost" onClick={() => navigate("/")} className="gap-2">
@@ -173,30 +191,29 @@ const Game = () => {
         <div className="w-full max-w-6xl flex items-end gap-4">
           <DeckCounter count={gameState.playerDeck.length} />
           <div className="flex-1 flex flex-col items-center gap-4">
-            {/* Player Field */}
+            {/* Player Field - Droppable Slots */}
             <div className="flex gap-3">
               {gameState.playerField.map((card, i) => (
-                <GameCard
+                <DroppableSlot
                   key={i}
+                  id={`field-${i}`}
                   card={card}
-                  isPlaceholder={!card}
-                  onClick={() => handleFieldCardClick(i)}
-                  className={gameState.phase === "placement" && card ? "ring-2 ring-primary" : ""}
+                  onRemove={card ? () => handleFieldCardClick(i) : undefined}
                 />
               ))}
             </div>
 
             <HPBar current={gameState.playerHP} max={30} label="Player" />
 
-            {/* Player Hand */}
+            {/* Player Hand - Draggable Cards */}
             {gameState.phase === "placement" && (
-              <div className="flex gap-3 mt-4">
+              <div className="flex gap-3 mt-4 flex-wrap justify-center">
                 {gameState.playerHand.map((card, i) => (
-                  <GameCard
+                  <DraggableCard
                     key={card.id}
                     card={card}
-                    onClick={() => handleCardClick(i)}
-                    className={canPlaceCards ? "hover:ring-2 hover:ring-primary" : "opacity-50 cursor-not-allowed"}
+                    id={`card-${i}`}
+                    disabled={!canPlaceCards}
                   />
                 ))}
               </div>
@@ -204,7 +221,25 @@ const Game = () => {
           </div>
         </div>
       </div>
+
+      {/* Dice Roll Popup */}
+      <DiceRollPopup
+        open={dicePopup.open}
+        onClose={() => setDicePopup({ ...dicePopup, open: false })}
+        result={dicePopup.result}
+        effect={dicePopup.effect}
+      />
+
+      {/* Victory Popup */}
+      <VictoryPopup
+        open={gameState.phase === "end"}
+        isVictory={gameState.playerHP > gameState.opponentHP}
+        playerHP={gameState.playerHP}
+        opponentHP={gameState.opponentHP}
+        onReturnToMenu={() => navigate("/")}
+      />
     </div>
+    </DndContext>
   );
 };
 

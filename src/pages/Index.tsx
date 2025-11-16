@@ -5,16 +5,6 @@ import { useNavigate } from "react-router-dom";
 const Index = () => {
   const navigate = useNavigate();
 
-  const menuItems = [
-    { label: "Create Account / Login", onClick: () => navigate("/auth") },
-    { label: "Play Online (1v1 PvP)", onClick: () => console.log("Play Online") },
-    { label: "Play vs Bot", onClick: () => navigate("/game") },
-    { label: "Deck Builder", onClick: () => console.log("Deck") },
-    { label: "Card Library", onClick: () => console.log("Library") },
-    { label: "Settings", onClick: () => navigate("/settings") },
-    { label: "Credits", onClick: () => navigate("/credits") },
-  ];
-
   return (
     <div className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden bg-background">
       {/* Atmospheric Background Effects */}
@@ -46,19 +36,27 @@ const Index = () => {
 
         {/* Menu Items */}
         <div className="flex flex-col space-y-4 w-full max-w-md">
-          {menuItems.map((item, index) => (
-            <MenuButton
-              key={index}
-              variant={index < 3 ? "primary" : "secondary"}
-              onClick={item.onClick}
-              className="w-full"
-              style={{
-                animationDelay: `${index * 0.1}s`,
-              }}
-            >
-              {item.label}
-            </MenuButton>
-          ))}
+          <MenuButton onClick={() => navigate("/game")} variant="primary">
+            Play vs Bot
+          </MenuButton>
+          <MenuButton onClick={() => navigate("/card-library")}>
+            Card Library
+          </MenuButton>
+          <MenuButton onClick={() => navigate("/deck-builder")}>
+            Deck Builder
+          </MenuButton>
+          <MenuButton onClick={() => navigate("/settings")}>
+            Settings
+          </MenuButton>
+          <MenuButton onClick={() => navigate("/credits")}>
+            Credits
+          </MenuButton>
+          <MenuButton onClick={() => alert("Not implemented yet")}>
+            How to Play
+          </MenuButton>
+          <MenuButton onClick={() => navigate("/auth")}>
+            Login / Sign Up
+          </MenuButton>
         </div>
 
         {/* Version Info */}
