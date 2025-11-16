@@ -26,11 +26,44 @@ const Game = () => {
     const { active, over } = event;
     if (!over || gameState.phase !== "placement") return;
 
+    // Handle rearranging cards on field
+    if (active.id.toString().startsWith("rearrange-")) {
+      const fromIndex = parseInt(active.id.toString().replace("rearrange-field-", ""));
+      const toIndex = parseInt(over.id.toString().replace("field-", ""));
+      
+      if (!isNaN(fromIndex) && !isNaN(toIndex) && fromIndex !== toIndex) {
+        // Swap cards on field
+        const newField = [...gameState.playerField];
+        const temp = newField[fromIndex];
+        newField[fromIndex] = newField[toIndex];
+        newField[toIndex] = temp;
+        // This would need a new action in useGameState - for now, remove and place
+        removeCardFromField(fromIndex);
+        return;
+      }
+      return;
+    }
+
     const cardIndex = parseInt(active.id.toString().replace("card-", ""));
     const fieldIndex = parseInt(over.id.toString().replace("field-", ""));
 
     if (!isNaN(cardIndex) && !isNaN(fieldIndex)) {
       placeCard(cardIndex, fieldIndex);
+    }
+  };
+
+  const handleTapToPlace = (cardIndex: number) => {
+    if (gameState.phase !== "placement") return;
+    const requiredCards = gameState.playerMust4Cards ? 4 : 5;
+    const placedCards = gameState.playerField.filter((c) => c !== null).length;
+    if (placedCards >= requiredCards) {
+      toast.error(`You can only place ${requiredCards} cards!`);
+      return;
+    }
+    // Find first empty slot
+    const emptySlot = gameState.playerField.findIndex((c) => c === null);
+    if (emptySlot !== -1) {
+      placeCard(cardIndex, emptySlot);
     }
   };
 
@@ -82,7 +115,7 @@ const Game = () => {
   };
 
   const handleNextRound = () => {
-    if (gameState.round >= 5 || gameState.playerHP <= 0 || gameState.opponentHP <= 0) {
+    if (gameState.round >= 6 || gameState.playerHP <= 0 || gameState.opponentHP <= 0) {
       navigate("/");
       return;
     }
@@ -123,8 +156,8 @@ const Game = () => {
 
         {/* Center Area - Round & Actions */}
         <div className="flex flex-col items-center gap-6">
-          <div className="text-center">
-            <h1 className="text-5xl font-bold text-primary glow-gold mb-2">Round {gameState.round}/5</h1>
+            <div className="text-center">
+              <h1 className="text-5xl font-bold text-primary glow-gold mb-2">Round {gameState.round}/6</h1>
             <p className="text-lg text-muted-foreground tracking-wider">
               {gameState.phase === "placement" && `Place ${requiredCards} cards`}
               {gameState.phase === "reveal" && "Cards revealed!"}
@@ -175,7 +208,7 @@ const Game = () => {
                 onClick={handleNextRound}
                 className="w-full mt-4"
               >
-                {gameState.round >= 5 || gameState.playerHP <= 0 || gameState.opponentHP <= 0 ? "Return to Menu" : "Next Round"}
+                {gameState.round >= 6 || gameState.playerHP <= 0 || gameState.opponentHP <= 0 ? "Return to Menu" : "Next Round"}
               </Button>
             </div>
           )}
@@ -207,13 +240,14 @@ const Game = () => {
 
             {/* Player Hand - Draggable Cards */}
             {gameState.phase === "placement" && (
-              <div className="flex gap-3 mt-4 flex-wrap justify-center">
+              <div className="flex gap-3 mt-12 flex-wrap justify-center">
                 {gameState.playerHand.map((card, i) => (
                   <DraggableCard
                     key={card.id}
                     card={card}
                     id={`card-${i}`}
                     disabled={!canPlaceCards}
+                    onTap={() => handleTapToPlace(i)}
                   />
                 ))}
               </div>
