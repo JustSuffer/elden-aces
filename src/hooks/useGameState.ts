@@ -189,13 +189,14 @@ export function useGameState() {
 
   const nextRound = useCallback(() => {
     setGameState((prev) => {
-      if (prev.round >= 5 || prev.playerHP <= 0 || prev.opponentHP <= 0) {
+      if (prev.round >= 6 || prev.playerHP <= 0 || prev.opponentHP <= 0) {
         return { ...prev, phase: "end" };
       }
 
-      // Keep unused cards in hand + deal 6 new cards
-      const { dealt: playerCards, remaining: playerRemaining } = dealCards(prev.playerDeck, 6);
-      const { dealt: opponentCards, remaining: opponentRemaining } = dealCards(prev.opponentDeck, 6);
+      // Keep unused cards in hand + deal 5 new cards (6 on first round only)
+      const cardsToDeal = prev.round === 1 ? 6 : 5;
+      const { dealt: playerCards, remaining: playerRemaining } = dealCards(prev.playerDeck, cardsToDeal);
+      const { dealt: opponentCards, remaining: opponentRemaining } = dealCards(prev.opponentDeck, cardsToDeal);
 
       return {
         ...prev,

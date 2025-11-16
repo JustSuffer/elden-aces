@@ -2,6 +2,7 @@ import { Card } from "@/data/cards";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useState } from "react";
+import { Eye } from "lucide-react";
 
 interface GameCardProps {
   card: Card | null;
@@ -9,9 +10,10 @@ interface GameCardProps {
   isPlaceholder?: boolean;
   className?: string;
   faceDown?: boolean;
+  showEyeIcon?: boolean;
 }
 
-export function GameCard({ card, onClick, isPlaceholder = false, className, faceDown = false }: GameCardProps) {
+export function GameCard({ card, onClick, isPlaceholder = false, className, faceDown = false, showEyeIcon = false }: GameCardProps) {
   const [showDetails, setShowDetails] = useState(false);
 
   if (isPlaceholder) {
@@ -31,10 +33,12 @@ export function GameCard({ card, onClick, isPlaceholder = false, className, face
   if (!card) return null;
 
   const handleCardClick = () => {
-    if (card.type === "special" && !faceDown) {
-      setShowDetails(true);
-    }
     onClick?.();
+  };
+
+  const handleEyeClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowDetails(true);
   };
 
   const getCardColor = () => {
@@ -54,16 +58,17 @@ export function GameCard({ card, onClick, isPlaceholder = false, className, face
 
   return (
     <>
-      <div
-        onClick={handleCardClick}
-        className={cn(
-          "w-24 h-36 border-2 rounded-lg relative overflow-hidden transition-all duration-300",
-          "cursor-pointer hover:scale-105 hover:shadow-lg",
-          faceDown ? "bg-card border-border" : getCardColor(),
-          card.type === "special" && !faceDown && "hover:shadow-primary/50",
-          className
-        )}
-      >
+      <div className="relative">
+        <div
+          onClick={handleCardClick}
+          className={cn(
+            "w-24 h-36 border-2 rounded-lg relative overflow-hidden transition-all duration-300",
+            "cursor-pointer hover:scale-105 hover:shadow-lg",
+            faceDown ? "bg-card border-border" : getCardColor(),
+            card.type === "special" && !faceDown && "hover:shadow-primary/50",
+            className
+          )}
+        >
         {faceDown ? (
           <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-muted to-card">
             <div className="text-4xl text-primary opacity-50">⚔</div>
@@ -86,10 +91,20 @@ export function GameCard({ card, onClick, isPlaceholder = false, className, face
             </div>
           </div>
         )}
+        </div>
+        
+        {showEyeIcon && card && !faceDown && (
+          <button
+            onClick={handleEyeClick}
+            className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-primary/20 hover:bg-primary/40 rounded-full p-2 transition-all z-10"
+          >
+            <Eye className="w-4 h-4 text-primary" />
+          </button>
+        )}
       </div>
 
-      {/* Special Card Details Dialog */}
-      {card.type === "special" && card.description && (
+      {/* Card Details Dialog */}
+      {card.description && (
         <Dialog open={showDetails} onOpenChange={setShowDetails}>
           <DialogContent className="max-w-md">
             <DialogHeader>
@@ -100,11 +115,13 @@ export function GameCard({ card, onClick, isPlaceholder = false, className, face
             </DialogHeader>
             <div className="space-y-4 pt-4">
               <p className="text-lg leading-relaxed text-muted-foreground">{card.description}</p>
-              <div className="bg-muted/50 p-4 rounded-lg border border-primary/20">
-                <p className="text-sm text-foreground/70">
-                  Click on special cards during the game to view their effects.
-                </p>
-              </div>
+              {card.type === "special" && (
+                <div className="bg-muted/50 p-4 rounded-lg border border-primary/20">
+                  <p className="text-sm text-foreground/70">
+                    Special cards have unique effects that can change the outcome of the round.
+                  </p>
+                </div>
+              )}
             </div>
           </DialogContent>
         </Dialog>

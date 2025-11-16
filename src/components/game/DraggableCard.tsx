@@ -9,7 +9,14 @@ interface DraggableCardProps {
   disabled?: boolean;
 }
 
-export function DraggableCard({ card, id, disabled }: DraggableCardProps) {
+interface DraggableCardProps {
+  card: Card;
+  id: string;
+  disabled?: boolean;
+  onTap?: () => void;
+}
+
+export function DraggableCard({ card, id, disabled, onTap }: DraggableCardProps) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id,
     disabled,
@@ -23,7 +30,12 @@ export function DraggableCard({ card, id, disabled }: DraggableCardProps) {
 
   return (
     <div ref={setNodeRef} style={style} {...listeners} {...attributes}>
-      <GameCard card={card} className={isDragging ? "ring-2 ring-primary" : ""} />
+      <GameCard 
+        card={card} 
+        className={isDragging ? "ring-2 ring-primary" : ""} 
+        onClick={onTap}
+        showEyeIcon
+      />
     </div>
   );
 }
