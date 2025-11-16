@@ -41,7 +41,7 @@ export function useGameState() {
       opponentHand: opponentCards,
       playerField: [null, null, null, null, null],
       opponentField: [null, null, null, null, null],
-      diceUsed: 0,
+      diceUsed: 0, // Global counter for entire match
       phase: "placement",
       opponentMust4Cards: false,
       playerMust4Cards: false,
@@ -193,23 +193,22 @@ export function useGameState() {
         return { ...prev, phase: "end" };
       }
 
-      // Deal new cards
-      const cardsNeeded = 6;
-      const { dealt: playerCards, remaining: playerRemaining } = dealCards(prev.playerDeck, cardsNeeded);
-      const { dealt: opponentCards, remaining: opponentRemaining } = dealCards(prev.opponentDeck, cardsNeeded);
+      // Keep unused cards in hand + deal 6 new cards
+      const { dealt: playerCards, remaining: playerRemaining } = dealCards(prev.playerDeck, 6);
+      const { dealt: opponentCards, remaining: opponentRemaining } = dealCards(prev.opponentDeck, 6);
 
       return {
         ...prev,
         round: prev.round + 1,
         playerDeck: playerRemaining,
         opponentDeck: opponentRemaining,
-        playerHand: playerCards,
-        opponentHand: opponentCards,
+        playerHand: [...prev.playerHand, ...playerCards], // Persist unused cards
+        opponentHand: [...prev.opponentHand, ...opponentCards],
         playerField: [null, null, null, null, null],
         opponentField: [null, null, null, null, null],
         phase: "placement",
         damageResult: null,
-        diceUsed: 0,
+        // diceUsed remains unchanged (global counter)
       };
     });
   }, []);
