@@ -5,15 +5,16 @@ interface HPBarProps {
   max: number;
   label: string;
   isOpponent?: boolean;
+  className?: string;
 }
 
-export function HPBar({ current, max, label, isOpponent = false }: HPBarProps) {
+export function HPBar({ current, max, label, isOpponent = false, className }: HPBarProps) {
   const percentage = (current / max) * 100;
   const isLow = percentage <= 30;
   const isCritical = percentage <= 15;
 
   return (
-    <div className="flex flex-col items-center gap-2 w-full max-w-xs">
+    <div className={cn("flex flex-col items-center gap-2 w-full max-w-xs", className)}>
       <div className="flex items-center justify-between w-full">
         <span className={cn("text-sm font-semibold", isOpponent ? "text-destructive" : "text-primary")}>
           {label}

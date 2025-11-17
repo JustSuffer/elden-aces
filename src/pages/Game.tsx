@@ -225,7 +225,7 @@ const Game = () => {
           <DeckCounter count={gameState.playerDeck.length} />
           <div className="flex-1 flex flex-col items-center gap-4">
             {/* Player Field - Droppable Slots */}
-            <div className="flex gap-3">
+            <div className="flex gap-3 mb-4">
               {gameState.playerField.map((card, i) => (
                 <DroppableSlot
                   key={i}
@@ -236,7 +236,7 @@ const Game = () => {
               ))}
             </div>
 
-            <HPBar current={gameState.playerHP} max={30} label="Player" />
+            <HPBar current={gameState.playerHP} max={30} label="Player" className="mb-4" />
 
             {/* Player Hand - Draggable Cards */}
             {gameState.phase === "placement" && (

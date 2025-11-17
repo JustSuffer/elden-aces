@@ -51,7 +51,7 @@ const Index = () => {
           <MenuButton onClick={() => navigate("/credits")}>
             Credits
           </MenuButton>
-          <MenuButton onClick={() => alert("Not implemented yet")}>
+          <MenuButton onClick={() => navigate("/how-to-play")}>
             How to Play
           </MenuButton>
           <MenuButton onClick={() => navigate("/auth")}>

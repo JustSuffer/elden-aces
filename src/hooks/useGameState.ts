@@ -111,6 +111,7 @@ export function useGameState() {
       if (result >= 1 && result <= 5) {
         newState.playerMust4Cards = true;
       } else if (result >= 6 && result <= 10) {
+        // Random 2 cards from hand swap with 2 random from deck
         const handIndices = prev.playerHand.map((_, i) => i);
         const toReplace = handIndices.sort(() => Math.random() - 0.5).slice(0, 2);
         const { dealt: newCards, remaining } = dealCards(prev.playerDeck, 2);
@@ -120,7 +121,7 @@ export function useGameState() {
         );
         newState.playerDeck = remaining;
       } else if (result >= 11 && result <= 15) {
-        // Player chooses 2 cards to replace (simplified: auto-replace for now)
+        // Player chooses 2 cards to send back and draw 2 new (simplified: auto-replace for now)
         const handIndices = prev.playerHand.map((_, i) => i);
         const toReplace = handIndices.sort(() => Math.random() - 0.5).slice(0, 2);
         const { dealt: newCards, remaining } = dealCards(prev.playerDeck, 2);
@@ -130,6 +131,7 @@ export function useGameState() {
         );
         newState.playerDeck = remaining;
       } else if (result >= 16 && result <= 18) {
+        // Add Twisted directly to HAND
         const twisted: Card = {
           id: `twisted-dice-${Date.now()}`,
           name: "Twisted",
@@ -137,10 +139,11 @@ export function useGameState() {
           type: "special",
           special: "twisted",
           color: "primary",
-          description: "Reflects damage if your total < opponent's total.",
+          description: "Twisted (α) - Alpha: A powerful reflection card that reverses the flow of damage. When your total numeric value is lower than your opponent's, all damage that would be dealt to you is instead reflected back to your opponent.",
         };
-        newState.playerDeck = [...prev.playerDeck, twisted];
+        newState.playerHand = [...prev.playerHand, twisted];
       } else if (result >= 19 && result <= 20) {
+        // Add Gamma directly to HAND
         const gamma: Card = {
           id: `gamma-dice-${Date.now()}`,
           name: "Gamma",
@@ -148,9 +151,9 @@ export function useGameState() {
           type: "special",
           special: "gamma",
           color: "primary",
-          description: "No damage taken. 2x damage dealt if higher. Opponent plays 4 cards next round.",
+          description: "Gamma (γ): You take no damage this round. If your total is higher, opponent takes 2× damage. Next round, opponent can only play 4 cards.",
         };
-        newState.playerDeck = [...prev.playerDeck, gamma];
+        newState.playerHand = [...prev.playerHand, gamma];
       }
 
       return newState;
