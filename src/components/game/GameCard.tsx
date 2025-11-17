@@ -63,7 +63,7 @@ export function GameCard({ card, onClick, isPlaceholder = false, className, face
           onClick={handleCardClick}
           className={cn(
             "w-24 h-36 border-2 rounded-lg relative overflow-hidden transition-all duration-300",
-            "cursor-pointer hover:scale-105 hover:shadow-lg",
+            "cursor-pointer hover:-translate-y-2 hover:shadow-lg",
             faceDown ? "bg-card border-border" : getCardColor(),
             card.type === "special" && !faceDown && "hover:shadow-primary/50",
             className
@@ -96,7 +96,7 @@ export function GameCard({ card, onClick, isPlaceholder = false, className, face
         {showEyeIcon && card && !faceDown && (
           <button
             onClick={handleEyeClick}
-            className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-primary/20 hover:bg-primary/40 rounded-full p-2 transition-all z-10"
+            className="absolute -bottom-10 left-1/2 -translate-x-1/2 bg-primary/20 hover:bg-primary/40 rounded-full p-2 transition-all z-10 border border-primary/30"
           >
             <Eye className="w-4 h-4 text-primary" />
           </button>
@@ -104,28 +104,54 @@ export function GameCard({ card, onClick, isPlaceholder = false, className, face
       </div>
 
       {/* Card Details Dialog */}
-      {card.description && (
-        <Dialog open={showDetails} onOpenChange={setShowDetails}>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-3 text-2xl">
-                <span className="text-4xl text-primary">{card.symbol}</span>
-                {card.name}
-              </DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 pt-4">
-              <p className="text-lg leading-relaxed text-muted-foreground">{card.description}</p>
-              {card.type === "special" && (
-                <div className="bg-muted/50 p-4 rounded-lg border border-primary/20">
-                  <p className="text-sm text-foreground/70">
-                    Special cards have unique effects that can change the outcome of the round.
-                  </p>
-                </div>
-              )}
+      <Dialog open={showDetails} onOpenChange={setShowDetails}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-3 text-2xl">
+              <span className="text-4xl text-primary glow-gold">{card.symbol}</span>
+              {card.name}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            {/* Card Type */}
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold text-primary">Type:</span>
+              <span className="text-sm text-foreground">{card.type === "numeric" ? "Numeric Card" : "Special Card"}</span>
             </div>
-          </DialogContent>
-        </Dialog>
-      )}
+            
+            {/* Card Value for numeric cards */}
+            {card.type === "numeric" && card.value && (
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold text-primary">Value:</span>
+                <span className="text-3xl font-bold text-foreground">{card.value}</span>
+              </div>
+            )}
+            
+            {/* Card Symbol Meaning */}
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold text-primary">Symbol:</span>
+              <span className="text-sm text-foreground">
+                {card.symbol === "Φ" && "Phi (Φ) - Balance / Genesis"}
+                {card.symbol === "Θ" && "Theta (Θ) - Time"}
+                {card.symbol === "Ψ" && "Psi (Ψ) - Mind"}
+                {card.symbol === "Ω" && "Omega (Ω) - Chaos"}
+                {card.symbol === "α" && "Alpha (α) - Twisted"}
+                {card.symbol === "Δ" && "Delta (Δ) - Amplifier"}
+                {card.symbol === "Σ" && "Sigma (Σ) - Reverse Amplifier"}
+                {card.symbol === "β" && "Beta (β) - Nullifier"}
+                {card.symbol === "γ" && "Gamma (γ) - Ultimate Shield"}
+              </span>
+            </div>
+            
+            {/* Description */}
+            {card.description && (
+              <div className="bg-muted/50 p-4 rounded-lg border border-primary/20">
+                <p className="text-sm leading-relaxed text-foreground/90 whitespace-pre-line">{card.description}</p>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

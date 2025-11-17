@@ -8,6 +8,7 @@ import Game from "./pages/Game";
 import Settings from "./pages/Settings";
 import Credits from "./pages/Credits";
 import Auth from "./pages/Auth";
+import HowToPlay from "./pages/HowToPlay";
 import CardLibrary from "./pages/CardLibrary";
 import DeckBuilder from "./pages/DeckBuilder";
 import NotFound from "./pages/NotFound";
@@ -26,6 +27,7 @@ const App = () => (
           <Route path="/settings" element={<Settings />} />
           <Route path="/credits" element={<Credits />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/how-to-play" element={<HowToPlay />} />
           <Route path="/card-library" element={<CardLibrary />} />
           <Route path="/deck-builder" element={<DeckBuilder />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

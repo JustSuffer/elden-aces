@@ -59,9 +59,13 @@ export default {
           ring: "hsl(var(--sidebar-ring))",
         },
         phi: "hsl(var(--phi-harmony))",
+        "phi-harmony": "hsl(var(--phi-harmony))",
         theta: "hsl(var(--theta-wisdom))",
+        "theta-wisdom": "hsl(var(--theta-wisdom))",
         psi: "hsl(var(--psi-mind))",
+        "psi-mind": "hsl(var(--psi-mind))",
         omega: "hsl(var(--omega-chaos))",
+        "omega-chaos": "hsl(var(--omega-chaos))",
         mist: "hsl(var(--mist))",
       },
       borderRadius: {
