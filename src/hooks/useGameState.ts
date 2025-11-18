@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { Card, DECK, shuffleDeck, dealCards } from "@/data/cards";
 import { calculateDamage } from "@/utils/damageCalculator";
+import { GAMMA_CARD } from "@/data/gammaCard";
 
 export interface GameState {
   round: number;
@@ -84,14 +85,39 @@ export function useGameState() {
     });
   }, []);
 
+  const rearrangeCard = useCallback((fromIndex: number, toIndex: number) => {
+    setGameState((prev) => {
+      const newField = [...prev.playerField];
+      const cardToMove = newField[fromIndex];
+      
+      // Only allow rearrangement to empty slots
+      if (!cardToMove || newField[toIndex] !== null) return prev;
+
+      newField[fromIndex] = null;
+      newField[toIndex] = cardToMove;
+
+      return {
+        ...prev,
+        playerField: newField,
+      };
+    });
+  }, []);
+
   const endPlacement = useCallback(() => {
     setGameState((prev) => {
-      // Bot places cards (simple random strategy)
+      // Bot places cards with randomized selection
       const botField: (Card | null)[] = [null, null, null, null, null];
       const cardsToPlace = prev.opponentMust4Cards ? 4 : 5;
 
-      for (let i = 0; i < cardsToPlace && i < prev.opponentHand.length; i++) {
-        botField[i] = prev.opponentHand[i];
+      // Create a copy of opponent hand and shuffle it for random selection
+      const shuffledHand = [...prev.opponentHand].sort(() => Math.random() - 0.5);
+      
+      // Select cards to play
+      const selectedCards = shuffledHand.slice(0, Math.min(cardsToPlace, shuffledHand.length));
+      
+      // Place cards randomly in available slots
+      for (let i = 0; i < selectedCards.length; i++) {
+        botField[i] = selectedCards[i];
       }
 
       return {
@@ -143,17 +169,8 @@ export function useGameState() {
         };
         newState.playerHand = [...prev.playerHand, twisted];
       } else if (result >= 19 && result <= 20) {
-        // Add Gamma directly to HAND
-        const gamma: Card = {
-          id: `gamma-dice-${Date.now()}`,
-          name: "Gamma",
-          symbol: "γ",
-          type: "special",
-          special: "gamma",
-          color: "primary",
-          description: "Gamma (γ): You take no damage this round. If your total is higher, opponent takes 2× damage. Next round, opponent can only play 4 cards.",
-        };
-        newState.playerHand = [...prev.playerHand, gamma];
+        // Add Gamma directly to HAND with detailed description
+        newState.playerHand = [...prev.playerHand, { ...GAMMA_CARD, id: `gamma-dice-${Date.now()}` }];
       }
 
       return newState;
@@ -221,6 +238,7 @@ export function useGameState() {
     gameState,
     placeCard,
     removeCardFromField,
+    rearrangeCard,
     endPlacement,
     rollDice,
     calculateRoundDamage,

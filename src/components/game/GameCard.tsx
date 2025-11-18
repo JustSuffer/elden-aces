@@ -96,7 +96,8 @@ export function GameCard({ card, onClick, isPlaceholder = false, className, face
         {showEyeIcon && card && !faceDown && (
           <button
             onClick={handleEyeClick}
-            className="absolute -bottom-10 left-1/2 -translate-x-1/2 bg-primary/20 hover:bg-primary/40 rounded-full p-2 transition-all z-10 border border-primary/30"
+            className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-primary/30 hover:bg-primary/50 rounded-full p-2 transition-all z-20 border border-primary/50 shadow-lg hover:shadow-primary/50"
+            aria-label="View card details"
           >
             <Eye className="w-4 h-4 text-primary" />
           </button>
@@ -145,7 +146,7 @@ export function GameCard({ card, onClick, isPlaceholder = false, className, face
             
             {/* Description */}
             {card.description && (
-              <div className="bg-muted/50 p-4 rounded-lg border border-primary/20">
+              <div className="bg-muted/50 p-4 rounded-lg border border-primary/20 max-h-96 overflow-y-auto">
                 <p className="text-sm leading-relaxed text-foreground/90 whitespace-pre-line">{card.description}</p>
               </div>
             )}

@@ -15,7 +15,7 @@ import { GameCard } from "@/components/game/GameCard";
 
 const Game = () => {
   const navigate = useNavigate();
-  const { gameState, placeCard, removeCardFromField, endPlacement, rollDice, calculateRoundDamage, nextRound } = useGameState();
+  const { gameState, placeCard, removeCardFromField, rearrangeCard, endPlacement, rollDice, calculateRoundDamage, nextRound } = useGameState();
   const [dicePopup, setDicePopup] = useState<{ open: boolean; result: number; effect: string }>({
     open: false,
     result: 0,
@@ -32,14 +32,7 @@ const Game = () => {
       const toIndex = parseInt(over.id.toString().replace("field-", ""));
       
       if (!isNaN(fromIndex) && !isNaN(toIndex) && fromIndex !== toIndex) {
-        // Swap cards on field
-        const newField = [...gameState.playerField];
-        const temp = newField[fromIndex];
-        newField[fromIndex] = newField[toIndex];
-        newField[toIndex] = temp;
-        // This would need a new action in useGameState - for now, remove and place
-        removeCardFromField(fromIndex);
-        return;
+        rearrangeCard(fromIndex, toIndex);
       }
       return;
     }
@@ -236,11 +229,11 @@ const Game = () => {
               ))}
             </div>
 
-            <HPBar current={gameState.playerHP} max={30} label="Player" className="mb-4" />
+            <HPBar current={gameState.playerHP} max={30} label="Player" className="mb-8" />
 
             {/* Player Hand - Draggable Cards */}
             {gameState.phase === "placement" && (
-              <div className="flex gap-3 mt-12 flex-wrap justify-center">
+              <div className="flex gap-3 mt-16 flex-wrap justify-center">
                 {gameState.playerHand.map((card, i) => (
                   <DraggableCard
                     key={card.id}
