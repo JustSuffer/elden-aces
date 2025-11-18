@@ -17,6 +17,7 @@ export interface GameState {
   phase: "placement" | "reveal" | "damage" | "end";
   opponentMust4Cards: boolean;
   playerMust4Cards: boolean;
+  cardSelectionMode: boolean;
   damageResult: {
     playerDamage: number;
     opponentDamage: number;
@@ -46,6 +47,7 @@ export function useGameState() {
       phase: "placement",
       opponentMust4Cards: false,
       playerMust4Cards: false,
+      cardSelectionMode: false,
       damageResult: null,
     };
   });
@@ -147,15 +149,8 @@ export function useGameState() {
         );
         newState.playerDeck = remaining;
       } else if (result >= 11 && result <= 15) {
-        // Player chooses 2 cards to send back and draw 2 new (simplified: auto-replace for now)
-        const handIndices = prev.playerHand.map((_, i) => i);
-        const toReplace = handIndices.sort(() => Math.random() - 0.5).slice(0, 2);
-        const { dealt: newCards, remaining } = dealCards(prev.playerDeck, 2);
-        
-        newState.playerHand = prev.playerHand.map((card, i) => 
-          toReplace.includes(i) ? (newCards[toReplace.indexOf(i)] || card) : card
-        );
-        newState.playerDeck = remaining;
+        // Trigger card selection mode
+        newState.cardSelectionMode = true;
       } else if (result >= 16 && result <= 18) {
         // Add Twisted directly to HAND
         const twisted: Card = {
@@ -234,6 +229,22 @@ export function useGameState() {
     });
   }, []);
 
+  const handleCardSelection = useCallback((selectedIndices: number[]) => {
+    setGameState((prev) => {
+      const cardsToReturn = selectedIndices.map(i => prev.playerHand[i]);
+      const newHand = prev.playerHand.filter((_, i) => !selectedIndices.includes(i));
+      
+      const { dealt: newCards, remaining } = dealCards(prev.playerDeck, 2);
+      
+      return {
+        ...prev,
+        playerHand: [...newHand, ...newCards],
+        playerDeck: [...remaining, ...cardsToReturn],
+        cardSelectionMode: false,
+      };
+    });
+  }, []);
+
   return {
     gameState,
     placeCard,
@@ -243,5 +254,6 @@ export function useGameState() {
     rollDice,
     calculateRoundDamage,
     nextRound,
+    handleCardSelection,
   };
 }

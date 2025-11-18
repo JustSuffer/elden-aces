@@ -4,6 +4,7 @@ import { HPBar } from "@/components/game/HPBar";
 import { DeckCounter } from "@/components/game/DeckCounter";
 import { DiceRollPopup } from "@/components/game/DiceRollPopup";
 import { VictoryPopup } from "@/components/game/VictoryPopup";
+import { CardSelectionPopup } from "@/components/game/CardSelectionPopup";
 import { Button } from "@/components/ui/button";
 import { useGameState } from "@/hooks/useGameState";
 import { useNavigate } from "react-router-dom";
@@ -15,7 +16,7 @@ import { GameCard } from "@/components/game/GameCard";
 
 const Game = () => {
   const navigate = useNavigate();
-  const { gameState, placeCard, removeCardFromField, rearrangeCard, endPlacement, rollDice, calculateRoundDamage, nextRound } = useGameState();
+  const { gameState, placeCard, removeCardFromField, rearrangeCard, endPlacement, rollDice, calculateRoundDamage, nextRound, handleCardSelection } = useGameState();
   const [dicePopup, setDicePopup] = useState<{ open: boolean; result: number; effect: string }>({
     open: false,
     result: 0,
@@ -264,6 +265,13 @@ const Game = () => {
         playerHP={gameState.playerHP}
         opponentHP={gameState.opponentHP}
         onReturnToMenu={() => navigate("/")}
+      />
+
+      {/* Card Selection Popup */}
+      <CardSelectionPopup
+        open={gameState.cardSelectionMode}
+        cards={gameState.playerHand}
+        onConfirm={handleCardSelection}
       />
     </div>
     </DndContext>
