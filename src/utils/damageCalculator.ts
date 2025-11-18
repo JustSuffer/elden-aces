@@ -106,15 +106,67 @@ export function calculateDamage(
 
   if (playerDeltaIndex !== -1 && !(opponentHasDeflate || opponentHasDeflateCard)) {
     const nextCard = playerDeltaIndex < 4 ? playerField[playerDeltaIndex + 1] : null;
-    if (nextCard?.special === "twisted") {
-      details.push("⚡ Player's Delta (Δ) → Sigma (Σ) transformation!");
+    const isTransformed = nextCard?.special === "twisted";
+    
+    // Calculate sum of cards before this index
+    let playerSum = 0;
+    let opponentSum = 0;
+    for (let i = 0; i < playerDeltaIndex; i++) {
+      playerSum += playerField[i]?.type === "numeric" ? (playerField[i]?.value || 0) : 0;
+      opponentSum += opponentField[i]?.type === "numeric" ? (opponentField[i]?.value || 0) : 0;
+    }
+    
+    if (isTransformed) {
+      // Sigma behavior: if player lower, opponent takes 2x; if player higher, player takes 2x
+      if (playerSum < opponentSum) {
+        opponentDamage += (opponentSum - playerSum) * 2;
+        details.push(`⚡ Player's Delta → Sigma transformation: Opponent takes ${(opponentSum - playerSum) * 2} damage`);
+      } else if (playerSum > opponentSum) {
+        playerDamage += (playerSum - opponentSum) * 2;
+        details.push(`⚡ Player's Delta → Sigma transformation: Player takes ${(playerSum - opponentSum) * 2} damage`);
+      }
+    } else {
+      // Normal Delta behavior: if opponent higher, opponent takes 2x; if player higher, player takes 2x
+      if (opponentSum > playerSum) {
+        opponentDamage += (opponentSum - playerSum) * 2;
+        details.push(`⚡ Player's Delta (Δ): Opponent takes ${(opponentSum - playerSum) * 2} damage`);
+      } else if (playerSum > opponentSum) {
+        playerDamage += (playerSum - opponentSum) * 2;
+        details.push(`⚡ Player's Delta (Δ): Player takes ${(playerSum - opponentSum) * 2} damage`);
+      }
     }
   }
 
   if (opponentDeltaIndex !== -1 && !(playerHasDeflate || playerHasDeflateCard)) {
     const nextCard = opponentDeltaIndex < 4 ? opponentField[opponentDeltaIndex + 1] : null;
-    if (nextCard?.special === "twisted") {
-      details.push("⚡ Opponent's Delta (Δ) → Sigma (Σ) transformation!");
+    const isTransformed = nextCard?.special === "twisted";
+    
+    // Calculate sum of cards before this index
+    let playerSum = 0;
+    let opponentSum = 0;
+    for (let i = 0; i < opponentDeltaIndex; i++) {
+      playerSum += playerField[i]?.type === "numeric" ? (playerField[i]?.value || 0) : 0;
+      opponentSum += opponentField[i]?.type === "numeric" ? (opponentField[i]?.value || 0) : 0;
+    }
+    
+    if (isTransformed) {
+      // Sigma behavior
+      if (opponentSum < playerSum) {
+        playerDamage += (playerSum - opponentSum) * 2;
+        details.push(`⚡ Opponent's Delta → Sigma transformation: Player takes ${(playerSum - opponentSum) * 2} damage`);
+      } else if (opponentSum > playerSum) {
+        opponentDamage += (opponentSum - playerSum) * 2;
+        details.push(`⚡ Opponent's Delta → Sigma transformation: Opponent takes ${(opponentSum - playerSum) * 2} damage`);
+      }
+    } else {
+      // Normal Delta behavior
+      if (playerSum > opponentSum) {
+        playerDamage += (playerSum - opponentSum) * 2;
+        details.push(`⚡ Opponent's Delta (Δ): Player takes ${(playerSum - opponentSum) * 2} damage`);
+      } else if (opponentSum > playerSum) {
+        opponentDamage += (opponentSum - playerSum) * 2;
+        details.push(`⚡ Opponent's Delta (Δ): Opponent takes ${(opponentSum - playerSum) * 2} damage`);
+      }
     }
   }
 
@@ -124,15 +176,67 @@ export function calculateDamage(
 
   if (playerSigmaIndex !== -1 && !(opponentHasDeflate || opponentHasDeflateCard)) {
     const nextCard = playerSigmaIndex < 4 ? playerField[playerSigmaIndex + 1] : null;
-    if (nextCard?.special === "twisted") {
-      details.push("⚡ Player's Sigma (Σ) → Delta (Δ) transformation!");
+    const isTransformed = nextCard?.special === "twisted";
+    
+    // Calculate sum of cards before this index
+    let playerSum = 0;
+    let opponentSum = 0;
+    for (let i = 0; i < playerSigmaIndex; i++) {
+      playerSum += playerField[i]?.type === "numeric" ? (playerField[i]?.value || 0) : 0;
+      opponentSum += opponentField[i]?.type === "numeric" ? (opponentField[i]?.value || 0) : 0;
+    }
+    
+    if (isTransformed) {
+      // Delta behavior
+      if (opponentSum > playerSum) {
+        opponentDamage += (opponentSum - playerSum) * 2;
+        details.push(`⚡ Player's Sigma → Delta transformation: Opponent takes ${(opponentSum - playerSum) * 2} damage`);
+      } else if (playerSum > opponentSum) {
+        playerDamage += (playerSum - opponentSum) * 2;
+        details.push(`⚡ Player's Sigma → Delta transformation: Player takes ${(playerSum - opponentSum) * 2} damage`);
+      }
+    } else {
+      // Normal Sigma behavior: if player lower, opponent takes 2x; if player higher, player takes 2x
+      if (playerSum < opponentSum) {
+        opponentDamage += (opponentSum - playerSum) * 2;
+        details.push(`⚡ Player's Sigma (Σ): Opponent takes ${(opponentSum - playerSum) * 2} damage`);
+      } else if (playerSum > opponentSum) {
+        playerDamage += (playerSum - opponentSum) * 2;
+        details.push(`⚡ Player's Sigma (Σ): Player takes ${(playerSum - opponentSum) * 2} damage`);
+      }
     }
   }
 
   if (opponentSigmaIndex !== -1 && !(playerHasDeflate || playerHasDeflateCard)) {
     const nextCard = opponentSigmaIndex < 4 ? opponentField[opponentSigmaIndex + 1] : null;
-    if (nextCard?.special === "twisted") {
-      details.push("⚡ Opponent's Sigma (Σ) → Delta (Δ) transformation!");
+    const isTransformed = nextCard?.special === "twisted";
+    
+    // Calculate sum of cards before this index
+    let playerSum = 0;
+    let opponentSum = 0;
+    for (let i = 0; i < opponentSigmaIndex; i++) {
+      playerSum += playerField[i]?.type === "numeric" ? (playerField[i]?.value || 0) : 0;
+      opponentSum += opponentField[i]?.type === "numeric" ? (opponentField[i]?.value || 0) : 0;
+    }
+    
+    if (isTransformed) {
+      // Delta behavior
+      if (playerSum > opponentSum) {
+        playerDamage += (playerSum - opponentSum) * 2;
+        details.push(`⚡ Opponent's Sigma → Delta transformation: Player takes ${(playerSum - opponentSum) * 2} damage`);
+      } else if (opponentSum > playerSum) {
+        opponentDamage += (opponentSum - playerSum) * 2;
+        details.push(`⚡ Opponent's Sigma → Delta transformation: Opponent takes ${(opponentSum - playerSum) * 2} damage`);
+      }
+    } else {
+      // Normal Sigma behavior
+      if (opponentSum < playerSum) {
+        playerDamage += (playerSum - opponentSum) * 2;
+        details.push(`⚡ Opponent's Sigma (Σ): Player takes ${(playerSum - opponentSum) * 2} damage`);
+      } else if (playerSum > opponentSum) {
+        opponentDamage += (opponentSum - playerSum) * 2;
+        details.push(`⚡ Opponent's Sigma (Σ): Opponent takes ${(opponentSum - playerSum) * 2} damage`);
+      }
     }
   }
 
