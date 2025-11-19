@@ -269,7 +269,7 @@ const Game = () => {
 
             {/* Player Hand - Draggable Cards */}
             {gameState.phase === "placement" && (
-              <DroppableSlot id="hand-dropzone" isPlaceholder className="hidden" card={null}>
+              <DroppableSlot id="hand-dropzone" isPlaceholder className="w-full" card={null}>
                 <div className="flex gap-3 mt-16 flex-wrap justify-center">
                   {gameState.playerHand.map((card, i) => (
                     <DraggableCard
