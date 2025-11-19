@@ -5,44 +5,62 @@ import { DeckCounter } from "@/components/game/DeckCounter";
 import { DiceRollPopup } from "@/components/game/DiceRollPopup";
 import { VictoryPopup } from "@/components/game/VictoryPopup";
 import { CardSelectionPopup } from "@/components/game/CardSelectionPopup";
+import { VfxLayer, VfxEffect } from "@/components/game/VfxLayer";
 import { Button } from "@/components/ui/button";
 import { useGameState } from "@/hooks/useGameState";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Dices } from "lucide-react";
 import { toast } from "sonner";
 import { DndContext, DragEndEvent } from "@dnd-kit/core";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { GameCard } from "@/components/game/GameCard";
+import { AudioManager } from "@/utils/AudioManager";
 
 const Game = () => {
   const navigate = useNavigate();
-  const { gameState, placeCard, removeCardFromField, rearrangeCard, endPlacement, rollDice, calculateRoundDamage, nextRound, handleCardSelection } = useGameState();
-  const [dicePopup, setDicePopup] = useState<{ open: boolean; result: number; effect: string }>({
-    open: false,
-    result: 0,
-    effect: "",
-  });
+  const { gameState, placeCard, removeCardFromField, rearrangeCard, endPlacement, rollDice, acknowledgeDiceResult, cancelDiceResult, calculateRoundDamage, nextRound, handleCardSelection } = useGameState();
+  const [vfxEffects, setVfxEffects] = useState<VfxEffect[]>([]);
+
+  useEffect(() => {
+    AudioManager.init();
+  }, []);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || gameState.phase !== "placement") return;
 
-    // Handle rearranging cards on field
-    if (active.id.toString().startsWith("rearrange-")) {
-      const fromIndex = parseInt(active.id.toString().replace("rearrange-field-", ""));
-      const toIndex = parseInt(over.id.toString().replace("field-", ""));
-      
-      if (!isNaN(fromIndex) && !isNaN(toIndex) && fromIndex !== toIndex) {
-        rearrangeCard(fromIndex, toIndex);
+    const activeId = active.id.toString();
+    const overId = over.id.toString();
+
+    // Handle dragging from field back to hand
+    if (activeId.startsWith("field-") && overId === "hand-dropzone") {
+      const fieldIndex = parseInt(activeId.replace("field-", ""));
+      if (!isNaN(fieldIndex)) {
+        removeCardFromField(fieldIndex);
+        AudioManager.play("card-placement", 0.6);
       }
       return;
     }
 
-    const cardIndex = parseInt(active.id.toString().replace("card-", ""));
-    const fieldIndex = parseInt(over.id.toString().replace("field-", ""));
+    // Handle rearranging cards on field
+    if (activeId.startsWith("field-")) {
+      const fromIndex = parseInt(activeId.replace("field-", ""));
+      const toIndex = parseInt(overId.replace("field-", ""));
+      
+      if (!isNaN(fromIndex) && !isNaN(toIndex) && fromIndex !== toIndex) {
+        rearrangeCard(fromIndex, toIndex);
+        AudioManager.play("card-placement", 0.6);
+      }
+      return;
+    }
+
+    // Handle placing card from hand to field
+    const cardIndex = parseInt(activeId.replace("card-", ""));
+    const fieldIndex = parseInt(overId.replace("field-", ""));
 
     if (!isNaN(cardIndex) && !isNaN(fieldIndex)) {
       placeCard(cardIndex, fieldIndex);
+      AudioManager.play("card-placement", 0.8);
     }
   };
 
@@ -72,24 +90,7 @@ const Game = () => {
       return;
     }
 
-    const result = rollDice();
-    
-    // Determine effect message
-    let effect = "";
-    if (result >= 1 && result <= 5) {
-      effect = "Fate demands: Play only 4 cards this round!";
-    } else if (result >= 6 && result <= 10) {
-      effect = "2 random cards swapped with deck!";
-    } else if (result >= 11 && result <= 15) {
-      effect = "2 cards returned to deck, 2 new cards drawn!";
-    } else if (result >= 16 && result <= 18) {
-      effect = "+1 Twisted (α) added to deck!";
-    } else if (result >= 19 && result <= 20) {
-      effect = "+1 Gamma (γ) added to deck!";
-    }
-
-    // Show dice animation popup
-    setDicePopup({ open: true, result, effect });
+    rollDice();
   };
 
   const handleEndPlacement = () => {
@@ -102,10 +103,43 @@ const Game = () => {
     }
     endPlacement();
     
+    // Play card flip sound
+    AudioManager.play("card-flip", 0.7);
+    
+    // Trigger VFX for special cards
+    setTimeout(() => {
+      gameState.playerField.forEach((card, index) => {
+        if (card?.special === "gamma") {
+          addVfx("gamma", index);
+        } else if (card?.special === "twisted") {
+          addVfx("twisted", index);
+        }
+      });
+    }, 600);
+    
     // Auto-calculate damage after a short delay
     setTimeout(() => {
       calculateRoundDamage();
-    }, 1000);
+      AudioManager.play("damage-dealt", 0.9);
+    }, 1500);
+  };
+
+  const addVfx = (type: "gamma" | "twisted" | "delta-sigma-transform", slotIndex: number) => {
+    const slotElement = document.querySelector(`[data-slot="${slotIndex}"]`);
+    if (!slotElement) return;
+    
+    const rect = slotElement.getBoundingClientRect();
+    const effect: VfxEffect = {
+      type,
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2,
+      id: `${type}-${Date.now()}-${Math.random()}`,
+    };
+    
+    setVfxEffects(prev => [...prev, effect]);
+    setTimeout(() => {
+      setVfxEffects(prev => prev.filter(e => e.id !== effect.id));
+    }, 2000);
   };
 
   const handleNextRound = () => {
@@ -221,12 +255,13 @@ const Game = () => {
             {/* Player Field - Droppable Slots */}
             <div className="flex gap-3 mb-4">
               {gameState.playerField.map((card, i) => (
-                <DroppableSlot
-                  key={i}
-                  id={`field-${i}`}
-                  card={card}
-                  onRemove={card ? () => handleFieldCardClick(i) : undefined}
-                />
+                <div key={i} data-slot={i}>
+                  <DroppableSlot
+                    id={`field-${i}`}
+                    card={card}
+                    onRemove={card ? () => handleFieldCardClick(i) : undefined}
+                  />
+                </div>
               ))}
             </div>
 
@@ -234,29 +269,38 @@ const Game = () => {
 
             {/* Player Hand - Draggable Cards */}
             {gameState.phase === "placement" && (
-              <div className="flex gap-3 mt-16 flex-wrap justify-center">
-                {gameState.playerHand.map((card, i) => (
-                  <DraggableCard
-                    key={card.id}
-                    card={card}
-                    id={`card-${i}`}
-                    disabled={!canPlaceCards}
-                    onTap={() => handleTapToPlace(i)}
-                  />
-                ))}
-              </div>
+              <DroppableSlot id="hand-dropzone" isPlaceholder className="hidden" card={null}>
+                <div className="flex gap-3 mt-16 flex-wrap justify-center">
+                  {gameState.playerHand.map((card, i) => (
+                    <DraggableCard
+                      key={card.id}
+                      card={card}
+                      id={`card-${i}`}
+                      disabled={!canPlaceCards}
+                      onTap={() => handleTapToPlace(i)}
+                    />
+                  ))}
+                </div>
+              </DroppableSlot>
             )}
           </div>
         </div>
       </div>
 
+      {/* VFX Layer */}
+      <VfxLayer effects={vfxEffects} />
+
       {/* Dice Roll Popup */}
-      <DiceRollPopup
-        open={dicePopup.open}
-        onClose={() => setDicePopup({ ...dicePopup, open: false })}
-        result={dicePopup.result}
-        effect={dicePopup.effect}
-      />
+      {gameState.pendingDiceResult && (
+        <DiceRollPopup
+          open={true}
+          onClose={() => {}}
+          onAcknowledge={acknowledgeDiceResult}
+          onCancel={cancelDiceResult}
+          result={gameState.pendingDiceResult.result}
+          effect={gameState.pendingDiceResult.effect}
+        />
+      )}
 
       {/* Victory Popup */}
       <VictoryPopup

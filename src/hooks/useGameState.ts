@@ -18,6 +18,10 @@ export interface GameState {
   opponentMust4Cards: boolean;
   playerMust4Cards: boolean;
   cardSelectionMode: boolean;
+  pendingDiceResult: {
+    result: number;
+    effect: string;
+  } | null;
   damageResult: {
     playerDamage: number;
     opponentDamage: number;
@@ -48,6 +52,7 @@ export function useGameState() {
       opponentMust4Cards: false,
       playerMust4Cards: false,
       cardSelectionMode: false,
+      pendingDiceResult: null,
       damageResult: null,
     };
   });
@@ -133,13 +138,41 @@ export function useGameState() {
   const rollDice = useCallback(() => {
     const result = Math.floor(Math.random() * 20) + 1;
     
+    let effect = "";
+    if (result >= 1 && result <= 5) {
+      effect = "Fate demands: Play only 4 cards this round!";
+    } else if (result >= 6 && result <= 10) {
+      effect = "2 random cards swapped with deck!";
+    } else if (result >= 11 && result <= 15) {
+      effect = "Choose 2 cards to send back to deck!";
+    } else if (result >= 16 && result <= 18) {
+      effect = "+1 Twisted (α) added to your hand!";
+    } else if (result >= 19 && result <= 20) {
+      effect = "+1 Gamma (γ) added to your hand!";
+    }
+
+    setGameState((prev) => ({
+      ...prev,
+      pendingDiceResult: { result, effect },
+    }));
+
+    return { result, effect };
+  }, []);
+
+  const acknowledgeDiceResult = useCallback(() => {
     setGameState((prev) => {
-      const newState = { ...prev, diceUsed: prev.diceUsed + 1 };
+      if (!prev.pendingDiceResult) return prev;
+
+      const result = prev.pendingDiceResult.result;
+      const newState = { 
+        ...prev, 
+        diceUsed: prev.diceUsed + 1,
+        pendingDiceResult: null 
+      };
 
       if (result >= 1 && result <= 5) {
         newState.playerMust4Cards = true;
       } else if (result >= 6 && result <= 10) {
-        // Random 2 cards from hand swap with 2 random from deck
         const handIndices = prev.playerHand.map((_, i) => i);
         const toReplace = handIndices.sort(() => Math.random() - 0.5).slice(0, 2);
         const { dealt: newCards, remaining } = dealCards(prev.playerDeck, 2);
@@ -149,10 +182,8 @@ export function useGameState() {
         );
         newState.playerDeck = remaining;
       } else if (result >= 11 && result <= 15) {
-        // Trigger card selection mode
         newState.cardSelectionMode = true;
       } else if (result >= 16 && result <= 18) {
-        // Add Twisted directly to HAND
         const twisted: Card = {
           id: `twisted-dice-${Date.now()}`,
           name: "Twisted",
@@ -164,14 +195,18 @@ export function useGameState() {
         };
         newState.playerHand = [...prev.playerHand, twisted];
       } else if (result >= 19 && result <= 20) {
-        // Add Gamma directly to HAND with detailed description
         newState.playerHand = [...prev.playerHand, { ...GAMMA_CARD, id: `gamma-dice-${Date.now()}` }];
       }
 
       return newState;
     });
+  }, []);
 
-    return result;
+  const cancelDiceResult = useCallback(() => {
+    setGameState((prev) => ({
+      ...prev,
+      pendingDiceResult: null,
+    }));
   }, []);
 
   const calculateRoundDamage = useCallback(() => {
@@ -252,6 +287,8 @@ export function useGameState() {
     rearrangeCard,
     endPlacement,
     rollDice,
+    acknowledgeDiceResult,
+    cancelDiceResult,
     calculateRoundDamage,
     nextRound,
     handleCardSelection,
