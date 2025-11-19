@@ -6,6 +6,7 @@ import { DiceRollPopup } from "@/components/game/DiceRollPopup";
 import { VictoryPopup } from "@/components/game/VictoryPopup";
 import { CardSelectionPopup } from "@/components/game/CardSelectionPopup";
 import { VfxLayer, VfxEffect } from "@/components/game/VfxLayer";
+import { CardFlip } from "@/components/game/CardFlip";
 import { Button } from "@/components/ui/button";
 import { useGameState } from "@/hooks/useGameState";
 import { useNavigate } from "react-router-dom";
@@ -176,7 +177,17 @@ const Game = () => {
             {/* Opponent Field */}
             <div className="flex gap-3">
               {gameState.opponentField.map((card, i) => (
-                <GameCard key={i} card={card} isPlaceholder={!card} faceDown={gameState.phase === "placement"} />
+                <div key={i} data-slot={`opponent-${i}`}>
+                  <CardFlip
+                    isRevealed={gameState.phase !== "placement"}
+                    frontContent={<GameCard card={card} isPlaceholder={!card} />}
+                    backContent={
+                      <div className="w-24 h-36 border-2 rounded-lg bg-gradient-to-br from-muted to-card flex items-center justify-center">
+                        <div className="text-4xl text-primary opacity-50">⚔</div>
+                      </div>
+                    }
+                  />
+                </div>
               ))}
             </div>
           </div>
