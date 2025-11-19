@@ -22,34 +22,52 @@ export function CardFlip({ isRevealed, frontContent, backContent, className }: C
         }}
         style={{
           transformStyle: "preserve-3d",
-          backfaceVisibility: "hidden",
         }}
         className="relative"
       >
         {/* Front face (revealed state) */}
-        <div
+        <motion.div
           style={{
             backfaceVisibility: "hidden",
             transform: "rotateY(0deg)",
           }}
-          className={isRevealed ? "block" : "hidden"}
+          animate={{
+            opacity: isRevealed ? 1 : 0,
+          }}
+          transition={{ duration: 0.3, delay: isRevealed ? 0.3 : 0 }}
+          className="absolute inset-0"
         >
-          {frontContent}
-        </div>
+          <motion.div
+            animate={{
+              filter: isRevealed ? "drop-shadow(0 10px 15px rgba(0,0,0,0.3))" : "drop-shadow(0 4px 6px rgba(0,0,0,0.1))",
+            }}
+            transition={{ duration: 0.3 }}
+          >
+            {frontContent}
+          </motion.div>
+        </motion.div>
 
         {/* Back face (hidden state) */}
-        <div
+        <motion.div
           style={{
             backfaceVisibility: "hidden",
             transform: "rotateY(180deg)",
-            position: "absolute",
-            top: 0,
-            left: 0,
           }}
-          className={!isRevealed ? "block" : "hidden"}
+          animate={{
+            opacity: !isRevealed ? 1 : 0,
+          }}
+          transition={{ duration: 0.3, delay: !isRevealed ? 0.3 : 0 }}
+          className="absolute inset-0"
         >
-          {backContent}
-        </div>
+          <motion.div
+            animate={{
+              filter: !isRevealed ? "drop-shadow(0 10px 15px rgba(0,0,0,0.3))" : "drop-shadow(0 4px 6px rgba(0,0,0,0.1))",
+            }}
+            transition={{ duration: 0.3 }}
+          >
+            {backContent}
+          </motion.div>
+        </motion.div>
       </motion.div>
     </div>
   );
