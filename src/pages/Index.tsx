@@ -36,8 +36,14 @@ const Index = () => {
 
         {/* Menu Items */}
         <div className="flex flex-col space-y-4 w-full max-w-md">
-          <MenuButton onClick={() => navigate("/game")} variant="primary">
+          <MenuButton onClick={() => navigate("/play")} variant="primary">
+            Play
+          </MenuButton>
+          <MenuButton onClick={() => navigate("/game")}>
             Play vs Bot
+          </MenuButton>
+          <MenuButton onClick={() => navigate("/profile")}>
+            Profile
           </MenuButton>
           <MenuButton onClick={() => navigate("/card-library")}>
             Card Library
@@ -53,9 +59,6 @@ const Index = () => {
           </MenuButton>
           <MenuButton onClick={() => navigate("/how-to-play")}>
             How to Play
-          </MenuButton>
-          <MenuButton onClick={() => navigate("/auth")}>
-            Login / Sign Up
           </MenuButton>
         </div>
 
