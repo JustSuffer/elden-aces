@@ -174,9 +174,15 @@ const Game = () => {
           <div className="flex-1 flex flex-col items-center gap-4">
             <HPBar current={gameState.opponentHP} max={30} label="Opponent" isOpponent />
             {/* Opponent Field */}
-            <div className="flex gap-3">
+            <div className="grid grid-cols-5 gap-4 justify-items-center">
               {gameState.opponentField.map((card, i) => (
-                <GameCard key={i} card={card} isPlaceholder={!card} faceDown={gameState.phase === "placement"} />
+                <GameCard 
+                  key={i} 
+                  card={card} 
+                  isPlaceholder={!card} 
+                  faceDown={gameState.phase === "placement"}
+                  showEyeIcon={!!(card && gameState.phase !== "placement")}
+                />
               ))}
             </div>
           </div>
@@ -253,7 +259,7 @@ const Game = () => {
           <DeckCounter count={gameState.playerDeck.length} />
           <div className="flex-1 flex flex-col items-center gap-4">
             {/* Player Field - Droppable Slots */}
-            <div className="flex gap-3 mb-4">
+            <div className="grid grid-cols-5 gap-4 mb-4 justify-items-center">
               {gameState.playerField.map((card, i) => (
                 <div key={i} data-slot={i}>
                   <DroppableSlot

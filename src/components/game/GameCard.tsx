@@ -96,6 +96,7 @@ export function GameCard({ card, onClick, isPlaceholder = false, className, face
         {showEyeIcon && card && !faceDown && (
           <button
             onClick={handleEyeClick}
+            onMouseEnter={() => setShowDetails(true)}
             className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-primary/30 hover:bg-primary/50 rounded-full p-2 transition-all z-20 border border-primary/50 shadow-lg hover:shadow-primary/50"
             aria-label="View card details"
           >
@@ -106,7 +107,7 @@ export function GameCard({ card, onClick, isPlaceholder = false, className, face
 
       {/* Card Details Dialog */}
       <Dialog open={showDetails} onOpenChange={setShowDetails}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-3 text-2xl">
               <span className="text-4xl text-primary glow-gold">{card.symbol}</span>

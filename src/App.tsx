@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Game from "./pages/Game";
+import Play from "./pages/Play";
+import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import Credits from "./pages/Credits";
 import Auth from "./pages/Auth";
@@ -22,11 +24,13 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          <Route path="/auth" element={<Auth />} />
           <Route path="/" element={<Index />} />
+          <Route path="/play" element={<Play />} />
           <Route path="/game" element={<Game />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/credits" element={<Credits />} />
-          <Route path="/auth" element={<Auth />} />
           <Route path="/how-to-play" element={<HowToPlay />} />
           <Route path="/card-library" element={<CardLibrary />} />
           <Route path="/deck-builder" element={<DeckBuilder />} />

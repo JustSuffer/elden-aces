@@ -14,6 +14,21 @@ class AudioManagerClass {
     this.gainNode = this.audioContext.createGain();
     this.gainNode.connect(this.audioContext.destination);
     this.gainNode.gain.value = this.masterVolume;
+
+    // Preload all sound effects
+    const sounds = [
+      { name: 'card-placement', url: '/audio/card-placement.mp3' },
+      { name: 'card-flip', url: '/audio/card-flip.mp3' },
+      { name: 'dice-roll', url: '/audio/dice-roll.mp3' },
+      { name: 'dice-ping', url: '/audio/dice-ping.mp3' },
+      { name: 'damage-dealt', url: '/audio/damage-dealt.mp3' },
+      { name: 'victory', url: '/audio/victory.mp3' },
+      { name: 'defeat', url: '/audio/defeat.mp3' },
+    ];
+
+    await Promise.all(
+      sounds.map(sound => this.loadSound(sound.name, sound.url))
+    );
   }
 
   async loadSound(name: string, url: string) {
