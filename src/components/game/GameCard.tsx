@@ -1,8 +1,9 @@
-import { Card } from "@/data/cards";
+import { Card } from "@/types/game";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useState } from "react";
+import React, { useState } from "react";
 import { Eye } from "lucide-react";
+import { SPECIAL_CARDS_DATA } from "@/data/gameData";
 
 interface GameCardProps {
   card: Card | null;
@@ -41,42 +42,40 @@ export function GameCard({ card, onClick, isPlaceholder = false, className, face
     setShowDetails(true);
   };
 
-  const getCardColor = () => {
-    switch (card.color) {
-      case "phi":
-        return "border-phi bg-phi/10";
-      case "theta":
-        return "border-theta bg-theta/10";
-      case "psi":
-        return "border-psi bg-psi/10";
-      case "omega":
-        return "border-omega bg-omega/10";
-      default:
-        return "border-primary bg-primary/10";
-    }
-  };
+  // Dynamic style for colors
+  const cardStyle = !faceDown && card.color ? {
+    borderColor: card.color,
+    backgroundColor: `${card.color}1A`, // 10% opacity
+    boxShadow: `0 0 10px ${card.color}33` // faint glow
+  } : {};
+
+  const textColorStyle = !faceDown && card.color ? {
+      color: card.color,
+      textShadow: `0 0 5px ${card.color}66`
+  } : {};
 
   return (
     <>
-      <div className="relative">
+      <div className="relative group">
         <div
           onClick={handleCardClick}
+          style={cardStyle}
           className={cn(
             "w-24 h-36 border-2 rounded-lg relative overflow-hidden transition-all duration-300",
-            "cursor-pointer hover:-translate-y-2 hover:shadow-lg",
-            faceDown ? "bg-card border-border" : getCardColor(),
+            "cursor-pointer hover:-translate-y-2 hover:shadow-xl hover:scale-105",
+            faceDown ? "bg-card border-border shadow-inner" : "",
             card.type === "special" && !faceDown && "hover:shadow-primary/50",
             className
           )}
         >
         {faceDown ? (
-          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-muted to-card">
-            <div className="text-4xl text-primary opacity-50">⚔</div>
+          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800">
+            <div className="text-4xl opacity-30 animate-pulse">ΦΩ</div>
           </div>
         ) : (
           <div className="relative h-full flex flex-col items-center justify-between p-2">
             {/* Symbol at top */}
-            <div className={cn("text-2xl font-bold", card.color === "primary" ? "text-primary" : `text-${card.color}`)}>
+            <div className={cn("text-2xl font-bold")} style={textColorStyle}>
               {card.symbol}
             </div>
 
@@ -84,9 +83,16 @@ export function GameCard({ card, onClick, isPlaceholder = false, className, face
             {card.type === "numeric" && card.value && (
               <div className="text-5xl font-bold text-foreground">{card.value}</div>
             )}
+            
+            {/* Special Type Indicator if numeric value is 0 or missing */}
+            {card.type === "special" && (
+                <div className="text-sm font-bold opacity-80" style={textColorStyle}>
+                   {card.specialType?.toUpperCase()}
+                </div>
+            )}
 
             {/* Name at bottom */}
-            <div className="text-[10px] text-center text-foreground/80 font-semibold tracking-wide">
+            <div className="text-[10px] text-center text-foreground/80 font-semibold tracking-wide truncate w-full px-1">
               {card.name}
             </div>
           </div>
@@ -110,7 +116,7 @@ export function GameCard({ card, onClick, isPlaceholder = false, className, face
         <DialogContent className="max-w-2xl fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-3 text-2xl">
-              <span className="text-4xl text-primary glow-gold">{card.symbol}</span>
+              <span className="text-4xl" style={textColorStyle}>{card.symbol}</span>
               {card.name}
             </DialogTitle>
           </DialogHeader>
@@ -129,21 +135,15 @@ export function GameCard({ card, onClick, isPlaceholder = false, className, face
               </div>
             )}
             
-            {/* Card Symbol Meaning */}
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-primary">Symbol:</span>
-              <span className="text-sm text-foreground">
-                {card.symbol === "Φ" && "Phi (Φ) - Balance / Genesis"}
-                {card.symbol === "Θ" && "Theta (Θ) - Time"}
-                {card.symbol === "Ψ" && "Psi (Ψ) - Mind"}
-                {card.symbol === "Ω" && "Omega (Ω) - Chaos"}
-                {card.symbol === "α" && "Alpha (α) - Twisted"}
-                {card.symbol === "Δ" && "Delta (Δ) - Amplifier"}
-                {card.symbol === "Σ" && "Sigma (Σ) - Reverse Amplifier"}
-                {card.symbol === "β" && "Beta (β) - Nullifier"}
-                {card.symbol === "γ" && "Gamma (γ) - Ultimate Shield"}
-              </span>
-            </div>
+            {/* Special Type Info */}
+            {card.specialType && (
+                 <div className="flex items-center gap-2">
+                 <span className="text-sm font-semibold text-primary">Effect:</span>
+                 <span className="text-sm text-foreground">
+                    {SPECIAL_CARDS_DATA[card.specialType]?.description || "Unknown Effect"}
+                 </span>
+               </div>
+            )}
             
             {/* Description */}
             {card.description && (

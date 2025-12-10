@@ -109,9 +109,9 @@ const Game = () => {
     // Trigger VFX for special cards
     setTimeout(() => {
       gameState.playerField.forEach((card, index) => {
-        if (card?.special === "gamma") {
+        if (card?.specialType === "gamma") {
           addVfx("gamma", index);
-        } else if (card?.special === "twisted") {
+        } else if (card?.specialType === "twisted") {
           addVfx("twisted", index);
         }
       });

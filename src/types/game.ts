@@ -1,0 +1,79 @@
+export type CardType = "numeric" | "special";
+export type SpecialCardType = "twisted" | "deflate" | "gamma" | "delta" | "sigma" | "die";
+
+export type ClassName = 
+  | "Vitalist" 
+  | "Slayer" 
+  | "Fateweaver" 
+  | "Oracle" 
+  | "Chronokeeper" 
+  | "Cryomancer" 
+  | "Incinerator" 
+  | "Siren" 
+  | "Augmentor" 
+  | "Conjurer" 
+  | "Mimic";
+
+export interface Card {
+  id: string;
+  name: string;
+  symbol: string;
+  value?: number; // 0 for special cards usually
+  type: CardType;
+  specialType?: SpecialCardType;
+  classSymbol?: string; // To track which class this numeric card belongs to (for scaling)
+  description?: string;
+  originalOwner?: string; // For Siren/Mimic tracking
+  isFrozen?: boolean;
+  color?: string;
+}
+
+export interface AbilityScale {
+  count: number;
+  effectDescription: string;
+  value?: number; // Numeric value of the effect (damage amount, heal amount, etc.)
+}
+
+export interface ClassData {
+  name: ClassName;
+  color: string;
+  symbol: string;
+  role: string;
+  initialHP: number;
+  passiveDescription: string;
+  abilityScales: AbilityScale[];
+  winCondition: string;
+  loseCondition?: string;
+  counterLogic?: {
+    [key in ClassName]?: string;
+  };
+}
+
+export interface PlayerState {
+  id: string;
+  className: ClassName;
+  hp: number;
+  maxHP: number;
+  deck: Card[];
+  hand: Card[];
+  graveyard: Card[]; // Played cards go here
+  playedCardsInRound: Card[]; // The 5 cards currently on the board
+  wins: number; // For match tracking if needed
+  isEliminated: boolean;
+  specialStatus?: {
+    roundSkipped?: number; // Chronokeeper
+    cardsFrozen?: number; // Cryomancer
+  };
+}
+
+export interface GameState {
+  round: number; // Current round (1-6)
+  maxRounds: number;
+  players: {
+    player: PlayerState;
+    opponent: PlayerState;
+  };
+  phase: "setup" | "draw" | "play" | "resolve" | "end";
+  winner?: string; // Player ID
+  logs: string[];
+}
