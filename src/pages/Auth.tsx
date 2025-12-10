@@ -5,11 +5,13 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
 
 const Auth = () => {
   const navigate = useNavigate();
+  const { user, signIn, signUp, loading: authLoading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
   const [loginEmail, setLoginEmail] = useState("");
@@ -20,16 +22,32 @@ const Auth = () => {
   const [signupUsername, setSignupUsername] = useState("");
   const [signupConfirmPassword, setSignupConfirmPassword] = useState("");
 
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user && !authLoading) {
+      navigate("/");
+    }
+  }, [user, authLoading, navigate]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate login
-    setTimeout(() => {
-      setIsLoading(false);
-      toast.success("Login successful!");
-      navigate("/");
-    }, 1000);
+    const { error } = await signIn(loginEmail, loginPassword);
+    
+    setIsLoading(false);
+    
+    if (error) {
+      if (error.message.includes("Invalid login credentials")) {
+        toast.error("Invalid email or password");
+      } else {
+        toast.error(error.message);
+      }
+      return;
+    }
+    
+    toast.success("Login successful!");
+    navigate("/");
   };
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -45,15 +63,37 @@ const Auth = () => {
       return;
     }
 
+    if (signupUsername.length < 3) {
+      toast.error("Username must be at least 3 characters!");
+      return;
+    }
+
     setIsLoading(true);
 
-    // Simulate signup
-    setTimeout(() => {
-      setIsLoading(false);
-      toast.success("Account created successfully!");
-      navigate("/");
-    }, 1000);
+    const { error } = await signUp(signupEmail, signupPassword, signupUsername);
+    
+    setIsLoading(false);
+    
+    if (error) {
+      if (error.message.includes("already registered")) {
+        toast.error("This email is already registered");
+      } else {
+        toast.error(error.message);
+      }
+      return;
+    }
+    
+    toast.success("Account created successfully!");
+    navigate("/");
   };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-primary text-xl">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col">

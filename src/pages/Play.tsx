@@ -3,53 +3,154 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Plus, Users } from "lucide-react";
+import { ArrowLeft, Users, Plus, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Lobby {
   id: string;
   name: string;
-  host: string;
-  players: number;
-  maxPlayers: number;
+  host_id: string;
+  max_players: number;
+  current_players: number;
+  status: string;
+  host_username?: string;
 }
 
 const Play = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [lobbyName, setLobbyName] = useState("");
   const [lobbies, setLobbies] = useState<Lobby[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Mock lobbies for now - will be replaced with real-time data
   useEffect(() => {
-    setLobbies([
-      { id: "1", name: "Quick Match", host: "Player1", players: 1, maxPlayers: 2 },
-      { id: "2", name: "Ranked Battle", host: "ProGamer", players: 1, maxPlayers: 2 },
-    ]);
+    fetchLobbies();
   }, []);
 
-  const handleCreateLobby = () => {
+  const fetchLobbies = async () => {
+    setIsRefreshing(true);
+    
+    const { data: lobbiesData, error } = await supabase
+      .from("lobbies")
+      .select("*")
+      .eq("status", "waiting")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching lobbies:", error);
+      setIsRefreshing(false);
+      return;
+    }
+
+    // Fetch host usernames
+    if (lobbiesData && lobbiesData.length > 0) {
+      const hostIds = lobbiesData.map(l => l.host_id);
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("user_id, username")
+        .in("user_id", hostIds);
+
+      const lobbiesWithUsernames = lobbiesData.map(lobby => ({
+        ...lobby,
+        host_username: profiles?.find(p => p.user_id === lobby.host_id)?.username || "Unknown"
+      }));
+
+      setLobbies(lobbiesWithUsernames);
+    } else {
+      setLobbies([]);
+    }
+    
+    setIsRefreshing(false);
+  };
+
+  const handleCreateLobby = async () => {
     if (!lobbyName.trim()) {
       toast.error("Please enter a lobby name");
       return;
     }
 
-    setLoading(true);
-    // TODO: Create lobby in database
-    setTimeout(() => {
-      toast.success(`Lobby "${lobbyName}" created!`);
-      setLobbyName("");
-      setLoading(false);
-    }, 500);
+    if (!user) {
+      toast.error("You must be logged in");
+      return;
+    }
+
+    setIsLoading(true);
+
+    const { data, error } = await supabase
+      .from("lobbies")
+      .insert({
+        name: lobbyName.trim(),
+        host_id: user.id,
+        max_players: 2,
+        current_players: 1,
+        status: "waiting"
+      })
+      .select()
+      .single();
+
+    if (error) {
+      toast.error("Failed to create lobby");
+      setIsLoading(false);
+      return;
+    }
+
+    // Add host to lobby_players
+    await supabase
+      .from("lobby_players")
+      .insert({
+        lobby_id: data.id,
+        user_id: user.id
+      });
+
+    toast.success("Lobby created!");
+    setLobbyName("");
+    fetchLobbies();
+    setIsLoading(false);
   };
 
-  const handleJoinLobby = (lobbyId: string) => {
-    setLoading(true);
-    // TODO: Join lobby in database
-    setTimeout(() => {
-      toast.success("Joined lobby!");
-      navigate("/game");
-    }, 500);
+  const handleJoinLobby = async (lobby: Lobby) => {
+    if (!user) {
+      toast.error("You must be logged in");
+      return;
+    }
+
+    if (lobby.current_players >= lobby.max_players) {
+      toast.error("Lobby is full");
+      return;
+    }
+
+    // Add player to lobby
+    const { error: joinError } = await supabase
+      .from("lobby_players")
+      .insert({
+        lobby_id: lobby.id,
+        user_id: user.id
+      });
+
+    if (joinError) {
+      toast.error("Failed to join lobby");
+      return;
+    }
+
+    // Update lobby player count
+    const { error: updateError } = await supabase
+      .from("lobbies")
+      .update({ 
+        current_players: lobby.current_players + 1,
+        status: lobby.current_players + 1 >= lobby.max_players ? "full" : "waiting"
+      })
+      .eq("id", lobby.id);
+
+    if (updateError) {
+      toast.error("Failed to update lobby");
+      return;
+    }
+
+    toast.success(`Joined ${lobby.name}!`);
+    navigate("/game");
   };
 
   return (
@@ -65,11 +166,11 @@ const Play = () => {
       </div>
 
       {/* Content */}
-      <div className="flex-1 flex flex-col items-center p-8 gap-8">
-        {/* Create Lobby Section */}
+      <div className="flex-1 flex flex-col items-center p-8 gap-6">
+        {/* Create Lobby */}
         <Card className="w-full max-w-2xl p-6 bg-card/50 backdrop-blur-sm border-primary/20">
-          <h2 className="text-2xl font-bold text-primary mb-4 flex items-center gap-2">
-            <Plus className="w-6 h-6" />
+          <h2 className="text-xl font-bold text-primary mb-4 flex items-center gap-2">
+            <Plus className="w-5 h-5" />
             Create Lobby
           </h2>
           <div className="flex gap-3">
@@ -77,60 +178,65 @@ const Play = () => {
               placeholder="Enter lobby name..."
               value={lobbyName}
               onChange={(e) => setLobbyName(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleCreateLobby()}
               className="flex-1"
             />
-            <Button
-              onClick={handleCreateLobby}
-              disabled={loading}
-              className="bg-primary hover:bg-primary/90"
-            >
-              Create
+            <Button onClick={handleCreateLobby} disabled={isLoading}>
+              {isLoading ? "Creating..." : "Create"}
             </Button>
           </div>
         </Card>
 
         {/* Available Lobbies */}
         <Card className="w-full max-w-2xl p-6 bg-card/50 backdrop-blur-sm border-primary/20">
-          <h2 className="text-2xl font-bold text-primary mb-4 flex items-center gap-2">
-            <Users className="w-6 h-6" />
-            Available Lobbies
-          </h2>
-          <div className="space-y-3">
-            {lobbies.length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">
-                No lobbies available. Create one to get started!
-              </p>
-            ) : (
-              lobbies.map((lobby) => (
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-primary flex items-center gap-2">
+              <Users className="w-5 h-5" />
+              Available Lobbies
+            </h2>
+            <Button variant="ghost" size="sm" onClick={fetchLobbies} disabled={isRefreshing}>
+              <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`} />
+            </Button>
+          </div>
+
+          {lobbies.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              No lobbies available. Create one to start playing!
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {lobbies.map((lobby) => (
                 <div
                   key={lobby.id}
                   className="flex items-center justify-between p-4 bg-background/50 rounded-lg border border-border hover:border-primary/50 transition-colors"
                 >
                   <div>
-                    <h3 className="font-bold text-foreground">{lobby.name}</h3>
+                    <h3 className="font-semibold text-foreground">{lobby.name}</h3>
                     <p className="text-sm text-muted-foreground">
-                      Host: {lobby.host} • Players: {lobby.players}/{lobby.maxPlayers}
+                      Host: {lobby.host_username} • {lobby.current_players}/{lobby.max_players} players
                     </p>
                   </div>
                   <Button
-                    onClick={() => handleJoinLobby(lobby.id)}
-                    disabled={loading || lobby.players >= lobby.maxPlayers}
-                    variant="default"
+                    onClick={() => handleJoinLobby(lobby)}
+                    disabled={lobby.current_players >= lobby.max_players || lobby.host_id === user?.id}
+                    variant={lobby.host_id === user?.id ? "outline" : "default"}
                   >
-                    {lobby.players >= lobby.maxPlayers ? "Full" : "Join"}
+                    {lobby.host_id === user?.id ? "Your Lobby" : "Join"}
                   </Button>
                 </div>
-              ))
-            )}
-          </div>
+              ))}
+            </div>
+          )}
         </Card>
 
-        {/* Info Box */}
-        <Card className="w-full max-w-2xl p-4 bg-muted/20 border-primary/10">
-          <p className="text-sm text-muted-foreground text-center">
-            Online play is in early development. More features coming soon!
+        {/* Quick Play Option */}
+        <Card className="w-full max-w-2xl p-6 bg-card/50 backdrop-blur-sm border-primary/20">
+          <h2 className="text-xl font-bold text-primary mb-4">Quick Play</h2>
+          <p className="text-muted-foreground mb-4">
+            Play against the AI bot instantly without waiting for other players.
           </p>
+          <Button onClick={() => navigate("/game")} className="w-full">
+            Play vs Bot
+          </Button>
         </Card>
       </div>
     </div>

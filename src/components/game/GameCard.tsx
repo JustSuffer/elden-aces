@@ -36,7 +36,7 @@ export function GameCard({ card, onClick, isPlaceholder = false, className, face
     onClick?.();
   };
 
-  const handleEyeClick = (e: React.MouseEvent) => {
+  const handleEyeDoubleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     setShowDetails(true);
   };
@@ -95,10 +95,10 @@ export function GameCard({ card, onClick, isPlaceholder = false, className, face
         
         {showEyeIcon && card && !faceDown && (
           <button
-            onClick={handleEyeClick}
-            onMouseEnter={() => setShowDetails(true)}
+            onDoubleClick={handleEyeDoubleClick}
             className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-primary/30 hover:bg-primary/50 rounded-full p-2 transition-all z-20 border border-primary/50 shadow-lg hover:shadow-primary/50"
-            aria-label="View card details"
+            aria-label="Double click to view card details"
+            title="Çift tıkla detayları gör"
           >
             <Eye className="w-4 h-4 text-primary" />
           </button>

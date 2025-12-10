@@ -1,27 +1,116 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, User, Mail, Trophy } from "lucide-react";
+import { ArrowLeft, User, Mail, Trophy, LogOut } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+
+interface Profile {
+  username: string;
+  avatar_url: string | null;
+}
+
+interface GameStats {
+  wins: number;
+  losses: number;
+  total_games: number;
+}
 
 const Profile = () => {
   const navigate = useNavigate();
-  const [username, setUsername] = useState("Player123");
-  const [email, setEmail] = useState("player@acoria.com");
-  const [wins, setWins] = useState(12);
-  const [losses, setLosses] = useState(8);
+  const { user, signOut } = useAuth();
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [stats, setStats] = useState<GameStats | null>(null);
+  const [username, setUsername] = useState("");
   const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleSave = () => {
-    // TODO: Save to database
+  useEffect(() => {
+    if (user) {
+      fetchProfile();
+      fetchStats();
+    }
+  }, [user]);
+
+  const fetchProfile = async () => {
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("username, avatar_url")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (error) {
+      console.error("Error fetching profile:", error);
+      return;
+    }
+
+    if (data) {
+      setProfile(data);
+      setUsername(data.username);
+    }
+    setIsLoading(false);
+  };
+
+  const fetchStats = async () => {
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from("game_stats")
+      .select("wins, losses, total_games")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (error) {
+      console.error("Error fetching stats:", error);
+      return;
+    }
+
+    if (data) {
+      setStats(data);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!user) return;
+
+    const { error } = await supabase
+      .from("profiles")
+      .update({ username })
+      .eq("user_id", user.id);
+
+    if (error) {
+      toast.error("Failed to update profile");
+      return;
+    }
+
+    setProfile(prev => prev ? { ...prev, username } : null);
     toast.success("Profile updated!");
     setIsEditing(false);
   };
 
-  const winRate = wins + losses > 0 ? ((wins / (wins + losses)) * 100).toFixed(1) : 0;
+  const handleLogout = async () => {
+    await signOut();
+    toast.success("Logged out successfully");
+    navigate("/auth");
+  };
+
+  const winRate = stats && stats.wins + stats.losses > 0 
+    ? ((stats.wins / (stats.wins + stats.losses)) * 100).toFixed(1) 
+    : "0";
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-primary text-xl animate-pulse">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -32,7 +121,10 @@ const Profile = () => {
           Menu
         </Button>
         <div className="text-xl font-bold text-primary glow-gold">Profile</div>
-        <div className="w-24" />
+        <Button variant="ghost" onClick={handleLogout} className="gap-2 text-destructive hover:text-destructive">
+          <LogOut className="w-4 h-4" />
+          Logout
+        </Button>
       </div>
 
       {/* Content */}
@@ -44,10 +136,10 @@ const Profile = () => {
               <User className="w-10 h-10 text-primary" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-foreground">{username}</h2>
+              <h2 className="text-2xl font-bold text-foreground">{profile?.username || "Player"}</h2>
               <p className="text-muted-foreground flex items-center gap-2">
                 <Mail className="w-4 h-4" />
-                {email}
+                {user?.email}
               </p>
             </div>
           </div>
@@ -59,17 +151,6 @@ const Profile = () => {
                 id="username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                disabled={!isEditing}
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
                 disabled={!isEditing}
                 className="mt-1"
               />
@@ -102,15 +183,15 @@ const Profile = () => {
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-background/50 p-4 rounded-lg text-center">
-              <div className="text-3xl font-bold text-primary">{wins}</div>
+              <div className="text-3xl font-bold text-primary">{stats?.wins || 0}</div>
               <div className="text-sm text-muted-foreground">Wins</div>
             </div>
             <div className="bg-background/50 p-4 rounded-lg text-center">
-              <div className="text-3xl font-bold text-omega">{losses}</div>
+              <div className="text-3xl font-bold text-omega">{stats?.losses || 0}</div>
               <div className="text-sm text-muted-foreground">Losses</div>
             </div>
             <div className="bg-background/50 p-4 rounded-lg text-center">
-              <div className="text-3xl font-bold text-theta">{wins + losses}</div>
+              <div className="text-3xl font-bold text-theta">{stats?.total_games || 0}</div>
               <div className="text-sm text-muted-foreground">Total Games</div>
             </div>
             <div className="bg-background/50 p-4 rounded-lg text-center">

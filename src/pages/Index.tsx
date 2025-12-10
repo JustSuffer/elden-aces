@@ -60,6 +60,9 @@ const Index = () => {
           <MenuButton onClick={() => navigate("/how-to-play")}>
             How to Play
           </MenuButton>
+          <MenuButton onClick={() => navigate("/tutorial")}>
+            Tutorial
+          </MenuButton>
         </div>
 
         {/* Version Info */}
