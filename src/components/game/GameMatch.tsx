@@ -237,7 +237,7 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
           <div className="flex flex-col items-center gap-4 md:gap-6">
             <div className="text-center">
               <h1 className="text-4xl md:text-5xl font-bold text-primary glow-gold mb-2 font-cinzel">
-                Round {gameState.round}/6
+                Round {gameState.round}/{gameState.maxRounds || 7}
               </h1>
               <p className="text-base md:text-lg text-muted-foreground tracking-wider">
                 {gameState.phase === "placement" && `Kartlarını seç ve oyna`}

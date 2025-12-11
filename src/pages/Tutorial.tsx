@@ -14,19 +14,19 @@ const Tutorial = () => {
       icon: <Swords className="w-12 h-12 text-primary" />,
       content: (
         <div className="space-y-4">
-          <p>ACORIA, stratejik bir 1v1 kart oyunudur. Her iki oyuncu da 40 HP ile başlar (Class'a göre değişir) ve 6 tur boyunca savaşır.</p>
-          <p>Amaç: Rakibinizin HP'sini 0'a düşürmek veya 6 tur sonunda daha yüksek HP'ye sahip olmak.</p>
+          <p>ACORIA, stratejik bir 1v1 kart oyunudur. Her iki oyuncu da 40 HP ile başlar (Class'a göre değişir) ve 7 tur boyunca savaşır.</p>
+          <p>Amaç: Rakibinizin HP'sini 0'a düşürmek veya 7 tur sonunda daha yüksek HP'ye sahip olmak.</p>
           <div className="bg-primary/10 p-4 rounded-lg border border-primary/30">
             <p className="text-sm text-primary font-semibold">30 kartlık sabit deste:</p>
             <ul className="text-sm mt-2 space-y-1">
-              <li>• 24 sayısal kart (Φ/Θ/Ψ/Ω her birinden 1-6 arası)</li>
+              <li>• 24 sayısal kart (11 elementin her birinden 1-6 arası)</li>
               <li>• 6 özel kart (2x Twisted α, 2x Deflate β, 1x Delta Δ, 1x Sigma Σ)</li>
             </ul>
           </div>
         </div>
       )
     },
-    {
+/*     {
       title: "Semboller ve Kartlar",
       icon: <Sparkles className="w-12 h-12 text-primary" />,
       content: (
@@ -50,6 +50,51 @@ const Tutorial = () => {
             </div>
           </div>
           <p className="text-sm">Her sembolden 1-6 arası değerlerde kartlar bulunur.</p>
+        </div>
+      )
+    }, */
+        {
+      title: "Sınıflar & Strateji",
+      icon: <Sparkles className="w-12 h-12 text-primary" />,
+      content: (
+        <div className="space-y-4 max-h-[400px] overflow-y-auto custom-scrollbar pr-2">
+          <p className="text-sm text-muted-foreground">Antigravity Sınıf Rolleri ve Mekanikleri:</p>
+          
+          <div className="space-y-2 text-sm">
+             <div className="p-2 border border-slate-700/50 rounded bg-slate-900/30">
+               <strong className="text-cyan-400">Cryomancer (Ξ):</strong> <em>Hard Control.</em> Rakibi dondurur, hamle yaptırmaz.
+             </div>
+             <div className="p-2 border border-slate-700/50 rounded bg-slate-900/30">
+               <strong className="text-red-400">Slayer (Ω):</strong> <em>DPS.</em> Kitle kontrole dirençli. Yüksek hasar vurur.
+             </div>
+             <div className="p-2 border border-slate-700/50 rounded bg-slate-900/30">
+               <strong className="text-yellow-200">Fateweaver (Π):</strong> <em>Late Carry.</em> Zarları biriktirip tek turda patlama yapar.
+             </div>
+             <div className="p-2 border border-slate-700/50 rounded bg-slate-900/30">
+               <strong className="text-gray-300">Chronokeeper (τ):</strong> <em>Tempo.</em> Rakibin zamanını çalar.
+             </div>
+             <div className="p-2 border border-slate-700/50 rounded bg-slate-900/30">
+               <strong className="text-green-400">Vitalist (Φ):</strong> <em>Tank.</em> 50 HP ile başlar, hasarı sünger gibi emer.
+             </div>
+             <div className="p-2 border border-slate-700/50 rounded bg-slate-900/30">
+               <strong className="text-gray-400">Mimic (ν):</strong> <em>Copycat.</em> Rakibin kartlarını kopyalar.
+             </div>
+             <div className="p-2 border border-slate-700/50 rounded bg-slate-900/30">
+               <strong className="text-purple-300">Oracle (Ψ):</strong> <em>Control.</em> Rakibin elini görür, destesini yakar.
+             </div>
+             <div className="p-2 border border-slate-700/50 rounded bg-slate-900/30">
+               <strong className="text-pink-400">Siren (η):</strong> <em>Disruptor.</em> Saldırıları kendine çevirir (-5 HP Curse).
+             </div>
+             <div className="p-2 border border-slate-700/50 rounded bg-slate-900/30">
+               <strong className="text-blue-400">Augmentor (Θ):</strong> <em>Buffer.</em> Kartları güçlendirir.
+             </div>
+             <div className="p-2 border border-slate-700/50 rounded bg-slate-900/30">
+               <strong className="text-orange-300">Conjurer (μ):</strong> <em>Summoner.</em> Sahayı minik ruhlarla doldurur.
+             </div>
+             <div className="p-2 border border-slate-700/50 rounded bg-slate-900/30">
+               <strong className="text-red-800">Incinerator (ρ):</strong> <em>Glass Cannon.</em> Kendini yakarak alan hasarı verir.
+             </div>
+          </div>
         </div>
       )
     },
@@ -153,51 +198,7 @@ const Tutorial = () => {
         </div>
       )
     },
-    {
-      title: "Sınıflar & Strateji",
-      icon: <Sparkles className="w-12 h-12 text-primary" />,
-      content: (
-        <div className="space-y-4 max-h-[400px] overflow-y-auto custom-scrollbar pr-2">
-          <p className="text-sm text-muted-foreground">Antigravity Sınıf Rolleri ve Mekanikleri:</p>
-          
-          <div className="space-y-2 text-sm">
-             <div className="p-2 border border-slate-700/50 rounded bg-slate-900/30">
-               <strong className="text-cyan-400">Cryomancer (Ξ):</strong> <em>Hard Control.</em> Rakibi dondurur, hamle yaptırmaz.
-             </div>
-             <div className="p-2 border border-slate-700/50 rounded bg-slate-900/30">
-               <strong className="text-red-400">Slayer (Ω):</strong> <em>DPS.</em> Kitle kontrole dirençli. Yüksek hasar vurur.
-             </div>
-             <div className="p-2 border border-slate-700/50 rounded bg-slate-900/30">
-               <strong className="text-yellow-200">Fateweaver (Π):</strong> <em>Late Carry.</em> Zarları biriktirip tek turda patlama yapar.
-             </div>
-             <div className="p-2 border border-slate-700/50 rounded bg-slate-900/30">
-               <strong className="text-gray-300">Chronokeeper (τ):</strong> <em>Tempo.</em> Rakibin zamanını çalar.
-             </div>
-             <div className="p-2 border border-slate-700/50 rounded bg-slate-900/30">
-               <strong className="text-green-400">Vitalist (Φ):</strong> <em>Tank.</em> 50 HP ile başlar, hasarı sünger gibi emer.
-             </div>
-             <div className="p-2 border border-slate-700/50 rounded bg-slate-900/30">
-               <strong className="text-gray-400">Mimic (ν):</strong> <em>Copycat.</em> Rakibin kartlarını kopyalar.
-             </div>
-             <div className="p-2 border border-slate-700/50 rounded bg-slate-900/30">
-               <strong className="text-purple-300">Oracle (Ψ):</strong> <em>Control.</em> Rakibin elini görür, destesini yakar.
-             </div>
-             <div className="p-2 border border-slate-700/50 rounded bg-slate-900/30">
-               <strong className="text-pink-400">Siren (η):</strong> <em>Disruptor.</em> Saldırıları kendine çevirir (-5 HP Curse).
-             </div>
-             <div className="p-2 border border-slate-700/50 rounded bg-slate-900/30">
-               <strong className="text-blue-400">Augmentor (Θ):</strong> <em>Buffer.</em> Kartları güçlendirir.
-             </div>
-             <div className="p-2 border border-slate-700/50 rounded bg-slate-900/30">
-               <strong className="text-orange-300">Conjurer (μ):</strong> <em>Summoner.</em> Sahayı minik ruhlarla doldurur.
-             </div>
-             <div className="p-2 border border-slate-700/50 rounded bg-slate-900/30">
-               <strong className="text-red-800">Incinerator (ρ):</strong> <em>Glass Cannon.</em> Kendini yakarak alan hasarı verir.
-             </div>
-          </div>
-        </div>
-      )
-    },
+
     {
       title: "Oyun Sonu",
       icon: <Swords className="w-12 h-12 text-primary" />,

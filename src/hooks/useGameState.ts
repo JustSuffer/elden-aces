@@ -164,6 +164,8 @@ export function useGameState(initParams?: GameInitParams) {
       opponentClass: oClass,
       playerDiceRolls: pClass === "Fateweaver" ? 2 : 0,
       carryOverCards: [],
+      maxRounds: 7,
+      logs: [],
     };
   });
 

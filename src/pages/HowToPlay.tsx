@@ -39,38 +39,8 @@ const HowToPlay = () => {
           <div className="grid md:grid-cols-2 gap-6">
             {/* Numeric Cards */}
             <div className="bg-card/50 border border-border rounded-lg p-6 space-y-3">
-              <h3 className="text-xl font-bold text-primary">Numeric Cards (24 cards) + Mimic (36 cards)</h3>
+              <h3 className="text-xl font-bold text-primary">Numeric Cards (24 cards)</h3>
               <p className="text-sm text-foreground/70">Each symbol has cards numbered 1-6:</p>
-              <ul className="space-y-2 text-sm">
-                <li className="flex items-start gap-2">
-                  <span className="text-2xl text-phi-harmony">Φ</span>
-                  <div>
-                    <strong className="text-phi-harmony">Phi (Φ)</strong> - Balance / Genesis
-                    <p className="text-muted-foreground">Represents harmony and creation</p>
-                  </div>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-2xl text-theta-wisdom">Θ</span>
-                  <div>
-                    <strong className="text-theta-wisdom">Theta (Θ)</strong> - Time
-                    <p className="text-muted-foreground">Controls the flow of time</p>
-                  </div>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-2xl text-psi-mind">Ψ</span>
-                  <div>
-                    <strong className="text-psi-mind">Psi (Ψ)</strong> - Mind
-                    <p className="text-muted-foreground">Power of consciousness</p>
-                  </div>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-2xl text-omega-chaos">Ω</span>
-                  <div>
-                    <strong className="text-omega-chaos">Omega (Ω)</strong> - Chaos
-                    <p className="text-muted-foreground">Embraces unpredictability</p>
-                  </div>
-                </li>
-              </ul>
             </div>
 
             {/* Special Cards */}
