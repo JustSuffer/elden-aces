@@ -79,8 +79,23 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
     name: "Chronokeeper",
     color: "#ffffff", // Transparent/White
     symbol: "τ",
+    role: "Stall",
+    initialHP: 30,
+    passiveDescription: "Skip Rounds.",
+    abilityScales: [
+        { count: 1, effectDescription: "-" },
+        { count: 2, effectDescription: "0 Sil" },
+        { count: 3, effectDescription: "1 Rnd Sil" },
+        { count: 4, effectDescription: "2 Rnd Sil" },
+        { count: 5, effectDescription: "3 Rnd Sil" },
+    ],
+    winCondition: "7. Raundu Gör",
+  },
+  Cryomancer: { // Fixed Missing Class
+    name: "Cryomancer",
+    color: "#bae6fd", // Ice Blue
     symbol: "Ξ",
-    role: "Hard Control",
+    role: "Control",
     initialHP: 40,
     passiveDescription: "Freezes.",
     abilityScales: [
