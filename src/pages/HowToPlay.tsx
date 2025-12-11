@@ -367,7 +367,10 @@ const HowToPlay = () => {
                 <ul className="text-sm space-y-1 text-foreground/70">
                     <li>❤️ HP: 50</li>
                     <li>🛡️ Passive: Start with 50 HP.</li>
-                    <li>✨ Ability: Heals HP based on Green Cards played (Max +15).</li>
+                    <li>✨ Ability: Heals HP (Green Cards).</li>
+                    <li className="text-xs text-muted-foreground pl-2 border-l-2 border-green-500/50">
+                        Scale: 2: +4 | 3: +6 | 4: +8 | 5: +15 HP
+                    </li>
                     <li>🏆 Win Con: End with MORE HP than Opponent.</li>
                     <li>⚠️ Counter: Must have LESS HP vs Slayer.</li>
                 </ul>
@@ -379,10 +382,13 @@ const HowToPlay = () => {
                 <p className="text-sm text-foreground/80 mb-2">Role: DPS / Anti-Meta</p>
                 <ul className="text-sm space-y-1 text-foreground/70">
                     <li>❤️ HP: 40</li>
-                    <li>🛡️ Passive: Immune to Twisted (α) Reflection.</li>
-                    <li>✨ Ability: Deals direct Dmg based on Red Cards (Max 12).</li>
+                    <li>🛡️ Passive: Immune to Twisted (α).</li>
+                    <li>✨ Ability: Direct Damage (Red Cards).</li>
+                    <li className="text-xs text-muted-foreground pl-2 border-l-2 border-red-500/50">
+                        Scale: 2: 3 | 3: 5 | 4: 8 | 5: 12 Dmg
+                    </li>
                     <li>🏆 Win Con: Deal 12+ Ability Dmg in one turn.</li>
-                    <li>⚠️ Lose Con: Deal 12+ Dmg but still have MORE HP than Opponent.</li>
+                    <li>⚠️ Lose Con: Deal 12+ Dmg but HP &gt; Opponent.</li>
                 </ul>
              </div>
 
@@ -392,9 +398,12 @@ const HowToPlay = () => {
                 <p className="text-sm text-foreground/80 mb-2">Role: Gambler</p>
                 <ul className="text-sm space-y-1 text-foreground/70">
                     <li>❤️ HP: 40</li>
-                    <li>🛡️ Passive: Can roll Dice from Round 3+.</li>
-                    <li>✨ Ability: Increases Dice Rolls & Adds Gamma Cards.</li>
-                    <li>🏆 Win Con: Play 5 Gamma (γ) Cards in one turn.</li>
+                    <li>🛡️ Passive: Dice active from Round 3+.</li>
+                    <li>✨ Ability: Bonus Dice Rolls & Gamma Cards.</li>
+                    <li className="text-xs text-muted-foreground pl-2 border-l-2 border-yellow-200/50">
+                        Scale: 2: +2 | 3: +4 | 4: +7 | 5: +8 & Gamma
+                    </li>
+                    <li>🏆 Win Con: Play 5 Gamma (γ) Cards.</li>
                 </ul>
              </div>
 
@@ -405,9 +414,12 @@ const HowToPlay = () => {
                 <ul className="text-sm space-y-1 text-foreground/70">
                     <li>❤️ HP: 40</li>
                     <li>🛡️ Passive: Draws extra cards / Self-Mills.</li>
-                    <li>✨ Ability: Deals Dmg & Draws Cards. (Max 10 Dmg + 5 Draw).</li>
-                    <li>🏆 Win Con: Empty your own Deck (0 Cards left).</li>
-                    <li>⚠️ Counter: Vs Vitalist, empty deck deals 25 Pure Dmg.</li>
+                    <li>✨ Ability: Dmg & Draw (Purple Cards).</li>
+                    <li className="text-xs text-muted-foreground pl-2 border-l-2 border-purple-500/50">
+                        Scale: 2: 2/2 | 3: 3/3 | 4: 4/4 | 5: 10 Dmg / 5 Draw
+                    </li>
+                    <li>🏆 Win Con: Empty your own Deck (0 Cards).</li>
+                    <li>⚠️ Counter: Vs Vitalist 0 Deck = 25 Pure Dmg.</li>
                 </ul>
              </div>
 
@@ -417,8 +429,11 @@ const HowToPlay = () => {
                 <p className="text-sm text-foreground/80 mb-2">Role: Stall</p>
                 <ul className="text-sm space-y-1 text-foreground/70">
                     <li>❤️ HP: 30</li>
-                    <li>🛡️ Passive: Starts with lower HP (30).</li>
-                    <li>✨ Ability: Silences opponents (skips their next N turns).</li>
+                    <li>🛡️ Passive: Starts with 30 HP.</li>
+                    <li>✨ Ability: Silences Opponent (Skips Turns).</li>
+                    <li className="text-xs text-muted-foreground pl-2 border-l-2 border-white/50">
+                        Scale: 3: 1 Rnd | 4: 2 Rnd | 5: 3 Rnd Silence
+                    </li>
                     <li>🏆 Win Con: Survive until end of Round 6.</li>
                 </ul>
              </div>
@@ -429,9 +444,12 @@ const HowToPlay = () => {
                 <p className="text-sm text-foreground/80 mb-2">Role: Hard Control</p>
                 <ul className="text-sm space-y-1 text-foreground/70">
                     <li>❤️ HP: 40</li>
-                    <li>🛡️ Passive: Freezes enemy cards (Value 0, No Effect).</li>
-                    <li>✨ Ability: Freezes 2-All opponent cards.</li>
-                    <li>🏆 Win Con: Freeze 3 Special Cards in one match.</li>
+                    <li>🛡️ Passive: Freezes enemy cards.</li>
+                    <li>✨ Ability: Freeze Opponent Hand.</li>
+                    <li className="text-xs text-muted-foreground pl-2 border-l-2 border-cyan-300/50">
+                        Scale: 2: 2 | 3: 3 | 4: 4 | 5: ALL Cards
+                    </li>
+                    <li>🏆 Win Con: Freeze 3 Special Cards (Total).</li>
                 </ul>
              </div>
 
@@ -442,9 +460,12 @@ const HowToPlay = () => {
                 <ul className="text-sm space-y-1 text-foreground/70">
                     <li>❤️ HP: 40</li>
                     <li>🛡️ Passive: Burns opponent's deck.</li>
-                    <li>✨ Ability: Burns 3-8 Cards from opponent deck.</li>
-                    <li>🏆 Win Con: Reduce Opponent Deck to 0 by Round 4.</li>
-                    <li>⚠️ Lose Con: Die if Opponent still has cards at R4.</li>
+                    <li>✨ Ability: Burn Opponent Deck.</li>
+                    <li className="text-xs text-muted-foreground pl-2 border-l-2 border-orange-900/50">
+                        Scale: 2: 3 | 3: 4 | 4: 5 | 5: 8 Cards + NoDeath
+                    </li>
+                    <li>🏆 Win Con: Opponent Deck at 0 by Round 4.</li>
+                    <li>⚠️ Lose Con: Die if Opponent &gt; 0 cards at R4.</li>
                 </ul>
              </div>
 
@@ -454,9 +475,12 @@ const HowToPlay = () => {
                 <p className="text-sm text-foreground/80 mb-2">Role: Thief</p>
                 <ul className="text-sm space-y-1 text-foreground/70">
                     <li>❤️ HP: 40</li>
-                    <li>🛡️ Passive: Steals cards from opponent deck.</li>
-                    <li>✨ Ability: Steals 2-5 Cards. Cards become Shiny Stolen.</li>
-                    <li>🏆 Win Con: Play 5 Stolen Cards in one turn.</li>
+                    <li>🛡️ Passive: Steals cards from opponent.</li>
+                    <li>✨ Ability: Steal Cards (Shiny).</li>
+                    <li className="text-xs text-muted-foreground pl-2 border-l-2 border-pink-500/50">
+                        Scale: 2: 2 | 3: 3 | 4: 4 | 5: 5 Cards
+                    </li>
+                    <li>🏆 Win Con: Play 5 Stolen Cards.</li>
                     <li>⚠️ Curse: Takes 5 Damage automatically at Round 4.</li>
                 </ul>
              </div>
@@ -468,7 +492,10 @@ const HowToPlay = () => {
                 <ul className="text-sm space-y-1 text-foreground/70">
                     <li>❤️ HP: 40</li>
                     <li>🛡️ Passive: Permanently buffs card values.</li>
-                    <li>✨ Ability: Buffs played cards by +1 to +6 Value.</li>
+                    <li>✨ Ability: Buff Played Cards.</li>
+                    <li className="text-xs text-muted-foreground pl-2 border-l-2 border-blue-500/50">
+                        Scale: 2: +1 | 3: +2 | 4: +3 | 5: +6 Value
+                    </li>
                     <li>🏆 Win Con: Play a card with Value 9+.</li>
                 </ul>
              </div>
@@ -480,8 +507,11 @@ const HowToPlay = () => {
                 <ul className="text-sm space-y-1 text-foreground/70">
                     <li>❤️ HP: 40</li>
                     <li>🛡️ Passive: Summons random cards.</li>
-                    <li>✨ Ability: Spawns random cards into empty slots.</li>
-                    <li>🏆 Win Con: Perform a Sigma + Delta Combo in one turn.</li>
+                    <li>✨ Ability: Spawn Cards.</li>
+                    <li className="text-xs text-muted-foreground pl-2 border-l-2 border-orange-500/50">
+                        Scale: 5: Spawns 5 Cards + Gamma
+                    </li>
+                    <li>🏆 Win Con: Perform a Sigma + Delta Combo.</li>
                 </ul>
              </div>
 
@@ -491,8 +521,8 @@ const HowToPlay = () => {
                 <p className="text-sm text-foreground/80 mb-2">Role: Copycat</p>
                 <ul className="text-sm space-y-1 text-foreground/70">
                     <li>❤️ HP: 40</li>
-                    <li>🛡️ Passive: Starts with COPY of Opponent Deck + 6 Mimic Cards (36 Total).</li>
-                    <li>✨ Ability: Copies opponent's last ability scale.</li>
+                    <li>🛡️ Passive: 36 Card Deck (Copy + 6 Mimic).</li>
+                    <li>✨ Ability: Copies Opponent's Last Ability Scale.</li>
                     <li>🏆 Win Con: Copies Opponent's Win Condition.</li>
                 </ul>
              </div>

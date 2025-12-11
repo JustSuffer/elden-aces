@@ -160,27 +160,50 @@ const Tutorial = () => {
         <div className="space-y-4 max-h-[400px] overflow-y-auto custom-scrollbar pr-2">
           <p>Oyunda 11 farklı sınıf vardır. Her birinin özel yetenekleri ve kazanma koşulları bulunur:</p>
           <div className="grid grid-cols-1 gap-2 text-sm">
+             {/* Vitalist */}
              <div className="bg-green-900/20 p-2 rounded border border-green-500/30">
-               <strong className="text-green-400">Vitalist:</strong> Tank, İyileşme odaklı. HP farkı ile kazanır.
+               <strong className="text-green-400">Vitalist (Φ):</strong> Tank. HP farkı ile kazanır (Start 50 HP).
              </div>
+             {/* Slayer */}
              <div className="bg-red-900/20 p-2 rounded border border-red-500/30">
-               <strong className="text-red-400">Slayer:</strong> Yüksek hasar. Tek turda 12 hasar verirse kazanır.
+               <strong className="text-red-400">Slayer (Ω):</strong> DPS. Tek turda 12 hasar verirse kazanır.
              </div>
+             {/* Fateweaver */}
+             <div className="bg-yellow-900/20 p-2 rounded border border-yellow-500/30">
+               <strong className="text-yellow-400">Fateweaver (Π):</strong> Kumarbaz. 5 Gamma (γ) kartı oynarsa kazanır.
+             </div>
+             {/* Oracle */}
+             <div className="bg-purple-900/20 p-2 rounded border border-purple-500/30">
+               <strong className="text-purple-400">Oracle (Ψ):</strong> Kahin. Destesini bitirirse (0 kart) kazanır.
+             </div>
+             {/* Chronokeeper */}
              <div className="bg-white/10 p-2 rounded border border-white/30">
-               <strong className="text-white">Chronokeeper:</strong> Zamanı durdurur. 6 tur hayatta kalırsa kazanır.
+               <strong className="text-white">Chronokeeper (τ):</strong> Zaman. 6 tur hayatta kalırsa kazanır.
              </div>
+             {/* Cryomancer */}
              <div className="bg-cyan-900/20 p-2 rounded border border-cyan-400/30">
-               <strong className="text-cyan-400">Cryomancer:</strong> Kartları dondurur (etkisizleştirir).
+               <strong className="text-cyan-400">Cryomancer (Ξ):</strong> Kontrol. 3 Özel Kart dondurursa kazanır.
              </div>
+             {/* Incinerator */}
+             <div className="bg-orange-900/20 p-2 rounded border border-orange-500/30">
+               <strong className="text-orange-400">Incinerator (ρ):</strong> Yakıcı. Rakip desteyi 4. Turda bitirirse kazanır.
+             </div>
+             {/* Siren */}
              <div className="bg-pink-900/20 p-2 rounded border border-pink-500/30">
-               <strong className="text-pink-400">Siren:</strong> Kart çalar. 4. Turda lanetlenir (-5 HP).
+               <strong className="text-pink-400">Siren (η):</strong> Hırsız. 5 Çalıntı kart oynarsa kazanır. (4. Turda hasar yer).
              </div>
+             {/* Augmentor */}
+             <div className="bg-blue-900/20 p-2 rounded border border-blue-500/30">
+               <strong className="text-blue-400">Augmentor (Θ):</strong> Güçlendirici. Değeri 9+ olan kart oynarsa kazanır.
+             </div>
+             {/* Conjurer */}
+             <div className="bg-orange-600/20 p-2 rounded border border-orange-400/30">
+               <strong className="text-orange-300">Conjurer (μ):</strong> Çağırıcı. Sigma+Delta kombosu yaparsa kazanır.
+             </div>
+             {/* Mimic */}
              <div className="bg-gray-800/50 p-2 rounded border border-gray-500/30">
-               <strong className="text-gray-400">Mimic:</strong> Rakibinin destesini ve kazanma koşulunu kopyalar.
+               <strong className="text-gray-400">Mimic (ν):</strong> Taklitçi. Rakibinin kazanma koşulunu kopyalar.
              </div>
-             <p className="text-xs text-muted-foreground mt-2 italic">
-               Diğer sınıflar: Fateweaver (Kumarbaz), Oracle (Kahin), Incinerator (Yakıcı), Augmentor (Güçlendirici), Conjurer (Çağırıcı).
-             </p>
           </div>
         </div>
       )

@@ -455,21 +455,7 @@ export function useGameState(initParams?: GameInitParams) {
         logDetails.push(`🔥 ${result.sideEffects.p2BurnCount} kartın yakıldı!`);
       }
 
-      // Handle Siren Steal
-      if (result.sideEffects.p1SirenSteal) {
-          const stolen = p2Deck.slice(0, result.sideEffects.p1SirenSteal).map(c => ({ ...c, isStolen: true }));
-          p2Deck = p2Deck.slice(result.sideEffects.p1SirenSteal);
-          prev.playerHand.push(...stolen); // Mutating local var 'prev' hand? No, we use newHand usually.
-          // Wait, 'newHand' is not defined here. Hand update happens in state return.
-          // We need to update 'p1Hand' / 'p2Hand' variables?
-          // calculateRoundDamage updates state at the end? 
-          // Let's see Lines 405-414, we construct p1State/p2State.
-          // But `setGameState` uses `prev` directly or constructed variables?
-          // We need to return the NEW hands.
-          // Let's access hands from `prev` but we need to update them.
-          // Actually, we need to create mutable copies of hands.
-      }
-      
+
       // RE-IMPLEMENTING PROPER STATE UPDATES FOR HANDS
       let p1Hand = [...prev.playerHand];
       let p2Hand = [...prev.opponentHand];
