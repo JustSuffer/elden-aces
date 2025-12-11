@@ -315,16 +315,24 @@ export function useGameState(initParams?: GameInitParams) {
       const p1Cards = prev.playerField.filter((c): c is Card => c !== null);
       const p2Cards = prev.opponentField.filter((c): c is Card => c !== null);
 
-      // Apply class abilities first
-      const p1AbilityResult = applyClassAbility(prev.playerClass, p1Cards, prev.playerHP);
-      const p2AbilityResult = applyClassAbility(prev.opponentClass, p2Cards, prev.opponentHP);
-
-      let newPlayerHP = Math.max(0, prev.playerHP + p1AbilityResult.hpChange);
-      let newOpponentHP = Math.max(0, prev.opponentHP + p2AbilityResult.hpChange);
-
-      // Resolve round combat
+      // Resolve round combat (Steps 1-5 including Ability execution)
       const result = resolveGameRound(p1Cards, p2Cards, prev.playerClass, prev.opponentClass);
 
+      // Healing is returned in abilityResults, we need to apply it + damage taken
+      // result.p1DamageTaken is NET positive damage
+      // result.abilityResults.pX.hpChange handles scaling healing (positive value = healing in Logic usually?)
+      // Wait, in logic update:
+      // Vitalist: "hpChange = scale.value" (Positive)
+      // We need to ADD healing and SUBTRACT damage.
+      
+      let newPlayerHP = prev.playerHP;
+      let newOpponentHP = prev.opponentHP;
+
+      // Apply Healing first (Logic: usually healing happens before damage or net change)
+      newPlayerHP += result.abilityResults.p1.hpChange;
+      newOpponentHP += result.abilityResults.p2.hpChange;
+
+      // Apply Damage
       newPlayerHP = Math.max(0, newPlayerHP - result.p1DamageTaken);
       newOpponentHP = Math.max(0, newOpponentHP - result.p2DamageTaken);
 
@@ -343,7 +351,7 @@ export function useGameState(initParams?: GameInitParams) {
       const p1InstantWin = checkCounterWinCondition(p1State, p2State, prev.round);
       const p2InstantWin = checkCounterWinCondition(p2State, p1State, prev.round);
 
-      let logDetails = [...p1AbilityResult.logs, ...p2AbilityResult.logs, ...result.logs];
+      let logDetails = result.logs;
       let phase: "placement" | "reveal" | "damage" | "end" = newPlayerHP <= 0 || newOpponentHP <= 0 ? "end" : "damage";
 
       if (p1InstantWin) {
