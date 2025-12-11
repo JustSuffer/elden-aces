@@ -359,3 +359,36 @@ function getCardCount(className: ClassName, cards: Card[]): number {
     const symbol = MASTER_CLASSES[className].symbol;
     return cards.filter(c => c.symbol === symbol).length;
 }
+
+export interface ClassAbilityResult {
+  hpChange: number;
+  logs: string[];
+}
+
+/**
+ * Applies class-specific abilities that affect HP directly (like Healing).
+ * This runs BEFORE the main damage resolution.
+ */
+export function applyClassAbility(
+  className: ClassName, 
+  playedCards: Card[], 
+  currentHP: number
+): ClassAbilityResult {
+  const logs: string[] = [];
+  let hpChange = 0;
+
+  const scale = getAbilityScale(className, playedCards);
+  
+  // Vitalist Healing Logic
+  if (className === "Vitalist") {
+    if (scale.value && scale.value > 0) {
+      hpChange = scale.value;
+      logs.push(`Vitalist healed for ${scale.value} HP.`);
+    }
+  }
+
+  // Add other pre-combat buffering logic here if needed
+  // For now, most other classes deal damage which is handled in resolveGameRound
+
+  return { hpChange, logs };
+}
