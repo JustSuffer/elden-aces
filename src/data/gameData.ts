@@ -7,7 +7,7 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
     symbol: "Φ",
     role: "Tank",
     initialHP: 40,
-    passiveDescription: "Starts with 40 HP.",
+    passiveDescription: "Start 40 HP.",
     abilityScales: [
         { count: 1, effectDescription: "0 Can" },
         { count: 2, effectDescription: "+4 Can", value: 4 },
@@ -18,7 +18,6 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
     winCondition: "Can > Rakip Can",
     counterLogic: {
       Slayer: "Must have LESS HP than Slayer to win.",
-      // Chronokeeper: "First to play 5-card flush wins instantly.", // Handled in code, removed from data text to clean up
     },
   },
   Slayer: {
@@ -27,7 +26,7 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
     symbol: "Ω",
     role: "DPS / Anti-Meta",
     initialHP: 30,
-    passiveDescription: "Immune to Twisted (α) reflection.",
+    passiveDescription: "Immune to Twisted (α).",
     abilityScales: [
         { count: 1, effectDescription: "0 Dmg" },
         { count: 2, effectDescription: "3 Dmg", value: 3 },
@@ -36,7 +35,7 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
         { count: 5, effectDescription: "12 Dmg", value: 12 },
     ],
     winCondition: "Tek turda 12+ Hasar",
-    loseCondition: "If 12 Dmg triggered & Self HP > Opponent HP.",
+    loseCondition: "If 12 Dmg & Self HP > Opp HP.",
     counterLogic: {
       Vitalist: "Must have MORE HP than Vitalist to win.",
     },
@@ -47,7 +46,7 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
     symbol: "Π",
     role: "Gambler",
     initialHP: 30,
-    passiveDescription: "Can roll dice from Round 3+.",
+    passiveDescription: "Dice R3+.",
     abilityScales: [
         { count: 1, effectDescription: "-" },
         { count: 2, effectDescription: "+2 Zar", value: 2 },
@@ -63,17 +62,17 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
     symbol: "Ψ",
     role: "Combo / Self-Mill",
     initialHP: 30,
-    passiveDescription: "Draw/Mill mechanic.",
+    passiveDescription: "Draw/Mill.",
     abilityScales: [
         { count: 1, effectDescription: "-" },
-        { count: 2, effectDescription: "2 Dmg / Draw 2", value: 2 },
-        { count: 3, effectDescription: "3 Dmg / Draw 3", value: 3 },
-        { count: 4, effectDescription: "4 Dmg / Draw 4", value: 4 },
+        { count: 2, effectDescription: "2 Dmg/Draw", value: 2 },
+        { count: 3, effectDescription: "3 Dmg/Draw", value: 3 },
+        { count: 4, effectDescription: "4 Dmg/Draw", value: 4 },
         { count: 5, effectDescription: "10 Dmg + 5 Draw", value: 10 },
     ],
     winCondition: "Deste Bitir",
     counterLogic: {
-      Vitalist: "Deck empty deals 25 Pure Dmg instead of win.",
+      Vitalist: "Empty Deck = 25 Pure Dmg.",
     },
   },
   Chronokeeper: {
@@ -82,18 +81,17 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
     symbol: "τ",
     role: "Stall",
     initialHP: 20,
-    passiveDescription: "Starts with 20 HP.",
+    passiveDescription: "Start 20 HP.",
     abilityScales: [
         { count: 1, effectDescription: "-" },
         { count: 2, effectDescription: "0 Sil" },
         { count: 3, effectDescription: "1 Rnd Sil" },
         { count: 4, effectDescription: "2 Rnd Sil" },
         { count: 5, effectDescription: "3 Rnd Sil" },
-        // 5th is also "6 Rnd Ölme" logic
     ],
     winCondition: "6 Rnd Ölme",
     counterLogic: {
-      Vitalist: "Play 5-card flush before Vitalist to win instantly.",
+      Vitalist: "Play 5-card flush to win.",
     },
   },
   Cryomancer: {
@@ -102,7 +100,7 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
     symbol: "Ξ",
     role: "Hard Control",
     initialHP: 30,
-    passiveDescription: "Freezes opponent cards.",
+    passiveDescription: "Freezes.",
     abilityScales: [
         { count: 1, effectDescription: "-" },
         { count: 2, effectDescription: "2 Don" },
@@ -118,16 +116,16 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
     symbol: "ρ",
     role: "Aggro Miller",
     initialHP: 30,
-    passiveDescription: "Burns opponent deck.",
+    passiveDescription: "Burns deck.",
     abilityScales: [
         { count: 1, effectDescription: "-" },
         { count: 2, effectDescription: "3 Yak" },
         { count: 3, effectDescription: "4 Yak" },
         { count: 4, effectDescription: "5 Yak" },
-        { count: 5, effectDescription: "8 Yak + NoDeathR4" },
+        { count: 5, effectDescription: "8 Yak + NoDeath" },
     ],
     winCondition: "R4 Rakip Deste 0",
-    loseCondition: "Die if opponent has cards at start of Round 4 (unless 5-card flush used).",
+    loseCondition: "Die if opponent has cards at R4.",
   },
   Siren: {
     name: "Siren",
@@ -144,7 +142,7 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
         { count: 5, effectDescription: "5 Çal" },
     ],
     winCondition: "5 Çalıntı Kart Oyna",
-    loseCondition: "Take 10 Dmg automatically at Round 4.",
+    loseCondition: "Take 10 Dmg at R4.",
   },
   Augmentor: {
     name: "Augmentor",
@@ -168,7 +166,7 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
     symbol: "μ",
     role: "Summoner",
     initialHP: 30,
-    passiveDescription: "Summons special cards.",
+    passiveDescription: "Summons.",
     abilityScales: [
         { count: 1, effectDescription: "-" },
         { count: 2, effectDescription: "Random" },
@@ -184,7 +182,7 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
     symbol: "ν",
     role: "Copycat",
     initialHP: 30,
-    passiveDescription: "Copies opponent moves.",
+    passiveDescription: "Copies.",
     abilityScales: [
         { count: 1, effectDescription: "-" },
         { count: 2, effectDescription: "Kopyala" },
@@ -194,7 +192,7 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
     ],
     winCondition: "Rakip WinCon",
     counterLogic: {
-      Fateweaver: "Copies Dice odds and abilities.",
+      Fateweaver: "Copies Dice odds.",
     },
   },
 };

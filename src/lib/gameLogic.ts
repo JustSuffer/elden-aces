@@ -138,11 +138,15 @@ function getAbilityScale(className: ClassName, playedCards: Card[]) {
 /**
  * Step 5 Implementation: Executing Side Effects based on Scale
  */
+
+/**
+ * Step 5: Class Ability Trigger (Switch-Case Implementation)
+ */
 function applyStep5Abilities(
   p1Class: ClassName, p1Cards: Card[], 
   p2Class: ClassName, p2Cards: Card[],
   effects: GameSideEffects,
-  p1Scale: any, p2Scale: any
+  // We don't need p1Scale/p2Scale passed in anymore, we calculate inside
 ): { p1ExtraDmg: number, p2ExtraDmg: number, p1AbilityRes: ClassAbilityResult, p2AbilityRes: ClassAbilityResult } {
   
   const p1Res: ClassAbilityResult = { hpChange: 0, logs: [] };
@@ -150,92 +154,240 @@ function applyStep5Abilities(
   let p1ExtraDmg = 0;
   let p2ExtraDmg = 0;
 
-  const process = (isP1: boolean, className: ClassName, scaleVal: number, count: number, res: ClassAbilityResult) => {
-    const targetEffects = effects; // shared ref
+  const processClass = (isP1: boolean, className: ClassName, cards: Card[], res: ClassAbilityResult) => {
+    // Count class cards (or generic/numeric if they match class symbol)
+    // Actually, usually we count Valid Cards meant for the class. 
+    // Simplified: Just count TOTAL cards played ?? 
+    // Table says "1 Kart", "2 Kart", "3 Kart" -> Usually means "Cards Played".
+    // But typically synergy requires "Class Cards". 
+    // "Sınıf Yetenek Ölçekleri" implies scaling with *Class Cards*.
+    // However, if I play 3 cards and 1 is a filler, does it count?
+    // Let's assume we count *All Cards Played* if the user plays a hand?
+    // User Prompt: "OYUNA SÜRÜLEN CLASSIN KARTLARI EĞER 2 SÜRDÜYSE 3 SÜRDÜYSE".
+    // "Oyuna sürülen Classın Kartları" -> "The Class Cards played into the game".
+    // It suggests we count the cards that belong to the Class.
+    // Let's stick to: Count of proper class cards in the hand.
     
-    // Vitalist (Healing)
-    if (className === "Vitalist") {
-      if (scaleVal > 0) {
-        res.hpChange = scaleVal;
-        res.logs.push(`Vitalist healed for ${scaleVal} HP.`);
-      }
-    }
-    // Slayer (Damage) 
-    else if (className === "Slayer") {
-      if (isP1) p1ExtraDmg += scaleVal;
-      else p2ExtraDmg += scaleVal;
-    }
-    // Oracle (Dmg/Draw)
-    else if (className === "Oracle") {
-      if (isP1) { p1ExtraDmg += scaleVal; targetEffects.p1DrawCount = scaleVal; } // "Draw X" logic needed in hook? Usually handled by "Draw X" text. 
-      else { p2ExtraDmg += scaleVal; targetEffects.p2DrawCount = scaleVal; }
-      // Assuming 'value' in data equals Draw count too roughly, or specific logic needed.
-      // Data says "10 Dmg + 5 Draw" for 5. Value is 10.
-      if (count === 5 && className === "Oracle") {
-         if(isP1) targetEffects.p1DrawCount = 5; else targetEffects.p2DrawCount = 5;
-      } else {
-         if(isP1) targetEffects.p1DrawCount = count; else targetEffects.p2DrawCount = count; // Roughly
-      }
-    }
-    // Cryomancer (Freeze)
-    else if (className === "Cryomancer") {
-      let freeze = 0;
-      if (count === 2) freeze = 2;
-      if (count === 3) freeze = 3; 
-      if (count === 4) freeze = 4;
-      if (count === 5) freeze = 99; // ALL
-      
-      if (isP1) targetEffects.p2FreezeCount = freeze;
-      else targetEffects.p1FreezeCount = freeze;
-    }
-    // Incinerator (Burn)
-    else if (className === "Incinerator") {
-      let burn = 0;
-      if (count === 2) burn = 3;
-      if (count === 3) burn = 4;
-      if (count === 4) burn = 5;
-      if (count === 5) burn = 8;
-      
-      if (isP1) targetEffects.p2BurnCount = burn;
-      else targetEffects.p1BurnCount = burn;
-    }
-    // Siren (Steal)
-    else if (className === "Siren") {
-      if (isP1) targetEffects.p1StealCount = scaleVal || count; // Logic says "2 Çal", Value is 0 in data probably
-      else targetEffects.p2StealCount = scaleVal || count; 
-      // Manual mapping from text to count
-      if(count === 2) { if(isP1) targetEffects.p1StealCount = 2; else targetEffects.p2StealCount = 2; }
-      if(count === 3) { if(isP1) targetEffects.p1StealCount = 3; else targetEffects.p2StealCount = 3; }
-      if(count === 4) { if(isP1) targetEffects.p1StealCount = 4; else targetEffects.p2StealCount = 4; }
-      if(count === 5) { if(isP1) targetEffects.p1StealCount = 5; else targetEffects.p2StealCount = 5; }
-    }
-    // Augmentor
-    else if (className === "Augmentor") {
-      if (count === 5) {
-         if (isP1) targetEffects.p1SetMax = true;
-         else targetEffects.p2SetMax = true;
-      } else if (count >= 2) {
-         if (isP1) targetEffects.p1ValueBuff = count - 1; 
-         else targetEffects.p2ValueBuff = count - 1;
-      }
-    }
-    // Chronokeeper
-    else if (className === "Chronokeeper") {
-      let skip = 0;
-      if (count === 3) skip = 1;
-      if (count === 4) skip = 2;
-      if (count === 5) skip = 3;
-      if (isP1) targetEffects.p1RoundsSkip = skip;
-      else targetEffects.p2RoundsSkip = skip;
-    }
+    // BUT WAIT: The system allows 1-5 cards total. If I play 1 Slayer and 2 Fillers, is it "1 Card" effect? 
+    // Yes, usually.
+    const classSymbol = MASTER_CLASSES[className].symbol;
+    const count = cards.filter(c => c.symbol === classSymbol || c.classSymbol === classSymbol).length;
     
-    // Fateweaver (Rolls - Handled in Hook mostly, but we can flag)
-    // Conjurer (Summons - Handled in Hook)
-    // Mimic (Copy - Handled in Hook/Logic special case)
+    // The table handles 1 to 5.
+    if (count === 0) return; // No class cards, no effect.
+
+    const targetEffects = effects; 
+    const isOpponent = !isP1; // Relative to current processor
+
+    switch (className) {
+      case "Vitalist": // (Φ)
+        switch (count) {
+          case 1:
+            res.logs.push("Vitalist (1): 0 Can");
+            break;
+          case 2:
+            res.hpChange += 4;
+            res.logs.push("Vitalist (2): +4 Can");
+            break;
+          case 3:
+            res.hpChange += 6;
+            res.logs.push("Vitalist (3): +6 Can");
+            break;
+          case 4:
+            res.hpChange += 8;
+            res.logs.push("Vitalist (4): +8 Can");
+            break;
+          case 5:
+            res.hpChange += 15;
+            res.logs.push("Vitalist (5): +15 Can");
+            break;
+        }
+        break;
+
+      case "Slayer": // (Ω)
+        switch (count) {
+          case 1:
+             res.logs.push("Slayer (1): 0 Dmg");
+             break;
+          case 2:
+            if (isP1) p1ExtraDmg += 3; else p2ExtraDmg += 3;
+            res.logs.push("Slayer (2): 3 Dmg");
+            break;
+          case 3:
+            if (isP1) p1ExtraDmg += 5; else p2ExtraDmg += 5;
+            res.logs.push("Slayer (3): 5 Dmg");
+            break;
+          case 4:
+            if (isP1) p1ExtraDmg += 8; else p2ExtraDmg += 8;
+            res.logs.push("Slayer (4): 8 Dmg");
+            break;
+          case 5:
+            if (isP1) p1ExtraDmg += 12; else p2ExtraDmg += 12;
+            res.logs.push("Slayer (5): 12 Dmg");
+            break;
+        }
+        break;
+
+      case "Fateweaver": // (Π)
+        // Handled mostly by Dice logic, but here we might add "Zar" capacity?
+        // "+2 Zar" usually means "Add +2 to Dice Rolls cap" or "Gain 2 Dice Items"?
+        // The game has a "Zar Hakki" (Dice Usage). 
+        // Let's assume it restores/adds to usage limit or unused, but implementing fully might require state change.
+        // For now logging it. Actual implementation of "Adding Writes to Dice" might be needed.
+        // "5x Gamma Kartı" is Win Condition.
+        // Table text: "+2 Zar"
+        switch (count) {
+          case 1: break;
+          case 2: res.logs.push("Fateweaver (2): +2 Zar (Not Implemented)"); break;
+          case 3: res.logs.push("Fateweaver (3): +4 Zar (Not Implemented)"); break;
+          case 4: res.logs.push("Fateweaver (4): +7 Zar (Not Implemented)"); break;
+          case 5: res.logs.push("Fateweaver (5): +8 Zar + Gamma"); break; 
+        }
+        break;
+
+      case "Augmentor": // (Θ)
+        switch (count) {
+          case 1: break;
+          case 2:
+             if (isP1) targetEffects.p1ValueBuff = 1; else targetEffects.p2ValueBuff = 1;
+             res.logs.push("Augmentor (2): +1 Değer");
+             break;
+          case 3:
+             if (isP1) targetEffects.p1ValueBuff = 2; else targetEffects.p2ValueBuff = 2;
+             res.logs.push("Augmentor (3): +2 Değer");
+             break;
+          case 4:
+             if (isP1) targetEffects.p1ValueBuff = 3; else targetEffects.p2ValueBuff = 3;
+             res.logs.push("Augmentor (4): +3 Değer");
+             break;
+          case 5:
+             if (isP1) targetEffects.p1ValueBuff = 6; else targetEffects.p2ValueBuff = 6;
+             // Set 30? "Set 30" might mean something else. Assuming Value Buff +6 for now.
+             res.logs.push("Augmentor (5): +6 Değer / Set 30");
+             break;
+        }
+        break;
+
+      case "Cryomancer": // (Ξ)
+        switch (count) {
+          case 1: break; // -
+          case 2:
+            if (isP1) targetEffects.p2FreezeCount = 2; else targetEffects.p1FreezeCount = 2;
+            res.logs.push("Cryomancer (2): 2 Don");
+            break;
+          case 3:
+            // "2+1 Don" -> Is it 3? Or 2 and 1? Assuming 3 total.
+            if (isP1) targetEffects.p2FreezeCount = 3; else targetEffects.p1FreezeCount = 3;
+            res.logs.push("Cryomancer (3): 2+1 Don");
+            break;
+          case 4:
+            // "2+2 Don" -> 4?
+            if (isP1) targetEffects.p2FreezeCount = 4; else targetEffects.p1FreezeCount = 4;
+            res.logs.push("Cryomancer (4): 2+2 Don");
+            break;
+          case 5:
+            if (isP1) targetEffects.p2FreezeCount = 99; else targetEffects.p1FreezeCount = 99;
+             res.logs.push("Cryomancer (5): TÜMÜNÜ Dondur");
+            break;
+        }
+        break;
+
+      case "Siren": // (η)
+        // Steal "Çal"
+        let steal = 0;
+        switch (count) {
+          case 2: steal = 2; break;
+          case 3: steal = 3; break;
+          case 4: steal = 4; break;
+          case 5: steal = 5; break;
+        }
+        if (steal > 0) {
+           if (isP1) targetEffects.p1StealCount = steal; else targetEffects.p2StealCount = steal;
+           res.logs.push(`Siren (${count}): ${steal} Çal`);
+        }
+        break;
+
+      case "Incinerator": // (ρ)
+        // Burn "Yak"
+        let burn = 0;
+        switch (count) {
+          case 2: burn = 3; break;
+          case 3: burn = 4; break;
+          case 4: burn = 5; break;
+          case 5: 
+             burn = 8; 
+             res.logs.push("Incinerator (5): NoDeath Active");
+             break;
+        }
+        if (burn > 0) {
+           if (isP1) targetEffects.p2BurnCount = burn; else targetEffects.p1BurnCount = burn;
+           res.logs.push(`Incinerator (${count}): ${burn} Yak`);
+        }
+        break;
+
+      case "Oracle": // (Ψ)
+        // Dmg/Draw
+        // "2 Dmg/Draw" -> Deals 2 Dmg AND Draws 2?
+        let dmg = 0;
+        let draw = 0;
+        switch (count) {
+          case 2: dmg = 2; draw = 2; break;
+          case 3: dmg = 3; draw = 3; break;
+          case 4: dmg = 4; draw = 4; break;
+          case 5: dmg = 10; draw = 5; break;
+        }
+        if (dmg > 0) {
+          if (isP1) { p1ExtraDmg += dmg; targetEffects.p1DrawCount = draw; }
+          else { p2ExtraDmg += dmg; targetEffects.p2DrawCount = draw; }
+          res.logs.push(`Oracle (${count}): ${dmg} Dmg + ${draw} Draw`);
+        }
+        break;
+
+      case "Chronokeeper": // (τ)
+        // Sil / Freeze Rounds? "Sil" usually means "Skip Round" or "Cancel Round"?
+        // Or "Silence"? Silence usually stops abilities.
+        // Prompt Table says "0 Sil", "1 Rnd Sil", "2 Rnd Sil", "3 Rnd Sil". 
+        // "Sil" -> Silence?
+        // Let's assume it sets "RoundsSkip" in sideEffects.
+        let skip = 0;
+        switch (count) {
+            case 2: skip = 0; res.logs.push("Chrono (2): 0 Sil"); break;
+            case 3: skip = 1; res.logs.push("Chrono (3): 1 Rnd Sil"); break;
+            case 4: skip = 2; res.logs.push("Chrono (4): 2 Rnd Sil"); break;
+            case 5: skip = 3; res.logs.push("Chrono (5): 3 Rnd Sil"); break;
+        }
+        if (skip > 0) {
+            if (isP1) targetEffects.p2RoundsSkip = skip; else targetEffects.p1RoundsSkip = skip;
+        }
+        break;
+
+      case "Conjurer": // (μ)
+        // "Random" for 2,3,4. "5 Kart + Gamma" for 5.
+        // Random effect? Maybe random card?
+        switch (count) {
+           case 2: res.logs.push("Conjurer (2): Random"); break;
+           case 3: res.logs.push("Conjurer (3): Random"); break;
+           case 4: res.logs.push("Conjurer (4): Random"); break;
+           case 5: res.logs.push("Conjurer (5): 5 Kart + Gamma"); break;
+        }
+        break;
+
+      case "Mimic": // (ν)
+        // Kopyala (Copy)
+        switch (count) {
+          case 2: case 3: case 4: case 5:
+             res.logs.push(`Mimic (${count}): Kopyala`);
+             break;
+        }
+        break;
+        
+      default:
+        break;
+    }
   };
 
-  process(true, p1Class, p1Scale.scale.value || 0, p1Scale.count, p1Res);
-  process(false, p2Class, p2Scale.scale.value || 0, p2Scale.count, p2Res);
+  processClass(true, p1Class, p1Cards, p1Res);
+  processClass(false, p2Class, p2Cards, p2Res);
 
   return { p1ExtraDmg, p2ExtraDmg, p1AbilityRes: p1Res, p2AbilityRes: p2Res };
 }
@@ -340,12 +492,12 @@ export function resolveGameRound(
   if (p2True > 0) logs.push(`P2 Synergy: ${p2True} True Damage`);
 
   // --- STEP 5: Class Ability Trigger ---
-  const p1Scale = getAbilityScale(p1Class, p1Cards);
-  const p2Scale = getAbilityScale(p2Class, p2Cards);
-
+  // --- STEP 5: Class Ability Trigger ---
+  // Scale is calculated inside the function now
+  
   const abilityRes = applyStep5Abilities(
     p1Class, p1Cards, p2Class, p2Cards, 
-    effects, p1Scale, p2Scale
+    effects
   );
 
   // Ability Damage is usually DIRECT (Slayer, Oracle). 

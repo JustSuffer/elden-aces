@@ -84,10 +84,10 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
 
   const handleTapToPlace = (cardIndex: number) => {
     if (gameState.phase !== "placement") return;
-    const requiredCards = gameState.playerMust4Cards ? 4 : 5;
+    const maxCards = gameState.playerMust4Cards ? 4 : 5;
     const placedCards = gameState.playerField.filter((c) => c !== null).length;
-    if (placedCards >= requiredCards) {
-      toast.error(`Bu tur sadece ${requiredCards} kart oynayabilirsin!`);
+    if (placedCards >= maxCards) {
+      toast.error(`Bu tur en fazla ${maxCards} kart oynayabilirsin!`);
       return;
     }
     const emptySlot = gameState.playerField.findIndex((c) => c === null);
@@ -116,13 +116,17 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
   };
 
   const handleEndPlacement = () => {
-    const requiredCards = gameState.playerMust4Cards ? 4 : 5;
     const placedCards = gameState.playerField.filter((c) => c !== null).length;
     
-    if (placedCards < requiredCards) {
-      toast.error(`${requiredCards} kart yerleştirmelisin!`);
+    if (placedCards < 1) {
+      toast.error(`En az 1 kart yerleştirmelisin!`);
       return;
     }
+    // If specific restriction active, we might want to enforce it? 
+    // "Bu tur sadece 4 kart oynayabilirsin" -> implies exactly 4? 
+    // Or just max 4? The prompt wants flexibility. Let's assume Max 4 if that effect is active.
+    // However, if the user explicitly wants to adhere to the table, the table has logic for 4 cards.
+    // I will enforce Min 1. The Max is handled in Tap.
     endPlacement();
     
     AudioManager.play("card-flip", 0.7);
@@ -236,7 +240,7 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
                 Round {gameState.round}/6
               </h1>
               <p className="text-base md:text-lg text-muted-foreground tracking-wider">
-                {gameState.phase === "placement" && `${requiredCards} kart yerleştir`}
+                {gameState.phase === "placement" && `Kartlarını seç ve oyna`}
                 {gameState.phase === "reveal" && "Kartlar açılıyor!"}
                 {gameState.phase === "damage" && "Round tamamlandı!"}
                 {gameState.phase === "end" && (
@@ -266,7 +270,7 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
                   variant="default"
                   size="lg"
                   onClick={handleEndPlacement}
-                  disabled={gameState.playerField.filter((c) => c !== null).length < requiredCards}
+                  disabled={gameState.playerField.filter((c) => c !== null).length < 1}
                   className="gap-2"
                 >
                   Yerleşimi Bitir
