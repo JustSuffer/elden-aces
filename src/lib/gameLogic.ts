@@ -228,20 +228,42 @@ function applyStep5Abilities(
         }
         break;
 
-      case "Fateweaver": // (Π)
-        // Handled mostly by Dice logic, but here we might add "Zar" capacity?
-        // "+2 Zar" usually means "Add +2 to Dice Rolls cap" or "Gain 2 Dice Items"?
-        // The game has a "Zar Hakki" (Dice Usage). 
-        // Let's assume it restores/adds to usage limit or unused, but implementing fully might require state change.
-        // For now logging it. Actual implementation of "Adding Writes to Dice" might be needed.
-        // "5x Gamma Kartı" is Win Condition.
-        // Table text: "+2 Zar"
+      case "Oracle": // (Ψ)
         switch (count) {
+          case 1: 
+             res.logs.push("Oracle (1): -");
+             break;
+          case 2:
+             if (isP1) { p1ExtraDmg += 2; targetEffects.p1DrawCount = (targetEffects.p1DrawCount || 0) + 2; } 
+             else { p2ExtraDmg += 2; targetEffects.p2DrawCount = (targetEffects.p2DrawCount || 0) + 2; }
+             res.logs.push("Oracle (2): 2 Hasar + 2 Çek");
+             break;
+          case 3:
+             if (isP1) { p1ExtraDmg += 3; targetEffects.p1DrawCount = (targetEffects.p1DrawCount || 0) + 3; }
+             else { p2ExtraDmg += 3; targetEffects.p2DrawCount = (targetEffects.p2DrawCount || 0) + 3; }
+             res.logs.push("Oracle (3): 3 Hasar + 3 Çek");
+             break;
+          case 4:
+             if (isP1) { p1ExtraDmg += 4; targetEffects.p1DrawCount = (targetEffects.p1DrawCount || 0) + 4; }
+             else { p2ExtraDmg += 4; targetEffects.p2DrawCount = (targetEffects.p2DrawCount || 0) + 4; }
+             res.logs.push("Oracle (4): 4 Hasar + 4 Çek");
+             break;
+          case 5:
+             if (isP1) { p1ExtraDmg += 10; targetEffects.p1DrawCount = (targetEffects.p1DrawCount || 0) + 5; }
+             else { p2ExtraDmg += 10; targetEffects.p2DrawCount = (targetEffects.p2DrawCount || 0) + 5; }
+             res.logs.push("Oracle (5): 10 Hasar + 5 Çek");
+             break;
+        }
+        break;
+
+      case "Fateweaver": // (Π)
+        // Handled mostly by Dice logic in useGameState
+         switch (count) {
           case 1: break;
-          case 2: res.logs.push("Fateweaver (2): +2 Zar (Not Implemented)"); break;
-          case 3: res.logs.push("Fateweaver (3): +4 Zar (Not Implemented)"); break;
-          case 4: res.logs.push("Fateweaver (4): +7 Zar (Not Implemented)"); break;
-          case 5: res.logs.push("Fateweaver (5): +8 Zar + Gamma"); break; 
+          case 2: res.logs.push("Fateweaver (2): +2 Zar Puanı"); break;
+          case 3: res.logs.push("Fateweaver (3): +4 Zar Puanı"); break;
+          case 4: res.logs.push("Fateweaver (4): +8 Zar Puanı"); break;
+          case 5: res.logs.push("Fateweaver (5): Nova (Tüm Zarlar)"); break; 
         }
         break;
 
@@ -747,7 +769,8 @@ export function checkCounterWinCondition(
         if (hasSigma && hasDelta) return true;
     }
 
-    // Oracle (Empty Deck) - Checked elsewhere (hook) usually
+    return undefined;
+}
 
     return undefined;
 }

@@ -15,7 +15,7 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
         { count: 4, effectDescription: "+8 Can", value: 8 },
         { count: 5, effectDescription: "+15 Can", value: 15 },
     ],
-    winCondition: "Can > Rakip Can",
+    winCondition: "7. Raundu Gör",
     counterLogic: {
       Slayer: "Must have LESS HP than Slayer to win.",
     },
@@ -42,19 +42,19 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
   },
   Fateweaver: {
     name: "Fateweaver",
-    color: "#fef08a", // White Gold
+    color: "#fbbf24", // Amber/Gold
     symbol: "Π",
-    role: "Gambler",
+    role: "Gambler / Late Carry",
     initialHP: 40,
-    passiveDescription: "Dice R3+.",
+    passiveDescription: "Stack Dice. R3+ Roll (13-20) -> Gamma.",
     abilityScales: [
         { count: 1, effectDescription: "-" },
-        { count: 2, effectDescription: "+2 Zar", value: 2 },
-        { count: 3, effectDescription: "+4 Zar", value: 4 },
-        { count: 4, effectDescription: "+7 Zar", value: 7 },
-        { count: 5, effectDescription: "+8 Zar + Gamma", value: 8 },
+        { count: 2, effectDescription: "+2 Zar Puanı", value: 2 },
+        { count: 3, effectDescription: "+4 Zar Puanı", value: 4 },
+        { count: 4, effectDescription: "+8 Zar Puanı", value: 7 },
+        { count: 5, effectDescription: "Tüm Zarları At (Nova)", value: 8 },
     ],
-    winCondition: "5x Gamma Kartı",
+    winCondition: "5 Gamma (γ) Oyna",
   },
   Oracle: {
     name: "Oracle",
@@ -64,7 +64,7 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
     initialHP: 40,
     passiveDescription: "Draw/Mill.",
     abilityScales: [
-        { count: 1, effectDescription: "-" },
+        { count: 1, effectDescription: "0 Dmg/Draw", value: 0 },
         { count: 2, effectDescription: "2 Dmg/Draw", value: 2 },
         { count: 3, effectDescription: "3 Dmg/Draw", value: 3 },
         { count: 4, effectDescription: "4 Dmg/Draw", value: 4 },
@@ -79,24 +79,6 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
     name: "Chronokeeper",
     color: "#ffffff", // Transparent/White
     symbol: "τ",
-    role: "Stall",
-    initialHP: 30,
-    passiveDescription: "Start 30 HP.",
-    abilityScales: [
-        { count: 1, effectDescription: "-" },
-        { count: 2, effectDescription: "0 Sil" },
-        { count: 3, effectDescription: "1 Rnd Sil" },
-        { count: 4, effectDescription: "2 Rnd Sil" },
-        { count: 5, effectDescription: "3 Rnd Sil" },
-    ],
-    winCondition: "6 Rnd Ölme",
-    counterLogic: {
-      Vitalist: "Play 5-card flush to win.",
-    },
-  },
-  Cryomancer: {
-    name: "Cryomancer",
-    color: "#bae6fd", // Frozen White
     symbol: "Ξ",
     role: "Hard Control",
     initialHP: 40,

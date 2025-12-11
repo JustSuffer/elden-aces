@@ -162,7 +162,7 @@ export function useGameState(initParams?: GameInitParams) {
       damageResult: null,
       playerClass: pClass,
       opponentClass: oClass,
-      playerDiceRolls: 0,
+      playerDiceRolls: pClass === "Fateweaver" ? 2 : 0,
       carryOverCards: [],
     };
   });
@@ -477,15 +477,27 @@ export function useGameState(initParams?: GameInitParams) {
           logDetails.push(`🧜‍♀️ Siren çalıyor: ${count} kart!`);
       }
 
-      // Check round 6 end condition
-      if (prev.round >= 6 && phase !== "end") {
+      // Check round 7 end condition (Game is now 7 Rounds)
+      if (prev.round >= 7 && phase !== "end") {
         phase = "end";
-        if (newPlayerHP > newOpponentHP) {
-          logDetails.push("6. Round sonu - HP'n daha yüksek!");
-        } else if (newOpponentHP > newPlayerHP) {
-          logDetails.push("6. Round sonu - Rakip HP'si daha yüksek!");
+        
+        // --- SURVIVAL WIN CONDITIONS (Vitalist / Chronokeeper) ---
+        // If they survived until Round 7, they win AUTOMATICALLY.
+        if (prev.playerClass === "Vitalist" && newPlayerHP > 0) {
+            logDetails.push("🌿 Vitalist 7. Raundu gördü! DOĞA KAZANDI!");
+            newOpponentHP = 0; // Force win
+        } else if (prev.playerClass === "Chronokeeper" && newPlayerHP > 0) {
+            logDetails.push("⏳ Chronokeeper zamanın efendisi oldu! KAZANDINIZ!");
+            newOpponentHP = 0; // Force win
         } else {
-          logDetails.push("6. Round sonu - Berabere!");
+            // Standard HP Determine
+            if (newPlayerHP > newOpponentHP) {
+              logDetails.push("7. Round sonu - HP'n daha yüksek!");
+            } else if (newOpponentHP > newPlayerHP) {
+              logDetails.push("7. Round sonu - Rakip HP'si daha yüksek!");
+            } else {
+              logDetails.push("7. Round sonu - Berabere!");
+            }
         }
       }
 
@@ -511,7 +523,7 @@ export function useGameState(initParams?: GameInitParams) {
 
   const nextRound = useCallback(() => {
     setGameState((prev) => {
-      if (prev.round >= 6 || prev.playerHP <= 0 || prev.opponentHP <= 0) {
+      if (prev.round >= 7 || prev.playerHP <= 0 || prev.opponentHP <= 0) {
         return { ...prev, phase: "end" };
       }
 
@@ -536,6 +548,7 @@ export function useGameState(initParams?: GameInitParams) {
         damageResult: null,
         playerMust4Cards: false,
         opponentMust4Cards: false,
+        playerDiceRolls: prev.playerClass === "Fateweaver" ? prev.playerDiceRolls + 2 : 0,
       };
     });
   }, []);
@@ -561,6 +574,52 @@ export function useGameState(initParams?: GameInitParams) {
     });
   }, []);
 
+  const rollFate = useCallback(() => {
+    setGameState((prev) => {
+      // Must be Fateweaver, Round 3+, and have dice
+      if (prev.playerClass !== "Fateweaver" || prev.round < 3 || prev.playerDiceRolls < 1) return prev;
+      
+      let sum = 0;
+      // Simulate D6 rolls
+      for(let i=0; i<prev.playerDiceRolls; i++) {
+        sum += Math.floor(Math.random() * 6) + 1;
+      }
+      
+      const success = sum >= 13 && sum <= 20;
+      const logs = [...(prev.logs || [])];
+      
+      logs.push(`🎲 Fate Roll: ${prev.playerDiceRolls} Zar atıldı. Toplam: ${sum}`);
+      
+      let newHand = [...prev.playerHand];
+      if (success) {
+          logs.push("✨ BAŞARILI! (13-20) -> Gamma (γ) kazandın!");
+          // Add Gamma Card Reward
+             const gammaCard: Card = {
+                 id: `special-gamma-reward-${Date.now()}`,
+                 name: "Gamma",
+                 symbol: "γ",
+                 type: "special",
+                 specialType: "gamma",
+                 value: 0,
+                 description: "Invincible. Deal 2x Difference as damage."
+             };
+          newHand.push(gammaCard);
+      } else {
+          logs.push("❌ BAŞARISIZ. (Hedef: 13-20)");
+      }
+      
+      // Consume Dice? "Tek turda (Nova)". Implies usage.
+      // But maybe we keep generating +2 next turn.
+      
+      return {
+          ...prev,
+          playerDiceRolls: 0, // Reset pool after Nova
+          logs,
+          playerHand: newHand
+      };
+    });
+  }, []);
+
   return {
     gameState,
     placeCard,
@@ -573,5 +632,6 @@ export function useGameState(initParams?: GameInitParams) {
     calculateRoundDamage,
     nextRound,
     handleCardSelection,
+    rollFate,
   };
 }
