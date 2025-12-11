@@ -220,17 +220,54 @@ export function useGameState(initParams?: GameInitParams) {
 
   const endPlacement = useCallback(() => {
     setGameState((prev) => {
-      // Bot Logic: Strategic placement based on class
+      // Bot Logic: Strategic placement based on round and class
       const botField: (Card | null)[] = [null, null, null, null, null];
-      const cardsToPlace = prev.opponentMust4Cards ? 4 : 5;
       
-      // Sort by value and take best cards
+      // 1. Determine Max Capacity
+      const maxCapacity = prev.opponentMust4Cards ? 4 : 5;
+      
+      // 2. Decide Target Count (Tactical Decision)
+      // Round 1-2: Save resources? 40% chance for 3, 40% for 4, 20% for 5.
+      // Round 3-4: Mid game. 20% for 4, 80% for 5.
+      // Round 5-6: All out. 100% for 5.
+      
+      let targetCount = maxCapacity;
+      const rand = Math.random();
+      
+      if (prev.round <= 2) {
+          if (rand < 0.4) targetCount = Math.min(3, maxCapacity);
+          else if (rand < 0.8) targetCount = Math.min(4, maxCapacity);
+          else targetCount = maxCapacity;
+      } else if (prev.round <= 4) {
+          if (rand < 0.2) targetCount = Math.min(4, maxCapacity);
+          else targetCount = maxCapacity;
+      } else {
+          targetCount = maxCapacity;
+      }
+      
+      // Ensure we have enough cards
+      const cardsToPlace = Math.min(targetCount, prev.opponentHand.length);
+
+      // 3. Selection Strategy
+      // Sort by value (descending) to play strongest cards? 
+      // Or save strongest for later? 
+      // Current Logic: Play strongest now.
       const sortedHand = [...prev.opponentHand].sort((a, b) => (b.value || 0) - (a.value || 0));
       const botHandToPlay = sortedHand.slice(0, cardsToPlace);
       
-      // Shuffle placement for unpredictability
+      // 4. Shuffle placement for unpredictability
       const shuffledPlay = botHandToPlay.sort(() => Math.random() - 0.5);
-      shuffledPlay.forEach((c, i) => botField[i] = c);
+      
+      // Place in random slots (fill empty slots)
+      // Actually we just fill the array indices 0..4 random? No, field is fixed 5 slots.
+      // We should distribute them randomly across the 5 slots?
+      // Or just fill 0..N? 
+      // Logic: "botField[i] = c" fills 0,1,2... which corresponds to LEFT alignment.
+      // Let's scatter them?
+      const availableSlots = [0, 1, 2, 3, 4].sort(() => Math.random() - 0.5);
+      shuffledPlay.forEach((c, i) => {
+          botField[availableSlots[i]] = c;
+      });
       
       // Remaining cards stay in hand for carry-over
       const remainingBotHand = prev.opponentHand.filter(c => !botHandToPlay.includes(c));

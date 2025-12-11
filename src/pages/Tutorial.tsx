@@ -14,7 +14,7 @@ const Tutorial = () => {
       icon: <Swords className="w-12 h-12 text-primary" />,
       content: (
         <div className="space-y-4">
-          <p>ACORIA, stratejik bir 1v1 kart oyunudur. Her iki oyuncu da 30 HP ile başlar ve 6 tur boyunca savaşır.</p>
+          <p>ACORIA, stratejik bir 1v1 kart oyunudur. Her iki oyuncu da 40 HP ile başlar (Class'a göre değişir) ve 6 tur boyunca savaşır.</p>
           <p>Amaç: Rakibinizin HP'sini 0'a düşürmek veya 6 tur sonunda daha yüksek HP'ye sahip olmak.</p>
           <div className="bg-primary/10 p-4 rounded-lg border border-primary/30">
             <p className="text-sm text-primary font-semibold">30 kartlık sabit deste:</p>
@@ -85,11 +85,11 @@ const Tutorial = () => {
         <div className="space-y-4">
           <p className="font-semibold">Hasar sırası (1'den 5'e):</p>
           <ol className="space-y-2 text-sm">
-            <li><span className="text-primary font-bold">1.</span> Pozisyon farkı: Her slotta kartların sayısal farkı hasar verir.</li>
-            <li><span className="text-primary font-bold">2.</span> Ardışık bonus: 2-3-4 gibi sıralı kartlar, sıra uzunluğu kadar engellenemez hasar.</li>
-            <li><span className="text-primary font-bold">3.</span> Sembol combo: 3x Φ gibi eşleşmeler, eşleşme sayısı kadar engellenemez hasar.</li>
-            <li><span className="text-primary font-bold">4.</span> Özel kart etkileri uygulanır.</li>
-            <li><span className="text-primary font-bold">5.</span> Final hasar HP'den düşülür.</li>
+            <li><span className="text-primary font-bold">1.</span> Dondurma/İptal: Cryomancer dondurur (0 Değer), Deflate iptal eder.</li>
+            <li><span className="text-primary font-bold">2.</span> Base Hasar: Kart toplamları farkı. Twist/Delta buraya etki eder.</li>
+            <li><span className="text-primary font-bold">3.</span> Combo Bonus (Sayısal): Ardışık (Straight) veya Aynı (Kind) sayılar bonus hasar ekler.</li>
+            <li><span className="text-primary font-bold">4.</span> True Damage (Synergy): Sınıf sembolü sayısı kadar direkt hasar.</li>
+            <li><span className="text-primary font-bold">5.</span> Class Yetenekleri: Sınıf yetenekleri son dokunuşu yapar.</li>
           </ol>
         </div>
       )

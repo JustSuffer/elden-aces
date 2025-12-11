@@ -39,7 +39,7 @@ const HowToPlay = () => {
           <div className="grid md:grid-cols-2 gap-6">
             {/* Numeric Cards */}
             <div className="bg-card/50 border border-border rounded-lg p-6 space-y-3">
-              <h3 className="text-xl font-bold text-primary">Numeric Cards (24 cards)</h3>
+              <h3 className="text-xl font-bold text-primary">Numeric Cards (24 cards) + Mimic (36 cards)</h3>
               <p className="text-sm text-foreground/70">Each symbol has cards numbered 1-6:</p>
               <ul className="space-y-2 text-sm">
                 <li className="flex items-start gap-2">
@@ -113,7 +113,7 @@ const HowToPlay = () => {
             <div>
               <h3 className="text-lg font-bold text-primary mb-2">Match Setup</h3>
               <ul className="space-y-2 text-sm text-foreground/80">
-                <li>• Both players start with <strong>30 HP</strong></li>
+                <li>• Both players start with <strong>40 HP</strong> (varies by Class)</li>
                 <li>• The game lasts <strong>6 rounds</strong></li>
                 <li>• Each player draws <strong>6 cards</strong> at the start</li>
                 <li>• Players place <strong>5 cards</strong> per round (or 4 if penalized by dice)</li>
@@ -160,47 +160,39 @@ const HowToPlay = () => {
             
             <ol className="space-y-3 text-sm">
               <li className="bg-muted/30 p-3 rounded-lg">
-                <strong className="text-primary">1. Base Damage</strong>
+                <strong className="text-primary">1. Pre-Calculation (Cryomancer/Deflate)</strong>
                 <p className="text-foreground/80 mt-1">
-                  Sum all numeric values from your 5 cards. The player with the higher total 
+                  Cryomancer freezes occur first (Value 0, Symbol Loss). Deflate cancels opponent specials.
+                </p>
+              </li>
+              
+              <li className="bg-muted/30 p-3 rounded-lg">
+                <strong className="text-primary">2. Base Damage</strong>
+                <p className="text-foreground/80 mt-1">
+                  Sum all numeric values from your 5 cards (after freeze). The player with the higher total 
                   deals the difference as damage to their opponent.
                 </p>
               </li>
               
               <li className="bg-muted/30 p-3 rounded-lg">
-                <strong className="text-primary">2. Sequential Combo Bonus</strong>
+                <strong className="text-primary">3. Numeric Combo Bonus (Step 3)</strong>
                 <p className="text-foreground/80 mt-1">
                   If you have 3+ consecutive numbers (e.g., 2-3-4 or 4-5-6), you deal bonus 
-                  damage equal to the sequence length. This damage is <strong>unblockable</strong>.
+                  damage equal to length. If you have 3+ of same Value (e.g. 5-5-5), deal damage equal to Count.
                 </p>
               </li>
               
               <li className="bg-muted/30 p-3 rounded-lg">
-                <strong className="text-primary">3. Symbol Combo Bonus</strong>
+                <strong className="text-primary">4. Class Synergy (True Damage)</strong>
                 <p className="text-foreground/80 mt-1">
-                  If you have 3+ cards with the same symbol (e.g., ΦΦΦ), you deal bonus damage 
-                  equal to the count. This damage is <strong>unblockable</strong>.
+                 Count of cards matching YOUR Class Symbol (or generic symbol) deals True Damage equal to count.
                 </p>
               </li>
-              
+
               <li className="bg-muted/30 p-3 rounded-lg">
-                <strong className="text-primary">4. Special Card Resolution</strong>
+                <strong className="text-primary">5. Special Resolution (Reflect/Amplify)</strong>
                 <p className="text-foreground/80 mt-1">
-                  Special cards resolve in this exact order:
-                </p>
-                <ul className="mt-2 ml-4 space-y-1">
-                  <li>a. <strong>Twisted (α)</strong> - Reflects damage if your total is lower</li>
-                  <li>b. <strong>Delta (Δ)</strong> - Index-based 2× calculation (transforms to Σ if followed by α)</li>
-                  <li>c. <strong>Sigma (Σ)</strong> - Reverse index-based 2× calculation (transforms to Δ if followed by α)</li>
-                  <li>d. <strong>Deflate (β)</strong> - Cancels opponent's special cards</li>
-                  <li>e. <strong>Gamma (γ)</strong> - No damage taken + 2× damage if winning</li>
-                </ul>
-              </li>
-              
-              <li className="bg-muted/30 p-3 rounded-lg">
-                <strong className="text-primary">5. Final Damage</strong>
-                <p className="text-foreground/80 mt-1">
-                  After all calculations, the final damage is subtracted from the losing player's HP.
+                  Twisted (Reflect), Delta/Sigma (Amplify) are processed on the Step 2 Damage.
                 </p>
               </li>
             </ol>
