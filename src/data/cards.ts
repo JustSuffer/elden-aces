@@ -1,3 +1,5 @@
+import { SpecialCardType } from "@/types/game";
+
 export interface Card {
   id: string;
   name: string;
@@ -5,8 +7,12 @@ export interface Card {
   value?: number;
   type: "numeric" | "special";
   special?: string;
+  specialType?: SpecialCardType;
   description?: string;
-  color: string;
+  color?: string;
+  classSymbol?: string;
+  originalOwner?: string;
+  isFrozen?: boolean;
 }
 
 export const DECK: Card[] = [
@@ -48,54 +54,54 @@ export const DECK: Card[] = [
     name: "Twisted",
     symbol: "α",
     type: "special",
-    special: "twisted",
+    specialType: "twisted",
     color: "primary",
-    description: "Twisted (α) - Alpha: A powerful reflection card that reverses the flow of damage. When your total numeric value is lower than your opponent's, all damage that would be dealt to you is instead reflected back to your opponent. This card does not have a numeric value but its effect can turn the tide of battle when you're at a disadvantage. The reflection happens during the damage calculation phase, after all numeric totals are computed but before final damage is applied. Use strategically when you know you'll be behind in total card value.",
+    description: "Twisted (α) - Alpha: A powerful reflection card that reverses the flow of damage. When your total numeric value is lower than your opponent's, all damage that would be dealt to you is instead reflected back to your opponent.",
   },
   {
     id: "twisted-2",
     name: "Twisted",
     symbol: "α",
     type: "special",
-    special: "twisted",
+    specialType: "twisted",
     color: "primary",
-    description: "Twisted (α) - Alpha: A powerful reflection card that reverses the flow of damage. When your total numeric value is lower than your opponent's, all damage that would be dealt to you is instead reflected back to your opponent. This card does not have a numeric value but its effect can turn the tide of battle when you're at a disadvantage. The reflection happens during the damage calculation phase, after all numeric totals are computed but before final damage is applied. Use strategically when you know you'll be behind in total card value.",
+    description: "Twisted (α) - Alpha: A powerful reflection card that reverses the flow of damage.",
   },
   {
     id: "delta-1",
     name: "Delta",
     symbol: "Δ",
     type: "special",
-    special: "delta",
+    specialType: "delta",
     color: "primary",
-    description: "Delta (Δ): An index-based damage amplifier card that calculates position-dependent effects. Delta's position in your 5-card lineup determines which cards are used for calculation. If Delta is placed in position 3, it compares the sum of cards in positions 1-2 from both players. If the opponent's sum is higher, they take 2× the difference as damage. If your sum is higher, you take 2× the difference as damage. This damage is calculated separately from the main damage calculation and is applied in addition to base damage. TRANSFORMATION EFFECT: If the card immediately to the right of Delta (position +1) is Twisted (α), Delta transforms into Sigma (Σ) and uses Sigma's reverse calculation instead, completely changing the damage direction.",
+    description: "Delta (Δ): An index-based damage amplifier. Position determines calculation. If followed by Twisted (α), transforms into Sigma.",
   },
   {
     id: "sigma-1",
     name: "Sigma",
     symbol: "Σ",
     type: "special",
-    special: "sigma",
+    specialType: "sigma",
     color: "primary",
-    description: "Sigma (Σ): The opposite of Delta, also an index-based damage amplifier. Sigma's position in your lineup determines which cards are compared. If Sigma is placed in position 3, it compares the sum of positions 1-2 from both players. Unlike Delta, if your sum is lower than the opponent's, your opponent takes 2× the difference as damage. If your sum is higher, you take 2× the difference. This inverted calculation can be strategically powerful when combined with low-value cards or other special effects. TRANSFORMATION EFFECT: If the card immediately to the right of Sigma (position +1) is Twisted (α), Sigma transforms into Delta (Δ) and uses Delta's calculation instead, reversing the damage logic.",
+    description: "Sigma (Σ): The opposite of Delta. If followed by Twisted (α), transforms into Delta.",
   },
   {
     id: "deflate-1",
     name: "Deflate",
     symbol: "β",
     type: "special",
-    special: "deflate",
+    specialType: "deflate",
     color: "primary",
-    description: "Deflate (β) - Beta: The ultimate nullification card and the most powerful defensive tool in the game. When Deflate is in your lineup, it completely cancels and nullifies all of your opponent's special card effects for that round. This includes: Gamma (γ) - removing invincibility and damage multipliers, Twisted (α) - preventing damage reflection, Sigma (Σ) - stopping index-based reverse damage, and Delta (Δ) - blocking position-based amplification. All these special cards become ordinary cards with no effects whatsoever, reducing the opponent's strategy to just their numeric values. Deflate does not have a numeric value itself and contributes 0 to your total, but its defensive power can prevent devastating special card combinations from your opponent. This card resolves first in the special card resolution order, making it the ultimate counter-strategy tool.",
+    description: "Deflate (β) - Beta: Nullifies ALL opponent's special card effects for this round.",
   },
   {
     id: "deflate-2",
     name: "Deflate",
     symbol: "β",
     type: "special",
-    special: "deflate",
+    specialType: "deflate",
     color: "primary",
-    description: "Deflate (β) - Beta: The ultimate nullification card and the most powerful defensive tool in the game. When Deflate is in your lineup, it completely cancels and nullifies all of your opponent's special card effects for that round. This includes: Gamma (γ) - removing invincibility and damage multipliers, Twisted (α) - preventing damage reflection, Sigma (Σ) - stopping index-based reverse damage, and Delta (Δ) - blocking position-based amplification. All these special cards become ordinary cards with no effects whatsoever, reducing the opponent's strategy to just their numeric values. Deflate does not have a numeric value itself and contributes 0 to your total, but its defensive power can prevent devastating special card combinations from your opponent. This card resolves first in the special card resolution order, making it the ultimate counter-strategy tool.",
+    description: "Deflate (β) - Beta: Nullifies ALL opponent's special card effects for this round.",
   },
 ];
 

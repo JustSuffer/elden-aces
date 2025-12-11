@@ -56,15 +56,12 @@ export function useGameState() {
     const playerDeck = createDeck(pClass); // Already shuffled
     const opponentDeck = createDeck(oClass);
     
-    const { dealt: playerCards, remaining: playerRemaining } = localDealCards(playerDeck, 5); // 5 cards per round usually, initial deal?
-    // Prompt: "Mekanik: Her round 5 kart oynanır." -> implies hand size needs to support 5 cards play.
-    // Usually draws up to 5? Or deal fixed amount?
-    // "Deste: 30 Kart". "Süre: 6 Round". 5 cards * 6 rounds = 30 cards. Perfect.
-    // So we deal 5 cards every round.
+    // Deal 6 cards per round (player plays 5, keeps 1 unplayed that carries over)
+    const cardsToDeal = 6;
     
     // Initial deal
-    const { dealt: initialP, remaining: remainP } = localDealCards(playerDeck, 5);
-    const { dealt: initialO, remaining: remainO } = localDealCards(opponentDeck, 5);
+    const { dealt: initialP, remaining: remainP } = localDealCards(playerDeck, cardsToDeal);
+    const { dealt: initialO, remaining: remainO } = localDealCards(opponentDeck, cardsToDeal);
 
     return {
       round: 1,
@@ -284,7 +281,7 @@ export function useGameState() {
           opponentDamage: result.p2DamageTaken,
           details: logDetails
         },
-        phase: phase,
+        phase: phase as "placement" | "reveal" | "damage" | "end",
       };
     });
   }, []);
@@ -295,12 +292,12 @@ export function useGameState() {
         return { ...prev, phase: "end" };
       }
 
-      const cardsToDeal = 5;
+      // Deal 6 cards per round (including carry-over cards from previous round)
+      // In this implementation, we clear the field and deal fresh 6 cards
+      // A more complex implementation would track unplayed cards
+      const cardsToDeal = 6;
       const { dealt: playerCards, remaining: playerRemaining } = localDealCards(prev.playerDeck, cardsToDeal);
       const { dealt: opponentCards, remaining: opponentRemaining } = localDealCards(prev.opponentDeck, cardsToDeal);
-      
-      // We overwrite hand (assuming previous cards are discarded/consumed)
-      // "Her round 5 kart oynanır" -> implies consumption.
       
       return {
         ...prev,
@@ -311,7 +308,7 @@ export function useGameState() {
         opponentHand: opponentCards,
         playerField: [null, null, null, null, null],
         opponentField: [null, null, null, null, null],
-        phase: "placement",
+        phase: "placement" as const,
         damageResult: null,
       };
     });

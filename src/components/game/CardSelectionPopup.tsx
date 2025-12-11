@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/data/cards";
+import { Card } from "@/types/game";
 import { GameCard } from "./GameCard";
 import { useState } from "react";
 import { CheckCircle2 } from "lucide-react";
