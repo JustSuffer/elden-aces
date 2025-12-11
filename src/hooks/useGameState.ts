@@ -512,6 +512,11 @@ export function useGameState(initParams?: GameInitParams) {
         opponentDeck: p2Deck,
         playerHand: p1Hand,
         opponentHand: p2Hand,
+        damageResult: {
+          playerDamage: result.p1DamageTaken,
+          opponentDamage: result.p2DamageTaken,
+          details: logDetails
+        },
       };
     });
   }, []);

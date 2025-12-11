@@ -154,6 +154,38 @@ const Tutorial = () => {
       )
     },
     {
+      title: "Sınıflar (Classes)",
+      icon: <Sparkles className="w-12 h-12 text-primary" />,
+      content: (
+        <div className="space-y-4 max-h-[400px] overflow-y-auto custom-scrollbar pr-2">
+          <p>Oyunda 11 farklı sınıf vardır. Her birinin özel yetenekleri ve kazanma koşulları bulunur:</p>
+          <div className="grid grid-cols-1 gap-2 text-sm">
+             <div className="bg-green-900/20 p-2 rounded border border-green-500/30">
+               <strong className="text-green-400">Vitalist:</strong> Tank, İyileşme odaklı. HP farkı ile kazanır.
+             </div>
+             <div className="bg-red-900/20 p-2 rounded border border-red-500/30">
+               <strong className="text-red-400">Slayer:</strong> Yüksek hasar. Tek turda 12 hasar verirse kazanır.
+             </div>
+             <div className="bg-white/10 p-2 rounded border border-white/30">
+               <strong className="text-white">Chronokeeper:</strong> Zamanı durdurur. 6 tur hayatta kalırsa kazanır.
+             </div>
+             <div className="bg-cyan-900/20 p-2 rounded border border-cyan-400/30">
+               <strong className="text-cyan-400">Cryomancer:</strong> Kartları dondurur (etkisizleştirir).
+             </div>
+             <div className="bg-pink-900/20 p-2 rounded border border-pink-500/30">
+               <strong className="text-pink-400">Siren:</strong> Kart çalar. 4. Turda lanetlenir (-5 HP).
+             </div>
+             <div className="bg-gray-800/50 p-2 rounded border border-gray-500/30">
+               <strong className="text-gray-400">Mimic:</strong> Rakibinin destesini ve kazanma koşulunu kopyalar.
+             </div>
+             <p className="text-xs text-muted-foreground mt-2 italic">
+               Diğer sınıflar: Fateweaver (Kumarbaz), Oracle (Kahin), Incinerator (Yakıcı), Augmentor (Güçlendirici), Conjurer (Çağırıcı).
+             </p>
+          </div>
+        </div>
+      )
+    },
+    {
       title: "Oyun Sonu",
       icon: <Swords className="w-12 h-12 text-primary" />,
       content: (

@@ -352,6 +352,154 @@ const HowToPlay = () => {
           </div>
         </section>
 
+        {/* Classes & Abilities */}
+        <section className="space-y-6">
+          <h2 className="text-3xl font-bold text-primary flex items-center gap-3">
+            <Sword className="w-8 h-8" />
+            Classes & Abilities
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+             {/* Vitalist */}
+             <div className="bg-card/50 border border-green-500/30 rounded-lg p-4">
+                <h3 className="text-xl font-bold text-green-500 mb-2">Vitalist (Φ)</h3>
+                <p className="text-sm text-foreground/80 mb-2">Role: Tank</p>
+                <ul className="text-sm space-y-1 text-foreground/70">
+                    <li>❤️ HP: 50</li>
+                    <li>🛡️ Passive: Start with 50 HP.</li>
+                    <li>✨ Ability: Heals HP based on Green Cards played (Max +15).</li>
+                    <li>🏆 Win Con: End with MORE HP than Opponent.</li>
+                    <li>⚠️ Counter: Must have LESS HP vs Slayer.</li>
+                </ul>
+             </div>
+
+             {/* Slayer */}
+             <div className="bg-card/50 border border-red-500/30 rounded-lg p-4">
+                <h3 className="text-xl font-bold text-red-500 mb-2">Slayer (Ω)</h3>
+                <p className="text-sm text-foreground/80 mb-2">Role: DPS / Anti-Meta</p>
+                <ul className="text-sm space-y-1 text-foreground/70">
+                    <li>❤️ HP: 40</li>
+                    <li>🛡️ Passive: Immune to Twisted (α) Reflection.</li>
+                    <li>✨ Ability: Deals direct Dmg based on Red Cards (Max 12).</li>
+                    <li>🏆 Win Con: Deal 12+ Ability Dmg in one turn.</li>
+                    <li>⚠️ Lose Con: Deal 12+ Dmg but still have MORE HP than Opponent.</li>
+                </ul>
+             </div>
+
+             {/* Fateweaver */}
+             <div className="bg-card/50 border border-yellow-200/30 rounded-lg p-4">
+                <h3 className="text-xl font-bold text-yellow-200 mb-2">Fateweaver (Π)</h3>
+                <p className="text-sm text-foreground/80 mb-2">Role: Gambler</p>
+                <ul className="text-sm space-y-1 text-foreground/70">
+                    <li>❤️ HP: 40</li>
+                    <li>🛡️ Passive: Can roll Dice from Round 3+.</li>
+                    <li>✨ Ability: Increases Dice Rolls & Adds Gamma Cards.</li>
+                    <li>🏆 Win Con: Play 5 Gamma (γ) Cards in one turn.</li>
+                </ul>
+             </div>
+
+             {/* Oracle */}
+             <div className="bg-card/50 border border-purple-500/30 rounded-lg p-4">
+                <h3 className="text-xl font-bold text-purple-500 mb-2">Oracle (Ψ)</h3>
+                <p className="text-sm text-foreground/80 mb-2">Role: Self-Mill</p>
+                <ul className="text-sm space-y-1 text-foreground/70">
+                    <li>❤️ HP: 40</li>
+                    <li>🛡️ Passive: Draws extra cards / Self-Mills.</li>
+                    <li>✨ Ability: Deals Dmg & Draws Cards. (Max 10 Dmg + 5 Draw).</li>
+                    <li>🏆 Win Con: Empty your own Deck (0 Cards left).</li>
+                    <li>⚠️ Counter: Vs Vitalist, empty deck deals 25 Pure Dmg.</li>
+                </ul>
+             </div>
+
+             {/* Chronokeeper */}
+             <div className="bg-card/50 border border-white/30 rounded-lg p-4">
+                <h3 className="text-xl font-bold text-white mb-2">Chronokeeper (τ)</h3>
+                <p className="text-sm text-foreground/80 mb-2">Role: Stall</p>
+                <ul className="text-sm space-y-1 text-foreground/70">
+                    <li>❤️ HP: 30</li>
+                    <li>🛡️ Passive: Starts with lower HP (30).</li>
+                    <li>✨ Ability: Silences opponents (skips their next N turns).</li>
+                    <li>🏆 Win Con: Survive until end of Round 6.</li>
+                </ul>
+             </div>
+
+             {/* Cryomancer */}
+             <div className="bg-card/50 border border-cyan-300/30 rounded-lg p-4">
+                <h3 className="text-xl font-bold text-cyan-300 mb-2">Cryomancer (Ξ)</h3>
+                <p className="text-sm text-foreground/80 mb-2">Role: Hard Control</p>
+                <ul className="text-sm space-y-1 text-foreground/70">
+                    <li>❤️ HP: 40</li>
+                    <li>🛡️ Passive: Freezes enemy cards (Value 0, No Effect).</li>
+                    <li>✨ Ability: Freezes 2-All opponent cards.</li>
+                    <li>🏆 Win Con: Freeze 3 Special Cards in one match.</li>
+                </ul>
+             </div>
+
+             {/* Incinerator */}
+             <div className="bg-card/50 border border-orange-900/30 rounded-lg p-4">
+                <h3 className="text-xl font-bold text-orange-900 mb-2">Incinerator (ρ)</h3>
+                <p className="text-sm text-foreground/80 mb-2">Role: Aggro Miller</p>
+                <ul className="text-sm space-y-1 text-foreground/70">
+                    <li>❤️ HP: 40</li>
+                    <li>🛡️ Passive: Burns opponent's deck.</li>
+                    <li>✨ Ability: Burns 3-8 Cards from opponent deck.</li>
+                    <li>🏆 Win Con: Reduce Opponent Deck to 0 by Round 4.</li>
+                    <li>⚠️ Lose Con: Die if Opponent still has cards at R4.</li>
+                </ul>
+             </div>
+
+             {/* Siren */}
+             <div className="bg-card/50 border border-pink-500/30 rounded-lg p-4">
+                <h3 className="text-xl font-bold text-pink-500 mb-2">Siren (η)</h3>
+                <p className="text-sm text-foreground/80 mb-2">Role: Thief</p>
+                <ul className="text-sm space-y-1 text-foreground/70">
+                    <li>❤️ HP: 40</li>
+                    <li>🛡️ Passive: Steals cards from opponent deck.</li>
+                    <li>✨ Ability: Steals 2-5 Cards. Cards become Shiny Stolen.</li>
+                    <li>🏆 Win Con: Play 5 Stolen Cards in one turn.</li>
+                    <li>⚠️ Curse: Takes 5 Damage automatically at Round 4.</li>
+                </ul>
+             </div>
+
+             {/* Augmentor */}
+             <div className="bg-card/50 border border-blue-500/30 rounded-lg p-4">
+                <h3 className="text-xl font-bold text-blue-500 mb-2">Augmentor (Θ)</h3>
+                <p className="text-sm text-foreground/80 mb-2">Role: Scaler</p>
+                <ul className="text-sm space-y-1 text-foreground/70">
+                    <li>❤️ HP: 40</li>
+                    <li>🛡️ Passive: Permanently buffs card values.</li>
+                    <li>✨ Ability: Buffs played cards by +1 to +6 Value.</li>
+                    <li>🏆 Win Con: Play a card with Value 9+.</li>
+                </ul>
+             </div>
+
+              {/* Conjurer */}
+              <div className="bg-card/50 border border-orange-500/30 rounded-lg p-4">
+                <h3 className="text-xl font-bold text-orange-500 mb-2">Conjurer (μ)</h3>
+                <p className="text-sm text-foreground/80 mb-2">Role: Summoner</p>
+                <ul className="text-sm space-y-1 text-foreground/70">
+                    <li>❤️ HP: 40</li>
+                    <li>🛡️ Passive: Summons random cards.</li>
+                    <li>✨ Ability: Spawns random cards into empty slots.</li>
+                    <li>🏆 Win Con: Perform a Sigma + Delta Combo in one turn.</li>
+                </ul>
+             </div>
+
+              {/* Mimic */}
+              <div className="bg-card/50 border border-gray-400/30 rounded-lg p-4">
+                <h3 className="text-xl font-bold text-gray-400 mb-2">Mimic (ν)</h3>
+                <p className="text-sm text-foreground/80 mb-2">Role: Copycat</p>
+                <ul className="text-sm space-y-1 text-foreground/70">
+                    <li>❤️ HP: 40</li>
+                    <li>🛡️ Passive: Starts with COPY of Opponent Deck + 6 Mimic Cards (36 Total).</li>
+                    <li>✨ Ability: Copies opponent's last ability scale.</li>
+                    <li>🏆 Win Con: Copies Opponent's Win Condition.</li>
+                </ul>
+             </div>
+
+          </div>
+        </section>
+
         {/* Victory Conditions */}
         <section className="space-y-6">
           <h2 className="text-3xl font-bold text-primary">Victory & Defeat</h2>
