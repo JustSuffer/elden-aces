@@ -352,181 +352,116 @@ const HowToPlay = () => {
           </div>
         </section>
 
-        {/* Classes & Abilities */}
-        <section className="space-y-6">
-          <h2 className="text-3xl font-bold text-primary flex items-center gap-3">
-            <Sword className="w-8 h-8" />
-            Classes & Abilities
-          </h2>
+        {/* Classes & Abilities - Detailed Roster */}
+        <section className="space-y-8">
+          <div className="flex items-center gap-3 mb-6">
+             <Sword className="w-10 h-10 text-primary" />
+             <h2 className="text-4xl font-bold text-primary font-cinzel">Sınıf Rehberi</h2>
+          </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-             {/* Vitalist */}
-             <div className="bg-card/50 border border-green-500/30 rounded-lg p-4">
-                <h3 className="text-xl font-bold text-green-500 mb-2">Vitalist (Φ)</h3>
-                <p className="text-sm text-foreground/80 mb-2">Role: Tank</p>
-                <ul className="text-sm space-y-1 text-foreground/70">
-                    <li>❤️ HP: 50</li>
-                    <li>🛡️ Passive: Start with 50 HP.</li>
-                    <li>✨ Ability: Heals HP (Green Cards).</li>
-                    <li className="text-xs text-muted-foreground pl-2 border-l-2 border-green-500/50">
-                        Scale: 2: +4 | 3: +6 | 4: +8 | 5: +15 HP
-                    </li>
-                    <li>🏆 Win Con: End with MORE HP than Opponent.</li>
-                    <li>⚠️ Counter: Must have LESS HP vs Slayer.</li>
-                </ul>
-             </div>
+                {/* Cryomancer */}
+                <div className="bg-gradient-to-br from-cyan-900/40 to-black border border-cyan-400/50 rounded-xl p-5 shadow-lg relative overflow-hidden group hover:scale-[1.02] transition-transform">
+                   <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 pointer-events-none text-6xl">Ξ</div>
+                   <h4 className="text-xl font-bold text-cyan-300 mb-1">Cryomancer (Ξ)</h4>
+                   <p className="text-xs font-mono text-cyan-200/70 mb-3">HARD CONTROL</p>
+                   <div className="space-y-2 text-sm text-gray-300">
+                      <p><strong className="text-cyan-400">Mantık:</strong> "Oyunun hızını ben belirlerim."</p>
+                      <p><strong className="text-white">Mekanik:</strong> <span className="text-cyan-200">Deep Freeze:</span> Rakibin zarlarını dondurur ve hamle yapmasını engeller.</p>
+                      <p className="text-xs italic text-gray-400 pt-2 border-t border-cyan-500/20">Strateji: Fateweaver'ı patlama turunda dondurup zarlarını yak.</p>
+                   </div>
+                </div>
 
-             {/* Slayer */}
-             <div className="bg-card/50 border border-red-500/30 rounded-lg p-4">
-                <h3 className="text-xl font-bold text-red-500 mb-2">Slayer (Ω)</h3>
-                <p className="text-sm text-foreground/80 mb-2">Role: DPS / Anti-Meta</p>
-                <ul className="text-sm space-y-1 text-foreground/70">
-                    <li>❤️ HP: 40</li>
-                    <li>🛡️ Passive: Immune to Twisted (α).</li>
-                    <li>✨ Ability: Direct Damage (Red Cards).</li>
-                    <li className="text-xs text-muted-foreground pl-2 border-l-2 border-red-500/50">
-                        Scale: 2: 3 | 3: 5 | 4: 8 | 5: 12 Dmg
-                    </li>
-                    <li>🏆 Win Con: Deal 12+ Ability Dmg in one turn.</li>
-                    <li>⚠️ Lose Con: Deal 12+ Dmg but HP &gt; Opponent.</li>
-                </ul>
-             </div>
+                {/* Slayer */}
+                <div className="bg-gradient-to-br from-red-900/40 to-black border border-red-500/50 rounded-xl p-5 shadow-lg relative overflow-hidden group hover:scale-[1.02] transition-transform">
+                   <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 pointer-events-none text-6xl">Ω</div>
+                   <h4 className="text-xl font-bold text-red-500 mb-1">Slayer (Ω)</h4>
+                   <p className="text-xs font-mono text-red-200/70 mb-3">BRUISER / DPS</p>
+                   <div className="space-y-2 text-sm text-gray-300">
+                      <p><strong className="text-red-400">Mantık:</strong> "Basitlik en büyük silahtır."</p>
+                      <p><strong className="text-white">Mekanik:</strong> <span className="text-red-300">Twisted Immunity:</span> Kitle kontrole dirençli. Sadece vurur.</p>
+                      <p className="text-xs italic text-gray-400 pt-2 border-t border-red-500/20">Strateji: R4-5'te işi bitir. Late game'e kalma.</p>
+                   </div>
+                </div>
 
-             {/* Fateweaver */}
-             <div className="bg-card/50 border border-yellow-200/30 rounded-lg p-4">
-                <h3 className="text-xl font-bold text-yellow-200 mb-2">Fateweaver (Π)</h3>
-                <p className="text-sm text-foreground/80 mb-2">Role: Gambler</p>
-                <ul className="text-sm space-y-1 text-foreground/70">
-                    <li>❤️ HP: 40</li>
-                    <li>🛡️ Passive: Dice active from Round 3+.</li>
-                    <li>✨ Ability: Bonus Dice Rolls & Gamma Cards.</li>
-                    <li className="text-xs text-muted-foreground pl-2 border-l-2 border-yellow-200/50">
-                        Scale: 2: +2 | 3: +4 | 4: +7 | 5: +8 & Gamma
-                    </li>
-                    <li>🏆 Win Con: Play 5 Gamma (γ) Cards.</li>
-                </ul>
-             </div>
+                {/* Fateweaver */}
+                <div className="bg-gradient-to-br from-yellow-700/20 to-black border border-yellow-400/50 rounded-xl p-5 shadow-lg relative overflow-hidden group hover:scale-[1.02] transition-transform">
+                   <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 pointer-events-none text-6xl">Π</div>
+                   <h4 className="text-xl font-bold text-yellow-400 mb-1">Fateweaver (Π)</h4>
+                   <p className="text-xs font-mono text-yellow-200/70 mb-3">LATE GAME CARRY</p>
+                   <div className="space-y-2 text-sm text-gray-300">
+                      <p><strong className="text-yellow-500">Mantık:</strong> "Sabreden derviş, dünyayı yakmış."</p>
+                      <p><strong className="text-white">Mekanik:</strong> <span className="text-yellow-200">Dice Stacking:</span> Zarları biriktirip tek turda Gamma (γ) yağdırır.</p>
+                      <p className="text-xs italic text-gray-400 pt-2 border-t border-yellow-500/20">Zayıflık: Erken oyunda Aggro'ya kaybeder.</p>
+                   </div>
+                </div>
 
-             {/* Oracle */}
-             <div className="bg-card/50 border border-purple-500/30 rounded-lg p-4">
-                <h3 className="text-xl font-bold text-purple-500 mb-2">Oracle (Ψ)</h3>
-                <p className="text-sm text-foreground/80 mb-2">Role: Self-Mill</p>
-                <ul className="text-sm space-y-1 text-foreground/70">
-                    <li>❤️ HP: 40</li>
-                    <li>🛡️ Passive: Draws extra cards / Self-Mills.</li>
-                    <li>✨ Ability: Dmg & Draw (Purple Cards).</li>
-                    <li className="text-xs text-muted-foreground pl-2 border-l-2 border-purple-500/50">
-                        Scale: 2: 2/2 | 3: 3/3 | 4: 4/4 | 5: 10 Dmg / 5 Draw
-                    </li>
-                    <li>🏆 Win Con: Empty your own Deck (0 Cards).</li>
-                    <li>⚠️ Counter: Vs Vitalist 0 Deck = 25 Pure Dmg.</li>
-                </ul>
-             </div>
+                {/* Chronokeeper */}
+                <div className="bg-gradient-to-br from-gray-800 to-black border border-white/40 rounded-xl p-5 shadow-lg relative overflow-hidden group hover:scale-[1.02] transition-transform">
+                   <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 pointer-events-none text-6xl">τ</div>
+                   <h4 className="text-xl font-bold text-white mb-1">Chronokeeper (τ)</h4>
+                   <p className="text-xs font-mono text-gray-400 mb-3">TEMPO / UTILITY</p>
+                   <div className="space-y-2 text-sm text-gray-300">
+                      <p><strong className="text-white">Mantık:</strong> "Senin sıran henüz gelmedi."</p>
+                      <p><strong className="text-gray-400">Mekanik:</strong> <span className="text-white">Time Manipulation:</span> Rakip sırasını çalar veya kendini hızlandırır.</p>
+                      <p className="text-xs italic text-gray-500 pt-2 border-t border-white/20">Strateji: Vitalist'i 'Outscale' eder.</p>
+                   </div>
+                </div>
 
-             {/* Chronokeeper */}
-             <div className="bg-card/50 border border-white/30 rounded-lg p-4">
-                <h3 className="text-xl font-bold text-white mb-2">Chronokeeper (τ)</h3>
-                <p className="text-sm text-foreground/80 mb-2">Role: Stall</p>
-                <ul className="text-sm space-y-1 text-foreground/70">
-                    <li>❤️ HP: 30</li>
-                    <li>🛡️ Passive: Starts with 30 HP.</li>
-                    <li>✨ Ability: Silences Opponent (Skips Turns).</li>
-                    <li className="text-xs text-muted-foreground pl-2 border-l-2 border-white/50">
-                        Scale: 3: 1 Rnd | 4: 2 Rnd | 5: 3 Rnd Silence
-                    </li>
-                    <li>🏆 Win Con: Survive until end of Round 6.</li>
-                </ul>
-             </div>
+                {/* Vitalist */}
+                <div className="bg-gradient-to-br from-green-900/40 to-black border border-green-500/50 rounded-xl p-5 shadow-lg relative overflow-hidden group hover:scale-[1.02] transition-transform">
+                   <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 pointer-events-none text-6xl">Φ</div>
+                   <h4 className="text-xl font-bold text-green-500 mb-1">Vitalist (Φ)</h4>
+                   <p className="text-xs font-mono text-green-200/70 mb-3">TANK / HEALER</p>
+                   <div className="space-y-2 text-sm text-gray-300">
+                      <p><strong className="text-green-400">Mantık:</strong> "Beni öldürmeyen şey vaktimi harcar."</p>
+                      <p><strong className="text-white">Mekanik:</strong> <span className="text-green-300">Overheal:</span> 50 HP ile başlar. Burst hasarı emer.</p>
+                      <p className="text-xs italic text-gray-400 pt-2 border-t border-green-500/20">Strateji: Fateweaver'ın patlamasından sağ çıkabilen tek sınıf.</p>
+                   </div>
+                </div>
 
-             {/* Cryomancer */}
-             <div className="bg-card/50 border border-cyan-300/30 rounded-lg p-4">
-                <h3 className="text-xl font-bold text-cyan-300 mb-2">Cryomancer (Ξ)</h3>
-                <p className="text-sm text-foreground/80 mb-2">Role: Hard Control</p>
-                <ul className="text-sm space-y-1 text-foreground/70">
-                    <li>❤️ HP: 40</li>
-                    <li>🛡️ Passive: Freezes enemy cards.</li>
-                    <li>✨ Ability: Freeze Opponent Hand.</li>
-                    <li className="text-xs text-muted-foreground pl-2 border-l-2 border-cyan-300/50">
-                        Scale: 2: 2 | 3: 3 | 4: 4 | 5: ALL Cards
-                    </li>
-                    <li>🏆 Win Con: Freeze 3 Special Cards (Total).</li>
-                </ul>
-             </div>
+                {/* Mimic */}
+                <div className="bg-gradient-to-br from-gray-700/40 to-black border border-gray-400/50 rounded-xl p-5 shadow-lg relative overflow-hidden group hover:scale-[1.02] transition-transform">
+                   <h4 className="text-xl font-bold text-gray-300 mb-1">Mimic (ν)</h4>
+                   <p className="text-xs font-mono text-gray-500 mb-3">ROGUE</p>
+                   <div className="space-y-2 text-sm text-gray-300">
+                      <p>"Sen neysen, ben daha iyisiyim." Rakibin en iyi kartlarını kopyalar.</p>
+                   </div>
+                </div>
 
-             {/* Incinerator */}
-             <div className="bg-card/50 border border-orange-900/30 rounded-lg p-4">
-                <h3 className="text-xl font-bold text-orange-900 mb-2">Incinerator (ρ)</h3>
-                <p className="text-sm text-foreground/80 mb-2">Role: Aggro Miller</p>
-                <ul className="text-sm space-y-1 text-foreground/70">
-                    <li>❤️ HP: 40</li>
-                    <li>🛡️ Passive: Burns opponent's deck.</li>
-                    <li>✨ Ability: Burn Opponent Deck.</li>
-                    <li className="text-xs text-muted-foreground pl-2 border-l-2 border-orange-900/50">
-                        Scale: 2: 3 | 3: 4 | 4: 5 | 5: 8 Cards + NoDeath
-                    </li>
-                    <li>🏆 Win Con: Opponent Deck at 0 by Round 4.</li>
-                    <li>⚠️ Lose Con: Die if Opponent &gt; 0 cards at R4.</li>
-                </ul>
-             </div>
+                {/* Oracle */}
+                 <div className="bg-gradient-to-br from-purple-900/40 to-black border border-purple-500/50 rounded-xl p-5 shadow-lg relative overflow-hidden group hover:scale-[1.02] transition-transform">
+                   <h4 className="text-xl font-bold text-purple-400 mb-1">Oracle (Ψ)</h4>
+                   <p className="text-xs font-mono text-purple-300/70 mb-3">INFO / CONTROL</p>
+                   <div className="space-y-2 text-sm text-gray-300">
+                      <p>"Hamleni önceden biliyorum." Rakibin elini görür, kartlarını yakar (Mill).</p>
+                   </div>
+                </div>
 
-             {/* Siren */}
-             <div className="bg-card/50 border border-pink-500/30 rounded-lg p-4">
-                <h3 className="text-xl font-bold text-pink-500 mb-2">Siren (η)</h3>
-                <p className="text-sm text-foreground/80 mb-2">Role: Thief</p>
-                <ul className="text-sm space-y-1 text-foreground/70">
-                    <li>❤️ HP: 40</li>
-                    <li>🛡️ Passive: Steals cards from opponent.</li>
-                    <li>✨ Ability: Steal Cards (Shiny).</li>
-                    <li className="text-xs text-muted-foreground pl-2 border-l-2 border-pink-500/50">
-                        Scale: 2: 2 | 3: 3 | 4: 4 | 5: 5 Cards
-                    </li>
-                    <li>🏆 Win Con: Play 5 Stolen Cards.</li>
-                    <li>⚠️ Curse: Takes 5 Damage automatically at Round 4.</li>
-                </ul>
-             </div>
+                {/* Siren */}
+                 <div className="bg-gradient-to-br from-pink-900/40 to-black border border-pink-500/50 rounded-xl p-5 shadow-lg relative overflow-hidden group hover:scale-[1.02] transition-transform">
+                   <h4 className="text-xl font-bold text-pink-500 mb-1">Siren (η)</h4>
+                   <p className="text-xs font-mono text-pink-300/70 mb-3">DISRUPTOR</p>
+                   <div className="space-y-2 text-sm text-gray-300">
+                      <p><strong className="text-pink-400">Charm:</strong> Rakibin saldırısını kendine çevirtir. (Round 4'te -5 HP yer).</p>
+                   </div>
+                </div>
 
-             {/* Augmentor */}
-             <div className="bg-card/50 border border-blue-500/30 rounded-lg p-4">
-                <h3 className="text-xl font-bold text-blue-500 mb-2">Augmentor (Θ)</h3>
-                <p className="text-sm text-foreground/80 mb-2">Role: Scaler</p>
-                <ul className="text-sm space-y-1 text-foreground/70">
-                    <li>❤️ HP: 40</li>
-                    <li>🛡️ Passive: Permanently buffs card values.</li>
-                    <li>✨ Ability: Buff Played Cards.</li>
-                    <li className="text-xs text-muted-foreground pl-2 border-l-2 border-blue-500/50">
-                        Scale: 2: +1 | 3: +2 | 4: +3 | 5: +6 Value
-                    </li>
-                    <li>🏆 Win Con: Play a card with Value 9+.</li>
-                </ul>
-             </div>
-
-              {/* Conjurer */}
-              <div className="bg-card/50 border border-orange-500/30 rounded-lg p-4">
-                <h3 className="text-xl font-bold text-orange-500 mb-2">Conjurer (μ)</h3>
-                <p className="text-sm text-foreground/80 mb-2">Role: Summoner</p>
-                <ul className="text-sm space-y-1 text-foreground/70">
-                    <li>❤️ HP: 40</li>
-                    <li>🛡️ Passive: Summons random cards.</li>
-                    <li>✨ Ability: Spawn Cards.</li>
-                    <li className="text-xs text-muted-foreground pl-2 border-l-2 border-orange-500/50">
-                        Scale: 5: Spawns 5 Cards + Gamma
-                    </li>
-                    <li>🏆 Win Con: Perform a Sigma + Delta Combo.</li>
-                </ul>
-             </div>
-
-              {/* Mimic */}
-              <div className="bg-card/50 border border-gray-400/30 rounded-lg p-4">
-                <h3 className="text-xl font-bold text-gray-400 mb-2">Mimic (ν)</h3>
-                <p className="text-sm text-foreground/80 mb-2">Role: Copycat</p>
-                <ul className="text-sm space-y-1 text-foreground/70">
-                    <li>❤️ HP: 40</li>
-                    <li>🛡️ Passive: 36 Card Deck (Copy + 6 Mimic).</li>
-                    <li>✨ Ability: Copies Opponent's Last Ability Scale.</li>
-                    <li>🏆 Win Con: Copies Opponent's Win Condition.</li>
-                </ul>
-             </div>
-
+                {/* Augmentor */}
+                <div className="bg-card/30 border border-blue-500/30 rounded-lg p-4">
+                   <h4 className="text-lg font-bold text-blue-400">Augmentor (Θ)</h4>
+                   <p className="text-xs text-gray-400">Kartları güçlendirir (Upgrade).</p>
+                </div>
+                {/* Conjurer */}
+                <div className="bg-card/30 border border-orange-500/30 rounded-lg p-4">
+                   <h4 className="text-lg font-bold text-orange-400">Conjurer (μ)</h4>
+                   <p className="text-xs text-gray-400">Sahayı minik ruhlarla doldurur (Swarm).</p>
+                </div>
+                 {/* Incinerator */}
+                <div className="bg-card/30 border border-red-800/30 rounded-lg p-4">
+                   <h4 className="text-lg font-bold text-red-800">Incinerator (ρ)</h4>
+                   <p className="text-xs text-gray-400">Kendini de yakarak alan hasarı verir.</p>
+                </div>
           </div>
         </section>
 

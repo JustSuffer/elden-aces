@@ -430,15 +430,17 @@ export function useGameState(initParams?: GameInitParams) {
         logDetails.push(`💀 ${prev.opponentClass} kazanma koşulunu sağladı!`);
       }
 
-      // --- SIREN CURSE CHECK (Round 4) ---
+      // --- SIREN CURSE (USER REQUEST: ROUND 4 AUTO-DAMAGE) ---
       if (prev.round === 4) {
+          // Siren Player takes 5 Damage automatically
           if (prev.playerClass === "Siren") {
               newPlayerHP = Math.max(0, newPlayerHP - 5);
-              logDetails.push("🧜‍♀️ Siren Curse: Round 4 (-5 HP)!");
+              logDetails.push("🧜‍♀️ LANET: Siren 4. Turda 5 Hasar yedi!");
           }
+          // Siren Opponent takes 5 Damage automatically
           if (prev.opponentClass === "Siren") {
               newOpponentHP = Math.max(0, newOpponentHP - 5);
-              logDetails.push("🧜‍♀️ Side Siren Curse: Round 4 (-5 HP)!");
+              logDetails.push("🧜‍♀️ LANET: Rakip Siren 4. Turda 5 Hasar yedi!");
           }
       }
 
