@@ -105,11 +105,39 @@ export function useGameState(initParams?: GameInitParams) {
     const oClass = initParams?.opponentClass || "Slayer";
 
     // Use player's saved deck or create default
-    const playerDeck = initParams?.playerDeck.cards 
-      ? shuffleDeck([...initParams.playerDeck.cards])
-      : createBotDeck(pClass);
     
     const opponentDeck = createBotDeck(oClass);
+    
+    let playerDeck: Card[];
+
+    if (pClass === "Mimic") {
+        // Mimic Logic: Copy Opponent's entire deck (30 cards) + Add 6 Mimic Cards = 36 Total
+        const mimicClassData = MASTER_CLASSES["Mimic"];
+        const mimicCards: Card[] = [];
+        for (let i = 1; i <= 6; i++) {
+             mimicCards.push({
+                id: `mimic-own-${i}-${Date.now()}`,
+                name: `${mimicClassData.name} Card`,
+                symbol: mimicClassData.symbol,
+                value: i,
+                type: "numeric",
+                classSymbol: mimicClassData.symbol,
+                color: mimicClassData.color
+             });
+        }
+        // Deep clone opponent deck with new IDs to prevent reference sharing
+        const opponentClones = opponentDeck.map(c => ({
+            ...c, 
+            id: `mimicked-${c.id}-${Date.now()}`
+        }));
+        
+        playerDeck = shuffleDeck([...opponentClones, ...mimicCards]);
+    } else {
+        // Standard Logic
+        playerDeck = initParams?.playerDeck.cards 
+          ? shuffleDeck([...initParams.playerDeck.cards])
+          : createBotDeck(pClass);
+    }
     
     // Deal 6 cards for round 1
     const { dealt: initialP, remaining: remainP } = localDealCards(playerDeck, 6);

@@ -269,27 +269,8 @@ function applyStep5Abilities(
         break;
 
       case "Cryomancer": // (Ξ)
-        switch (count) {
-          case 1: break; // -
-          case 2:
-            if (isP1) targetEffects.p2FreezeCount = 2; else targetEffects.p1FreezeCount = 2;
-            res.logs.push("Cryomancer (2): 2 Don");
-            break;
-          case 3:
-            // "2+1 Don" -> Is it 3? Or 2 and 1? Assuming 3 total.
-            if (isP1) targetEffects.p2FreezeCount = 3; else targetEffects.p1FreezeCount = 3;
-            res.logs.push("Cryomancer (3): 2+1 Don");
-            break;
-          case 4:
-            // "2+2 Don" -> 4?
-            if (isP1) targetEffects.p2FreezeCount = 4; else targetEffects.p1FreezeCount = 4;
-            res.logs.push("Cryomancer (4): 2+2 Don");
-            break;
-          case 5:
-            if (isP1) targetEffects.p2FreezeCount = 99; else targetEffects.p1FreezeCount = 99;
-             res.logs.push("Cryomancer (5): TÜMÜNÜ Dondur");
-            break;
-        }
+        // Handled in Step 0 (Pre-Calculation)
+        // Only log if needed, but Step 0 already logs.
         break;
 
       case "Siren": // (η)
@@ -405,6 +386,138 @@ export function resolveGameRound(
 ): DamageResult {
   const logs: string[] = [];
   const effects: GameSideEffects = {};
+
+  // --- STEP 0: CRYOMANCER FREEZE (Pre-Calculation) ---
+  // "Rakibin oyuna sürdüğü kartları dondur (Değer 0, Classız)"
+  
+  // Clone cards to avoid mutating the original persistent objects for now (though usually safe in this scope)
+  // We need to modify them for THIS CALCULATION ONLY effectively.
+  // Actually, if we modify them here, does it update the UI to show they were frozen?
+  // The 'p1Cards' ref usually comes from 'playedCardsInRound'. 
+  // Ideally we return the 'frozen' state so UI can show it.
+  // But for logic:
+  
+  const processFreeze = (attackerClass: ClassName, attackerCards: Card[], victimCards: Card[], ownerName: string) => {
+      if (attackerClass !== "Cryomancer") return;
+
+      const cryoSymbol = MASTER_CLASSES.Cryomancer.symbol;
+      const count = attackerCards.filter(c => c.symbol === cryoSymbol || c.classSymbol === cryoSymbol).length;
+      
+      let freezeCount = 0;
+      switch (count) {
+          case 2: freezeCount = 2; break;
+          case 3: freezeCount = 3; break;
+          case 4: freezeCount = 4; break;
+          case 5: freezeCount = 99; break; // All
+      }
+
+      if (freezeCount > 0) {
+          logs.push(`❄️ Cryomancer (${count}) dondurma etkisi: ${freezeCount === 99 ? "TÜM" : freezeCount} kart dondu!`);
+          
+          // Select random victims
+          // Filter only cards that CAN be frozen? (Usually all played cards)
+          // We can't freeze "Already Frozen" if we track that?
+          // Just pick indices.
+          const indices = Array.from({ length: victimCards.length }, (_, i) => i);
+          // Shuffle indices
+          for (let i = indices.length - 1; i > 0; i--) {
+              const j = Math.floor(Math.random() * (i + 1));
+              [indices[i], indices[j]] = [indices[j], indices[i]];
+          }
+          
+          const targets = indices.slice(0, Math.min(freezeCount, victimCards.length));
+          
+          targets.forEach(idx => {
+              const card = victimCards[idx];
+              // Apply Freeze Effect
+              // "Değerini 0 olarak sayacak... Classız olarak düşünülecek"
+              // We modify the card object in this local scope array.
+              // Note: This mutation affects 'p1Cards' array passed in. 
+              // If 'p1Cards' is a reference to State, this mutation is Permanent for the round view?
+              // Yes, we probably want that so UI shows "0".
+              
+              // Store original if needed? No, purely destructive for the round logic.
+              if (card.value !== undefined) { 
+                 logs.push(`   -> ${card.name} (${card.value}) dondu (0 oldu).`);
+                 card.value = 0; 
+              } else {
+                 logs.push(`   -> ${card.name} dondu.`);
+              }
+              
+              card.symbol = ""; // Remove symbol (Class synergies broken)
+              card.classSymbol = undefined;
+              card.isFrozen = true; // Mark for UI if supported
+          });
+      }
+  };
+
+  // We must process checks BEFORE modifying cards (simultaneous? or Priority?)
+  // Usually simultaneous reveal. P1 Freeze P2, P2 Freeze P1.
+  // Check counts on ORIGINAL inputs. Apply changes to MUTABLE inputs.
+  
+  // Clone arrays for processing references?
+  // If we mutate p1Cards directly, it might affect P2's analysis of P1 if P2 is also Cryomancer?
+  // "Count Opponent Cards" -> If P1 freezes P2's cards (removing symbols), and P2 IS Cryomancer...
+  // P2's Freeze Count depends on P2's Symbols. 
+  // If P1 moves first and erases P2's symbols, P2 fails to freeze P1?
+  // SPEED TIE? "Specify specified order?"
+  // Usually simultaneous. We need to count FIRST, then Exec.
+  
+  const p1CryoCount = p1Class === "Cryomancer" 
+    ? p1Cards.filter(c => c.symbol === MASTER_CLASSES.Cryomancer.symbol || c.classSymbol === MASTER_CLASSES.Cryomancer.symbol).length 
+    : 0;
+    
+  const p2CryoCount = p2Class === "Cryomancer" 
+    ? p2Cards.filter(c => c.symbol === MASTER_CLASSES.Cryomancer.symbol || c.classSymbol === MASTER_CLASSES.Cryomancer.symbol).length 
+    : 0;
+
+  // Now Apply
+  if (p1CryoCount > 0) {
+     // P1 freezes P2
+      let freezeCount = 0;
+      if (p1CryoCount === 2) freezeCount = 2;
+      else if (p1CryoCount === 3) freezeCount = 3;
+      else if (p1CryoCount === 4) freezeCount = 4;
+      else if (p1CryoCount >= 5) freezeCount = 99;
+      
+      if (freezeCount > 0) {
+          logs.push(`❄️ P1 Cryomancer (${p1CryoCount}) donduruyor!`);
+          const indices = Array.from({ length: p2Cards.length }, (_, i) => i);
+          // Shuffle
+          indices.sort(() => Math.random() - 0.5);
+          const targets = indices.slice(0, Math.min(freezeCount, p2Cards.length));
+          targets.forEach(i => {
+             const c = p2Cards[i];
+             c.value = 0;
+             c.symbol = "";
+             c.classSymbol = undefined;
+             c.isFrozen = true;
+          });
+      }
+  }
+
+  if (p2CryoCount > 0) {
+     // P2 freezes P1
+      let freezeCount = 0;
+      if (p2CryoCount === 2) freezeCount = 2;
+      else if (p2CryoCount === 3) freezeCount = 3;
+      else if (p2CryoCount === 4) freezeCount = 4;
+      else if (p2CryoCount >= 5) freezeCount = 99;
+      
+      if (freezeCount > 0) {
+          logs.push(`❄️ P2 Cryomancer (${p2CryoCount}) donduruyor!`);
+          const indices = Array.from({ length: p1Cards.length }, (_, i) => i);
+          indices.sort(() => Math.random() - 0.5);
+          const targets = indices.slice(0, Math.min(freezeCount, p1Cards.length));
+          targets.forEach(i => {
+             const c = p1Cards[i];
+             c.value = 0;
+             c.symbol = "";
+             c.classSymbol = undefined;
+             c.isFrozen = true;
+          });
+      }
+  }
 
   // --- STEP 1: Deflate (Pre-Calculation) ---
   const p1HasDeflate = p1Cards.some(c => c.specialType === "deflate");

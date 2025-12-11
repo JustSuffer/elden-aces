@@ -6,8 +6,8 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
     color: "#22c55e", // Green
     symbol: "Φ",
     role: "Tank",
-    initialHP: 40,
-    passiveDescription: "Start 40 HP.",
+    initialHP: 50,
+    passiveDescription: "Start 50 HP.",
     abilityScales: [
         { count: 1, effectDescription: "0 Can" },
         { count: 2, effectDescription: "+4 Can", value: 4 },
@@ -25,7 +25,7 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
     color: "#ef4444", // Red
     symbol: "Ω",
     role: "DPS / Anti-Meta",
-    initialHP: 30,
+    initialHP: 40,
     passiveDescription: "Immune to Twisted (α).",
     abilityScales: [
         { count: 1, effectDescription: "0 Dmg" },
@@ -45,7 +45,7 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
     color: "#fef08a", // White Gold
     symbol: "Π",
     role: "Gambler",
-    initialHP: 30,
+    initialHP: 40,
     passiveDescription: "Dice R3+.",
     abilityScales: [
         { count: 1, effectDescription: "-" },
@@ -61,7 +61,7 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
     color: "#a855f7", // Purple
     symbol: "Ψ",
     role: "Combo / Self-Mill",
-    initialHP: 30,
+    initialHP: 40,
     passiveDescription: "Draw/Mill.",
     abilityScales: [
         { count: 1, effectDescription: "-" },
@@ -80,8 +80,8 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
     color: "#ffffff", // Transparent/White
     symbol: "τ",
     role: "Stall",
-    initialHP: 20,
-    passiveDescription: "Start 20 HP.",
+    initialHP: 30,
+    passiveDescription: "Start 30 HP.",
     abilityScales: [
         { count: 1, effectDescription: "-" },
         { count: 2, effectDescription: "0 Sil" },
@@ -99,13 +99,13 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
     color: "#bae6fd", // Frozen White
     symbol: "Ξ",
     role: "Hard Control",
-    initialHP: 30,
+    initialHP: 40,
     passiveDescription: "Freezes.",
     abilityScales: [
         { count: 1, effectDescription: "-" },
-        { count: 2, effectDescription: "2 Don" },
-        { count: 3, effectDescription: "2+1 Don" },
-        { count: 4, effectDescription: "2+2 Don" },
+        { count: 2, effectDescription: "2 Dondur" },
+        { count: 3, effectDescription: "3 Dondur" },
+        { count: 4, effectDescription: "4 Dondur" },
         { count: 5, effectDescription: "TÜMÜNÜ Dondur" },
     ],
     winCondition: "3 Özel Kart Dondur",
@@ -115,7 +115,7 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
     color: "#78350f", // Brown
     symbol: "ρ",
     role: "Aggro Miller",
-    initialHP: 30,
+    initialHP: 40,
     passiveDescription: "Burns deck.",
     abilityScales: [
         { count: 1, effectDescription: "-" },
@@ -132,7 +132,7 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
     color: "#ec4899", // Pink
     symbol: "η",
     role: "Thief",
-    initialHP: 30,
+    initialHP: 40,
     passiveDescription: "Steals cards.",
     abilityScales: [
         { count: 1, effectDescription: "-" },
@@ -149,7 +149,7 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
     color: "#3b82f6", // Blue
     symbol: "Θ",
     role: "Scaler",
-    initialHP: 30,
+    initialHP: 40,
     passiveDescription: "Buffs card values.",
     abilityScales: [
         { count: 1, effectDescription: "-" },
@@ -165,7 +165,7 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
     color: "#f97316", // Orange
     symbol: "μ",
     role: "Summoner",
-    initialHP: 30,
+    initialHP: 40,
     passiveDescription: "Summons.",
     abilityScales: [
         { count: 1, effectDescription: "-" },
@@ -181,8 +181,8 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
     color: "#9ca3af", // Grey
     symbol: "ν",
     role: "Copycat",
-    initialHP: 30,
-    passiveDescription: "Copies.",
+    initialHP: 40,
+    passiveDescription: "Kopies Opp Deck + 6 Mimic Cards (Total 36).",
     abilityScales: [
         { count: 1, effectDescription: "-" },
         { count: 2, effectDescription: "Kopyala" },
