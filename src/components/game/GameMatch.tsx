@@ -166,7 +166,8 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
   };
 
   const handleNextRound = () => {
-    if (gameState.round >= 6 || gameState.playerHP <= 0 || gameState.opponentHP <= 0) {
+    const maxRounds = gameState.maxRounds || 7;
+    if (gameState.round >= maxRounds || gameState.playerHP <= 0 || gameState.opponentHP <= 0) {
       navigate("/");
       return;
     }

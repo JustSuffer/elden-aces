@@ -2,7 +2,7 @@ import { Card } from "@/types/game";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import React, { useState } from "react";
-import { Eye } from "lucide-react";
+import { Eye, Snowflake } from "lucide-react";
 import { SPECIAL_CARDS_DATA } from "@/data/gameData";
 
 interface GameCardProps {
@@ -65,7 +65,8 @@ export function GameCard({ card, onClick, isPlaceholder = false, className, face
             "cursor-pointer hover:-translate-y-2 hover:shadow-xl hover:scale-105",
             faceDown ? "bg-card border-border shadow-inner" : "",
             card.type === "special" && !faceDown && "hover:shadow-primary/50",
-            card.isStolen && !faceDown && "ring-4 ring-yellow-400/80 shadow-[0_0_20px_rgba(250,204,21,0.8)] animate-pulse z-10", // SHINY EFFECT (UPDATED)
+            card.isStolen && !faceDown && "ring-4 ring-yellow-400/80 shadow-[0_0_20px_rgba(250,204,21,0.8)] animate-pulse z-10",
+            card.isFrozen && !faceDown && "ring-4 ring-cyan-300 shadow-[0_0_20px_rgba(103,232,249,0.5)] bg-cyan-900/20 grayscale-[0.5] contrast-125 z-10",
             className
           )}
         >
@@ -75,14 +76,23 @@ export function GameCard({ card, onClick, isPlaceholder = false, className, face
           </div>
         ) : (
           <div className="relative h-full flex flex-col items-center justify-between p-2">
+            {/* Frozen Overlay */}
+            {card.isFrozen && (
+              <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none bg-cyan-500/10 backdrop-blur-[1px]">
+                 <Snowflake className="w-16 h-16 text-cyan-200/80 animate-spin-slow drop-shadow-[0_0_10px_rgba(34,211,238,0.8)]" style={{ animationDuration: "10s" }} />
+              </div>
+            )}
+
             {/* Symbol at top */}
             <div className={cn("text-2xl font-bold")} style={textColorStyle}>
               {card.symbol}
             </div>
 
             {/* Value or special indicator in middle */}
-            {card.type === "numeric" && card.value && (
-              <div className="text-5xl font-bold text-foreground">{card.value}</div>
+            {card.type === "numeric" && (
+              <div className={cn("text-5xl font-bold text-foreground", card.value === 0 && card.isFrozen && "text-cyan-200")}>
+                  {card.value}
+              </div>
             )}
             
             {/* Special Type Indicator if numeric value is 0 or missing */}

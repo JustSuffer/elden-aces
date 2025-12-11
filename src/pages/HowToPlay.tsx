@@ -37,11 +37,11 @@ const HowToPlay = () => {
           </h2>
           
           <div className="grid md:grid-cols-2 gap-6">
-            {/* Numeric Cards */}
-            <div className="bg-card/50 border border-border rounded-lg p-6 space-y-3">
+                    
+            {/* <div className="bg-card/50 border border-border rounded-lg p-6 space-y-3">
               <h3 className="text-xl font-bold text-primary">Numeric Cards (24 cards)</h3>
               <p className="text-sm text-foreground/70">Each symbol has cards numbered 1-6:</p>
-            </div>
+            </div> */}
 
             {/* Special Cards */}
             <div className="bg-card/50 border border-border rounded-lg p-6 space-y-3">
@@ -392,45 +392,74 @@ const HowToPlay = () => {
 
                 {/* Mimic */}
                 <div className="bg-gradient-to-br from-gray-700/40 to-black border border-gray-400/50 rounded-xl p-5 shadow-lg relative overflow-hidden group hover:scale-[1.02] transition-transform">
+                   <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 pointer-events-none text-6xl">ν</div>
                    <h4 className="text-xl font-bold text-gray-300 mb-1">Mimic (ν)</h4>
                    <p className="text-xs font-mono text-gray-500 mb-3">ROGUE</p>
                    <div className="space-y-2 text-sm text-gray-300">
-                      <p>"Sen neysen, ben daha iyisiyim." Rakibin en iyi kartlarını kopyalar.</p>
+                      <p><strong className="text-gray-400">Mantık:</strong> "Sen neysen, ben daha iyisiyim."</p>
+                      <p><strong className="text-white">Mekanik:</strong> <span className="text-gray-200">Copycat:</span> Rakibin destesini kopyalar.</p>
+                      <p className="text-xs italic text-gray-500 pt-2 border-t border-gray-500/20">Strateji: Rakibini kendi silahıyla vur.</p>
                    </div>
                 </div>
 
                 {/* Oracle */}
                  <div className="bg-gradient-to-br from-purple-900/40 to-black border border-purple-500/50 rounded-xl p-5 shadow-lg relative overflow-hidden group hover:scale-[1.02] transition-transform">
+                   <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 pointer-events-none text-6xl">Ψ</div>
                    <h4 className="text-xl font-bold text-purple-400 mb-1">Oracle (Ψ)</h4>
                    <p className="text-xs font-mono text-purple-300/70 mb-3">INFO / CONTROL</p>
                    <div className="space-y-2 text-sm text-gray-300">
-                      <p>"Hamleni önceden biliyorum." Rakibin elini görür, kartlarını yakar (Mill).</p>
+                      <p><strong className="text-purple-400">Mantık:</strong> "Hamleni önceden biliyorum."</p>
+                      <p><strong className="text-white">Mekanik:</strong> <span className="text-purple-200">Future Sight:</span> Rakibin elini görür, kartlarını yakar (Mill).</p>
+                      <p className="text-xs italic text-gray-400 pt-2 border-t border-purple-500/20">Strateji: Deste bitir (Mill Win).</p>
                    </div>
                 </div>
 
                 {/* Siren */}
                  <div className="bg-gradient-to-br from-pink-900/40 to-black border border-pink-500/50 rounded-xl p-5 shadow-lg relative overflow-hidden group hover:scale-[1.02] transition-transform">
+                   <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 pointer-events-none text-6xl">η</div>
                    <h4 className="text-xl font-bold text-pink-500 mb-1">Siren (η)</h4>
                    <p className="text-xs font-mono text-pink-300/70 mb-3">DISRUPTOR</p>
                    <div className="space-y-2 text-sm text-gray-300">
-                      <p><strong className="text-pink-400">Charm:</strong> Rakibin saldırısını kendine çevirtir. (Round 4'te -5 HP yer).</p>
+                      <p><strong className="text-pink-400">Mantık:</strong> "Güzellik acıdır."</p>
+                      <p><strong className="text-white">Mekanik:</strong> <span className="text-pink-200">Charm:</span> Rakibin saldırısını kendine çevirtir. (Round 4'te -5 HP yer).</p>
+                      <p className="text-xs italic text-gray-400 pt-2 border-t border-pink-500/20">Strateji: Rakibi kendi gücüyle yok et.</p>
                    </div>
                 </div>
 
                 {/* Augmentor */}
-                <div className="bg-card/30 border border-blue-500/30 rounded-lg p-4">
-                   <h4 className="text-lg font-bold text-blue-400">Augmentor (Θ)</h4>
-                   <p className="text-xs text-gray-400">Kartları güçlendirir (Upgrade).</p>
+                <div className="bg-gradient-to-br from-blue-900/40 to-black border border-blue-500/50 rounded-xl p-5 shadow-lg relative overflow-hidden group hover:scale-[1.02] transition-transform">
+                   <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 pointer-events-none text-6xl">Θ</div>
+                   <h4 className="text-xl font-bold text-blue-400 mb-1">Augmentor (Θ)</h4>
+                   <p className="text-xs font-mono text-blue-300/70 mb-3">BUFFER</p>
+                   <div className="space-y-2 text-sm text-gray-300">
+                      <p><strong className="text-blue-400">Mantık:</strong> "Sınırları zorla."</p>
+                      <p><strong className="text-white">Mekanik:</strong> <span className="text-blue-200">Upgrade:</span> Kartları güçlendirir.</p>
+                      <p className="text-xs italic text-gray-400 pt-2 border-t border-blue-500/20">Strateji: Kart değerlerini yükselterek kazan.</p>
+                   </div>
                 </div>
+
                 {/* Conjurer */}
-                <div className="bg-card/30 border border-orange-500/30 rounded-lg p-4">
-                   <h4 className="text-lg font-bold text-orange-400">Conjurer (μ)</h4>
-                   <p className="text-xs text-gray-400">Sahayı minik ruhlarla doldurur (Swarm).</p>
+                <div className="bg-gradient-to-br from-orange-900/40 to-black border border-orange-500/50 rounded-xl p-5 shadow-lg relative overflow-hidden group hover:scale-[1.02] transition-transform">
+                   <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 pointer-events-none text-6xl">μ</div>
+                   <h4 className="text-xl font-bold text-orange-400 mb-1">Conjurer (μ)</h4>
+                   <p className="text-xs font-mono text-orange-300/70 mb-3">SUMMONER</p>
+                   <div className="space-y-2 text-sm text-gray-300">
+                      <p><strong className="text-orange-400">Mantık:</strong> "Çoklukta kuvvet vardır."</p>
+                      <p><strong className="text-white">Mekanik:</strong> <span className="text-orange-200">Swarm:</span> Sahayı minik ruhlarla doldurur.</p>
+                      <p className="text-xs italic text-gray-400 pt-2 border-t border-orange-500/20">Strateji: Sahayı doldurarak üstünlük kur.</p>
+                   </div>
                 </div>
+
                  {/* Incinerator */}
-                <div className="bg-card/30 border border-red-800/30 rounded-lg p-4">
-                   <h4 className="text-lg font-bold text-red-800">Incinerator (ρ)</h4>
-                   <p className="text-xs text-gray-400">Kendini de yakarak alan hasarı verir.</p>
+                <div className="bg-gradient-to-br from-red-950/40 to-black border border-red-800/50 rounded-xl p-5 shadow-lg relative overflow-hidden group hover:scale-[1.02] transition-transform">
+                   <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 pointer-events-none text-6xl">ρ</div>
+                   <h4 className="text-xl font-bold text-red-700 mb-1">Incinerator (ρ)</h4>
+                   <p className="text-xs font-mono text-red-500/70 mb-3">GLASS CANNON</p>
+                   <div className="space-y-2 text-sm text-gray-300">
+                      <p><strong className="text-red-600">Mantık:</strong> "Yanan sönmez."</p>
+                      <p><strong className="text-white">Mekanik:</strong> <span className="text-red-400">Overheat:</span> Kendini de yakarak alan hasarı verir.</p>
+                      <p className="text-xs italic text-gray-400 pt-2 border-t border-red-800/20">Strateji: Hızlı ve yıkıcı hasar.</p>
+                   </div>
                 </div>
           </div>
         </section>

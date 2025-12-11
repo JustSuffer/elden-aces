@@ -479,6 +479,34 @@ export function useGameState(initParams?: GameInitParams) {
           logDetails.push(`🧜‍♀️ Siren çalıyor: ${count} kart!`);
       }
 
+      // --- ORACLE DRAW / SELF-MILL LOGIC ---
+      if (result.sideEffects.p1DrawCount) {
+          const count = result.sideEffects.p1DrawCount;
+          // Draw from OWN deck
+          const drawn = p1Deck.slice(0, count);
+          p1Deck = p1Deck.slice(count);
+          p1Hand.push(...drawn);
+          logDetails.push(`🔮 Oracle geleceği gördü: ${count} kart çekti! (Kalan Deste: ${p1Deck.length})`);
+          
+          if (p1Deck.length === 0 && prev.playerClass === "Oracle") {
+             logDetails.push("🔮 KEHANET GERÇEKLEŞTİ: Deste bitti! ORACLE KAZANDI!");
+             newOpponentHP = 0; // Win
+          }
+      }
+
+       if (result.sideEffects.p2DrawCount) {
+          const count = result.sideEffects.p2DrawCount;
+          const drawn = p2Deck.slice(0, count);
+          p2Deck = p2Deck.slice(count);
+          p2Hand.push(...drawn);
+          logDetails.push(`🔮 Rakip Oracle kart çekiyor: ${count} (Kalan: ${p2Deck.length})`);
+          
+          if (p2Deck.length === 0 && prev.opponentClass === "Oracle") {
+              logDetails.push("🔮 RAKİP KEHANETİ TAMAMLADI: Oracle Kazandı!");
+              newPlayerHP = 0;
+          }
+      }
+
       // Check round 7 end condition (Game is now 7 Rounds)
       if (prev.round >= 7 && phase !== "end") {
         phase = "end";
