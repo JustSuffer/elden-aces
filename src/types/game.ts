@@ -61,6 +61,8 @@ export interface GameSideEffects {
   p2BurnCount?: number;
   p1SirenSteal?: number;
   p2SirenSteal?: number;
+  p1DrawCount?: number;
+  p2DrawCount?: number;
 }
 
 export interface PlayerState {

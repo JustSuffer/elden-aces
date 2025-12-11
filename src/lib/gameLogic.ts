@@ -771,6 +771,3 @@ export function checkCounterWinCondition(
 
     return undefined;
 }
-
-    return undefined;
-}
