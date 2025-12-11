@@ -63,6 +63,10 @@ export interface GameSideEffects {
   p2SirenSteal?: number;
   p1DrawCount?: number;
   p2DrawCount?: number;
+  p1DiceGain?: number;
+  p2DiceGain?: number;
+  p1GammaReward?: boolean;
+  p2GammaReward?: boolean;
 }
 
 export interface PlayerState {

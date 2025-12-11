@@ -409,7 +409,7 @@ const HowToPlay = () => {
                    <p className="text-xs font-mono text-purple-300/70 mb-3">INFO / CONTROL</p>
                    <div className="space-y-2 text-sm text-gray-300">
                       <p><strong className="text-purple-400">Mantık:</strong> "Hamleni önceden biliyorum."</p>
-                      <p><strong className="text-white">Mekanik:</strong> <span className="text-purple-200">Future Sight:</span> Rakibin elini görür, kartlarını yakar (Mill).</p>
+                      <p><strong className="text-white">Mekanik:</strong> <span className="text-purple-200">Future Sight:</span> Kart çekerken rakibin canını almayı hedefler. (Mill).</p>
                       <p className="text-xs italic text-gray-400 pt-2 border-t border-purple-500/20">Strateji: Deste bitir (Mill Win).</p>
                    </div>
                 </div>
@@ -421,8 +421,8 @@ const HowToPlay = () => {
                    <p className="text-xs font-mono text-pink-300/70 mb-3">DISRUPTOR</p>
                    <div className="space-y-2 text-sm text-gray-300">
                       <p><strong className="text-pink-400">Mantık:</strong> "Güzellik acıdır."</p>
-                      <p><strong className="text-white">Mekanik:</strong> <span className="text-pink-200">Charm:</span> Rakibin saldırısını kendine çevirtir. (Round 4'te -5 HP yer).</p>
-                      <p className="text-xs italic text-gray-400 pt-2 border-t border-pink-500/20">Strateji: Rakibi kendi gücüyle yok et.</p>
+                      <p><strong className="text-white">Mekanik:</strong> <span className="text-pink-200">Charm:</span> Rakibin kartlarını kullanır. (Round 4'te -5 HP yer).</p>
+                      <p className="text-xs italic text-gray-400 pt-2 border-t border-pink-500/20">Strateji: Rakibi kendi kartlarıyla cezbedin.</p>
                    </div>
                 </div>
 
@@ -445,8 +445,8 @@ const HowToPlay = () => {
                    <p className="text-xs font-mono text-orange-300/70 mb-3">SUMMONER</p>
                    <div className="space-y-2 text-sm text-gray-300">
                       <p><strong className="text-orange-400">Mantık:</strong> "Çoklukta kuvvet vardır."</p>
-                      <p><strong className="text-white">Mekanik:</strong> <span className="text-orange-200">Swarm:</span> Sahayı minik ruhlarla doldurur.</p>
-                      <p className="text-xs italic text-gray-400 pt-2 border-t border-orange-500/20">Strateji: Sahayı doldurarak üstünlük kur.</p>
+                      <p><strong className="text-white">Mekanik:</strong> <span className="text-orange-200">Swarm:</span> Sahayı özel kartlarla doldurur.</p>
+                      <p className="text-xs italic text-gray-400 pt-2 border-t border-orange-500/20">Strateji: özel kartlarla oyunu kazan.</p>
                    </div>
                 </div>
 
@@ -457,8 +457,8 @@ const HowToPlay = () => {
                    <p className="text-xs font-mono text-red-500/70 mb-3">GLASS CANNON</p>
                    <div className="space-y-2 text-sm text-gray-300">
                       <p><strong className="text-red-600">Mantık:</strong> "Yanan sönmez."</p>
-                      <p><strong className="text-white">Mekanik:</strong> <span className="text-red-400">Overheat:</span> Kendini de yakarak alan hasarı verir.</p>
-                      <p className="text-xs italic text-gray-400 pt-2 border-t border-red-800/20">Strateji: Hızlı ve yıkıcı hasar.</p>
+                      <p><strong className="text-white">Mekanik:</strong> <span className="text-red-400">Overheat:</span> Kendi destesini yakar.</p>
+                      <p className="text-xs italic text-gray-400 pt-2 border-t border-red-800/20">Strateji: Hızlı ve ölümcül oyun tarzı</p>
                    </div>
                 </div>
           </div>

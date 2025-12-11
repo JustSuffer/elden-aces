@@ -507,41 +507,116 @@ export function useGameState(initParams?: GameInitParams) {
           }
       }
 
-      // Check round 7 end condition (Game is now 7 Rounds)
-      if (prev.round >= 7 && phase !== "end") {
-        phase = "end";
-        
-        // --- SURVIVAL WIN CONDITIONS (Vitalist / Chronokeeper) ---
-        // If they survived until Round 7, they win AUTOMATICALLY.
-        if (prev.playerClass === "Vitalist" && newPlayerHP > 0) {
-            logDetails.push("🌿 Vitalist 7. Raundu gördü! DOĞA KAZANDI!");
-            newOpponentHP = 0; // Force win
-        } else if (prev.playerClass === "Chronokeeper" && newPlayerHP > 0) {
-            logDetails.push("⏳ Chronokeeper zamanın efendisi oldu! KAZANDINIZ!");
-            newOpponentHP = 0; // Force win
-        } else {
-            // Standard HP Determine
-            if (newPlayerHP > newOpponentHP) {
-              logDetails.push("7. Round sonu - HP'n daha yüksek!");
-            } else if (newOpponentHP > newPlayerHP) {
-              logDetails.push("7. Round sonu - Rakip HP'si daha yüksek!");
-            } else {
-              logDetails.push("7. Round sonu - Berabere!");
-            }
-        }
+       if (result.sideEffects.p2DrawCount) {
+          const count = result.sideEffects.p2DrawCount;
+          const drawn = p2Deck.slice(0, count);
+          p2Deck = p2Deck.slice(count);
+          p2Hand.push(...drawn);
+          logDetails.push(`🔮 Rakip Oracle kart çekiyor: ${count} (Kalan: ${p2Deck.length})`);
+          
+          if (p2Deck.length === 0 && prev.opponentClass === "Oracle") {
+              logDetails.push("🔮 RAKİP KEHANETİ TAMAMLADI: Oracle Kazandı!");
+              newPlayerHP = 0;
+          }
+      }
+
+      // --- FATEWEAVER LOGIC (Dice Gain + Gamma) ---
+      let newPlayerDiceRolls = prev.playerDiceRolls;
+      
+      if (result.sideEffects.p1DiceGain) {
+          const gain = result.sideEffects.p1DiceGain;
+          newPlayerDiceRolls += gain;
+          logDetails.push(`🎲 Fateweaver Zarları Topluyor: +${gain} Zar Hakkı! (Toplam: ${newPlayerDiceRolls})`);
+      }
+      if (result.sideEffects.p1GammaReward) {
+          // Add Gamma
+           p1Hand.push({
+               id: `reward-gamma-${Date.now()}`,
+               name: SPECIAL_CARDS_DATA.gamma.name,
+               symbol: SPECIAL_CARDS_DATA.gamma.symbol,
+               type: "special",
+               specialType: "gamma",
+               value: 0,
+               description: SPECIAL_CARDS_DATA.gamma.description
+           });
+           logDetails.push("✨ Fateweaver 5 Kart Bonusu: Gamma (γ) kazandı!");
+      }
+      
+      // Bot Fateweaver Logic (Optional logs, keeping state consistent if we tracked it)
+       if (result.sideEffects.p2DiceGain) {
+          logDetails.push(`🎲 Rakip Fateweaver +${result.sideEffects.p2DiceGain} Zar Hakkı kazandı!`);
+      }
+      if (result.sideEffects.p2GammaReward) {
+          p2Hand.push({
+               id: `reward-gamma-bot-${Date.now()}`,
+               name: SPECIAL_CARDS_DATA.gamma.name,
+               symbol: SPECIAL_CARDS_DATA.gamma.symbol,
+               type: "special",
+               specialType: "gamma",
+               value: 0,
+               description: SPECIAL_CARDS_DATA.gamma.description
+           });
+           logDetails.push("✨ Rakip Fateweaver Gamma (γ) kazandı!");
+      }
+
+      // Check round 7 end condition - REMOVED IMMEDIATE END
+      // We allow the "Damage" phase to show the result first.
+      // The Transition to "End" phase happens in nextRound() if round >= 7.
+      
+      // EXCEPTION: Survival Win Conditions immediately end game?
+      // "Vitalist/Chronokeeper artık 7. round a kadar yaşarsa kazanacak"
+      // If we are at Round 7, and HP > 0, they win.
+      // If we don't end phase here, user sees "Round 7 Complete".
+      // Then clicks Next -> Victory.
+      // This is actually BETTER visuals.
+      // But we need to make sure `winner` is set correctly if we delay?
+      // Or we just let `nextRound` handle it. 
+      // BUT `nextRound` sets `phase="end"`. It doesn't set `winner`. `winner` is usually set in `calculateRoundDamage`.
+      // So I DO need to set `winner` here if R7 survival?
+      // Or I can calculate winner in `nextRound`? No, `nextRound` assumes state holds result.
+      
+      // Let's modify the survival check to Log "Victory Assured" but wait for Next click?
+      // Or just set `newOpponentHP = 0` (force win) at R7 end, so Damage Result shows "Opponent Defeated"?
+      // User said "Son round da hangi hasarı kimin yediği ve kimin ne kosulla kazandığı anlatılacak".
+      // If I set HP=0, it looks like a kill.
+      // If I want "Vitalist Survived" message, I should add it to logs, and maybe set winner?
+      
+      let winner = undefined;
+      
+      if (prev.round >= 7) {
+          if (prev.playerClass === "Vitalist" && newPlayerHP > 0) {
+              logDetails.push("🌿 Vitalist 7. Raundu gördü! DOĞA KAZANDI!");
+              winner = "p1";
+              // We don't force End Phase yet, so user sees this log in the Damage popup.
+          } else if (prev.playerClass === "Chronokeeper" && newPlayerHP > 0) {
+              logDetails.push("⏳ Chronokeeper zamanın efendisi oldu! KAZANDINIZ!");
+              winner = "p1";
+          } else {
+             // Normal HP Comparison at end of R7
+             if (newPlayerHP > newOpponentHP) {
+                  logDetails.push("7. Round Sonucu: HP avantajı ile Zafer!");
+                  winner = "p1";
+             } else if (newOpponentHP > newPlayerHP) {
+                 logDetails.push("7. Round Sonucu: HP dezavantajı ile Yenilgi.");
+                 winner = "p2";
+             } else {
+                 logDetails.push("7. Round Sonucu: Berabere!");
+             }
+          }
       }
 
       return {
         ...prev,
         playerHP: newPlayerHP,
         opponentHP: newOpponentHP,
-        phase,
+        phase, // Keeps "damage" or "end" if already dead
         logs: [...(prev.logs || []), ...logDetails],
-        winner: phase === "end" ? (newPlayerHP > newOpponentHP ? "p1" : (newOpponentHP > newPlayerHP ? "p2" : undefined)) : undefined,
+        winner: (newPlayerHP <= 0 ? "p2" : (newOpponentHP <= 0 ? "p1" : winner)), // Check death OR R7 logic
         playerDeck: p1Deck,
         opponentDeck: p2Deck,
         playerHand: p1Hand,
         opponentHand: p2Hand,
+        playerDiceRolls: newPlayerDiceRolls,
         damageResult: {
           playerDamage: result.p1DamageTaken,
           opponentDamage: result.p2DamageTaken,
