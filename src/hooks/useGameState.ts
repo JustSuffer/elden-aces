@@ -1,11 +1,8 @@
 import { useState, useCallback } from "react";
-import { Card, ClassName, GameState as NewGameState, PlayerState } from "../types/game";
-import { createDeck, MASTER_CLASSES } from "../data/gameData";
-import { resolveGameRound, checkCounterWinCondition } from "../lib/gameLogic";
-// Wait, I didn't export dealCards from gameData.ts in my previous edit. 
-// I should add it or just implement it here. It's simple. 
-// But wait, the original useGameState imported it from data/cards. 
-// I'll implement a simple one here or import if I added it. I didn't add it to gameData.ts.
+import { Card, ClassName, PlayerState } from "../types/game";
+import { SavedDeck } from "../types/deck";
+import { MASTER_CLASSES, SPECIAL_CARDS_DATA, shuffleDeck } from "../data/gameData";
+import { resolveGameRound, checkCounterWinCondition, applyClassAbility } from "../lib/gameLogic";
 
 function localDealCards(deck: Card[], count: number): { dealt: Card[]; remaining: Card[] } {
   const dealt = deck.slice(0, count);
@@ -13,7 +10,6 @@ function localDealCards(deck: Card[], count: number): { dealt: Card[]; remaining
   return { dealt, remaining };
 }
 
-// Adapted GameState interface to match what Game.tsx expects, but using new types
 export interface GameState {
   round: number;
   playerHP: number;
@@ -38,38 +34,91 @@ export interface GameState {
     opponentDamage: number;
     details: string[];
   } | null;
-  
-  // New fields for Class Tracking
   playerClass: ClassName;
+  opponentClass: ClassName;
+  playerDiceRolls: number; // Accumulated dice rolls for Fateweaver
+  carryOverCards: Card[]; // Cards carried over from previous round
+}
+
+// Generate bot deck based on class
+function createBotDeck(className: ClassName): Card[] {
+  const classData = MASTER_CLASSES[className];
+  const deck: Card[] = [];
+  
+  // 6 Main class cards (1-6)
+  for (let i = 1; i <= 6; i++) {
+    deck.push({
+      id: `bot-${className.toLowerCase()}-${i}-${Date.now()}`,
+      name: `${classData.name} ${i}`,
+      symbol: classData.symbol,
+      value: i,
+      type: "numeric",
+      classSymbol: classData.symbol,
+      color: classData.color
+    });
+  }
+
+  // 6 Special cards
+  const specialTypes = ["twisted", "twisted", "deflate", "deflate", "delta", "sigma"] as const;
+  specialTypes.forEach((type, idx) => {
+    deck.push({
+      id: `bot-special-${type}-${idx}-${Date.now()}`,
+      name: SPECIAL_CARDS_DATA[type].name,
+      symbol: SPECIAL_CARDS_DATA[type].symbol,
+      type: "special",
+      specialType: type,
+      value: 0,
+      description: SPECIAL_CARDS_DATA[type].description,
+    });
+  });
+
+  // 18 Filler cards from 3 random other classes
+  const otherClasses = Object.keys(MASTER_CLASSES).filter(c => c !== className) as ClassName[];
+  const shuffledOthers = otherClasses.sort(() => Math.random() - 0.5).slice(0, 3);
+  
+  shuffledOthers.forEach((fillerClass) => {
+    const fillerData = MASTER_CLASSES[fillerClass];
+    for (let i = 1; i <= 6; i++) {
+      deck.push({
+        id: `bot-${fillerClass.toLowerCase()}-${i}-${Date.now()}-${Math.random()}`,
+        name: `${fillerData.name} ${i}`,
+        symbol: fillerData.symbol,
+        value: i,
+        type: "numeric",
+        classSymbol: fillerData.symbol,
+        color: fillerData.color
+      });
+    }
+  });
+
+  return shuffleDeck(deck);
+}
+
+interface GameInitParams {
+  playerDeck: SavedDeck;
   opponentClass: ClassName;
 }
 
-export function useGameState() {
+export function useGameState(initParams?: GameInitParams) {
   const [gameState, setGameState] = useState<GameState>(() => {
-    // Initial Classes - Hardcoded for now or Random?
-    // Let's go with Vitalist vs Slayer as per prompt example, or Random.
-    // "1v1 Sıra Tabanlı..." doesn't specify initial setup.
-    // I'll pick Vitalist (Player) vs Slayer (Opponent) for demo.
-    const pClass: ClassName = "Vitalist";
-    const oClass: ClassName = "Slayer";
+    const pClass = initParams?.playerDeck.mainClass || "Vitalist";
+    const oClass = initParams?.opponentClass || "Slayer";
 
-    const playerDeck = createDeck(pClass); // Already shuffled
-    const opponentDeck = createDeck(oClass);
+    // Use player's saved deck or create default
+    const playerDeck = initParams?.playerDeck.cards 
+      ? shuffleDeck([...initParams.playerDeck.cards])
+      : createBotDeck(pClass);
     
-    const { dealt: playerCards, remaining: playerRemaining } = localDealCards(playerDeck, 5); // 5 cards per round usually, initial deal?
-    // Prompt: "Mekanik: Her round 5 kart oynanır." -> implies hand size needs to support 5 cards play.
-    // Usually draws up to 5? Or deal fixed amount?
-    // "Deste: 30 Kart". "Süre: 6 Round". 5 cards * 6 rounds = 30 cards. Perfect.
-    // So we deal 5 cards every round.
+    const opponentDeck = createBotDeck(oClass);
     
-    // Initial deal
-    const { dealt: initialP, remaining: remainP } = localDealCards(playerDeck, 5);
-    const { dealt: initialO, remaining: remainO } = localDealCards(opponentDeck, 5);
+    // Deal 6 cards for round 1
+    const { dealt: initialP, remaining: remainP } = localDealCards(playerDeck, 6);
+    const { dealt: initialO, remaining: remainO } = localDealCards(opponentDeck, 6);
 
     return {
       round: 1,
-      playerHP: MASTER_CLASSES[pClass].initialHP, // Vitalist 40
-      opponentHP: MASTER_CLASSES[oClass].initialHP, // Slayer 30
+      playerHP: MASTER_CLASSES[pClass].initialHP,
+      opponentHP: MASTER_CLASSES[oClass].initialHP,
       playerDeck: remainP,
       opponentDeck: remainO,
       playerHand: initialP,
@@ -85,6 +134,8 @@ export function useGameState() {
       damageResult: null,
       playerClass: pClass,
       opponentClass: oClass,
+      playerDiceRolls: 0,
+      carryOverCards: [],
     };
   });
 
@@ -141,55 +192,118 @@ export function useGameState() {
 
   const endPlacement = useCallback(() => {
     setGameState((prev) => {
-      // Bot Logic: Random placement from hand
+      // Bot Logic: Strategic placement based on class
       const botField: (Card | null)[] = [null, null, null, null, null];
       const cardsToPlace = prev.opponentMust4Cards ? 4 : 5;
       
-      // Just take first N cards for now, or random shuffle
-      const botHandToPlay = [...prev.opponentHand].slice(0, cardsToPlace);
-      // Fill slots 0 to N-1
-      botHandToPlay.forEach((c, i) => botField[i] = c);
+      // Sort by value and take best cards
+      const sortedHand = [...prev.opponentHand].sort((a, b) => (b.value || 0) - (a.value || 0));
+      const botHandToPlay = sortedHand.slice(0, cardsToPlace);
       
-      // Remaining hand (unused cards?) 
-      // In this game mode (5 cards deal, 5 cards play), hand should be empty after play effectively.
-      // But if they play 4, 1 remains?
-      // For now, keep unused in hand (though they might be discarded if we draw fresh 5 next round? 
-      // "Deste: 30 Kart... Süre: 6 Round... Her round 5 kart oynanır." -> implies strict 5 deal/play consumption.
+      // Shuffle placement for unpredictability
+      const shuffledPlay = botHandToPlay.sort(() => Math.random() - 0.5);
+      shuffledPlay.forEach((c, i) => botField[i] = c);
+      
+      // Remaining cards stay in hand for carry-over
+      const remainingBotHand = prev.opponentHand.filter(c => !botHandToPlay.includes(c));
       
       return {
         ...prev,
         opponentField: botField,
+        opponentHand: remainingBotHand,
         phase: "reveal",
       };
     });
   }, []);
 
   const rollDice = useCallback(() => {
-    // Fateweaver specific? Or Global?
-    // Prompt: "Zar Mekaniği: ... Sadece Zardan (Pi) gelir. Fateweaver'a özeldir (R3+)."
-    // It seems only Fateweaver uses dice. 
-    // But existing code had a generic dice roll.
-    // I will keep generic structure but maybe limit it?
-    // "Zar atma yeteneği sadece Round 3 ve sonrasında kullanılabilir."
-    
-    // For now I'll just keep the existing "simulation" of dice logic or adapt it.
-    // Let's simple return a mocked result compatible with UI.
-    const result = Math.floor(Math.random() * 20) + 1;
-    let effect = "Fate rolled: " + result;
+    // Check if Fateweaver and round >= 3
+    setGameState((prev) => {
+      if (prev.playerClass === "Fateweaver" && prev.round < 3) {
+        return prev; // Can't roll yet
+      }
+      
+      if (prev.diceUsed >= 2 && prev.playerClass !== "Fateweaver") {
+        return prev; // Max 2 rolls for non-Fateweaver
+      }
 
-    if (result >= 13) effect += " (Success!)";
-    else effect += " (Fail)";
+      const result = Math.floor(Math.random() * 20) + 1;
+      let effect = "";
+      
+      if (result >= 1 && result <= 5) {
+        effect = "Bu tur sadece 4 kart oynayabilirsin!";
+      } else if (result >= 6 && result <= 10) {
+        effect = "2 kart elinden desteye karıştı, 2 yeni kart çektin!";
+      } else if (result >= 11 && result <= 15) {
+        effect = "2 kart seç: desteye at ve 2 yeni kart çek!";
+      } else if (result >= 16 && result <= 18) {
+        effect = "Eline 1 adet Twisted (α) eklendi!";
+      } else {
+        effect = "Eline 1 adet Gamma (γ) eklendi!";
+      }
 
-    setGameState((prev) => ({
-      ...prev,
-      pendingDiceResult: { result, effect },
-    }));
-
-    return { result, effect };
+      return {
+        ...prev,
+        pendingDiceResult: { result, effect },
+      };
+    });
   }, []);
 
   const acknowledgeDiceResult = useCallback(() => {
-     setGameState((prev) => ({ ...prev, diceUsed: prev.diceUsed + 1, pendingDiceResult: null }));
+    setGameState((prev) => {
+      if (!prev.pendingDiceResult) return prev;
+      
+      const result = prev.pendingDiceResult.result;
+      let newHand = [...prev.playerHand];
+      let newDeck = [...prev.playerDeck];
+      let must4Cards = prev.playerMust4Cards;
+      let cardSelectionMode = false;
+
+      if (result >= 1 && result <= 5) {
+        must4Cards = true;
+      } else if (result >= 6 && result <= 10) {
+        // Swap 2 random cards
+        const toSwap = newHand.splice(0, Math.min(2, newHand.length));
+        newDeck = shuffleDeck([...newDeck, ...toSwap]);
+        const { dealt, remaining } = localDealCards(newDeck, 2);
+        newHand = [...newHand, ...dealt];
+        newDeck = remaining;
+      } else if (result >= 11 && result <= 15) {
+        cardSelectionMode = true;
+      } else if (result >= 16 && result <= 18) {
+        // Add Twisted
+        newHand.push({
+          id: `dice-twisted-${Date.now()}`,
+          name: SPECIAL_CARDS_DATA.twisted.name,
+          symbol: SPECIAL_CARDS_DATA.twisted.symbol,
+          type: "special",
+          specialType: "twisted",
+          value: 0,
+          description: SPECIAL_CARDS_DATA.twisted.description,
+        });
+      } else {
+        // Add Gamma
+        newHand.push({
+          id: `dice-gamma-${Date.now()}`,
+          name: SPECIAL_CARDS_DATA.gamma.name,
+          symbol: SPECIAL_CARDS_DATA.gamma.symbol,
+          type: "special",
+          specialType: "gamma",
+          value: 0,
+          description: SPECIAL_CARDS_DATA.gamma.description,
+        });
+      }
+
+      return {
+        ...prev,
+        diceUsed: prev.diceUsed + 1,
+        pendingDiceResult: null,
+        playerHand: newHand,
+        playerDeck: newDeck,
+        playerMust4Cards: must4Cards,
+        cardSelectionMode,
+      };
+    });
   }, []);
 
   const cancelDiceResult = useCallback(() => {
@@ -198,28 +312,30 @@ export function useGameState() {
 
   const calculateRoundDamage = useCallback(() => {
     setGameState((prev) => {
-      // Create non-null arrays for the logic function
       const p1Cards = prev.playerField.filter((c): c is Card => c !== null);
-      const p2Cards = prev.opponentField.filter((c): c is Card => c !== null); // Opponent
+      const p2Cards = prev.opponentField.filter((c): c is Card => c !== null);
 
-      const result = resolveGameRound(
-        p1Cards,
-        p2Cards,
-        prev.playerClass,
-        prev.opponentClass
-      );
+      // Apply class abilities first
+      const p1AbilityResult = applyClassAbility(prev.playerClass, p1Cards, prev.playerHP);
+      const p2AbilityResult = applyClassAbility(prev.opponentClass, p2Cards, prev.opponentHP);
 
-      let newPlayerHP = Math.max(0, prev.playerHP - result.p1DamageTaken);
-      let newOpponentHP = Math.max(0, prev.opponentHP - result.p2DamageTaken); // p2DamageTaken is damage P2 took
+      let newPlayerHP = Math.max(0, prev.playerHP + p1AbilityResult.hpChange);
+      let newOpponentHP = Math.max(0, prev.opponentHP + p2AbilityResult.hpChange);
 
-      // Construct temporary PlayerState objects for logic check
+      // Resolve round combat
+      const result = resolveGameRound(p1Cards, p2Cards, prev.playerClass, prev.opponentClass);
+
+      newPlayerHP = Math.max(0, newPlayerHP - result.p1DamageTaken);
+      newOpponentHP = Math.max(0, newOpponentHP - result.p2DamageTaken);
+
+      // Check instant win conditions
       const p1State: PlayerState = {
-        id: "p1", className: prev.playerClass, hp: prev.playerHP, maxHP: MASTER_CLASSES[prev.playerClass].initialHP,
+        id: "p1", className: prev.playerClass, hp: newPlayerHP, maxHP: MASTER_CLASSES[prev.playerClass].initialHP,
         deck: prev.playerDeck, hand: prev.playerHand, graveyard: [], playedCardsInRound: p1Cards,
         wins: 0, isEliminated: false
       };
       const p2State: PlayerState = {
-        id: "p2", className: prev.opponentClass, hp: prev.opponentHP, maxHP: MASTER_CLASSES[prev.opponentClass].initialHP,
+        id: "p2", className: prev.opponentClass, hp: newOpponentHP, maxHP: MASTER_CLASSES[prev.opponentClass].initialHP,
         deck: prev.opponentDeck, hand: prev.opponentHand, graveyard: [], playedCardsInRound: p2Cards,
         wins: 0, isEliminated: false
       };
@@ -227,54 +343,47 @@ export function useGameState() {
       const p1InstantWin = checkCounterWinCondition(p1State, p2State, prev.round);
       const p2InstantWin = checkCounterWinCondition(p2State, p1State, prev.round);
 
-      let logDetails = [...result.logs];
-      let phase = newPlayerHP <= 0 || newOpponentHP <= 0 ? "end" : "damage";
+      let logDetails = [...p1AbilityResult.logs, ...p2AbilityResult.logs, ...result.logs];
+      let phase: "placement" | "reveal" | "damage" | "end" = newPlayerHP <= 0 || newOpponentHP <= 0 ? "end" : "damage";
 
       if (p1InstantWin) {
-         newOpponentHP = 0; // Force end
-         phase = "end";
-         logDetails.push("Player met specific Win Condition!");
+        newOpponentHP = 0;
+        phase = "end";
+        logDetails.push(`🏆 ${prev.playerClass} kazanma koşulunu sağladı!`);
       }
       if (p2InstantWin) {
-         newPlayerHP = 0;
-         phase = "end";
-         logDetails.push("Opponent met specific Win Condition!");
+        newPlayerHP = 0;
+        phase = "end";
+        logDetails.push(`💀 ${prev.opponentClass} kazanma koşulunu sağladı!`);
       }
 
-      // Apply Side Effects (Burn, Draw, etc.)
-      const effects = result.sideEffects;
+      // Apply side effects
       let p1Deck = [...prev.playerDeck];
       let p2Deck = [...prev.opponentDeck];
-      let currentRound = prev.round;
 
-      // Incinerator Burns
-      if (effects.p1BurnCount) {
-         p2Deck = p2Deck.slice(effects.p1BurnCount);
-         logDetails.push(`Incinerator burnt ${effects.p1BurnCount} cards from Opponent!`);
+      if (result.sideEffects.p1BurnCount) {
+        p2Deck = p2Deck.slice(result.sideEffects.p1BurnCount);
+        logDetails.push(`🔥 ${result.sideEffects.p1BurnCount} rakip kartı yakıldı!`);
       }
-      if (effects.p2BurnCount) {
-         p1Deck = p1Deck.slice(effects.p2BurnCount);
-         logDetails.push(`Incinerator burnt ${effects.p2BurnCount} cards from Player!`);
+      if (result.sideEffects.p2BurnCount) {
+        p1Deck = p1Deck.slice(result.sideEffects.p2BurnCount);
+        logDetails.push(`🔥 ${result.sideEffects.p2BurnCount} kartın yakıldı!`);
       }
 
-      // Chronokeeper Round Skip (Actually "Deleting" rounds usually means reversing time or preventing progress?
-      // Prompt: "0 Round siler" (Effectively cancels round progress?).
-      // If "3 Round siler", maybe we decrement round counter?
-      // Let's assume it decrements logic round or cancels this round's increment?
-      // NextRound function increments round.
-      // If we decrement here, next round will simple go back or stay same.
-      if (effects.p1RoundsSkip) {
-          currentRound = Math.max(1, currentRound - effects.p1RoundsSkip);
-          logDetails.push(`Chronokeeper deleted ${effects.p1RoundsSkip} rounds!`);
-      }
-      if (effects.p2RoundsSkip) {
-          currentRound = Math.max(1, currentRound - effects.p2RoundsSkip);
-          logDetails.push(`Chronokeeper deleted ${effects.p2RoundsSkip} rounds!`);
+      // Check round 6 end condition
+      if (prev.round >= 6 && phase !== "end") {
+        phase = "end";
+        if (newPlayerHP > newOpponentHP) {
+          logDetails.push("6. Round sonu - HP'n daha yüksek!");
+        } else if (newOpponentHP > newPlayerHP) {
+          logDetails.push("6. Round sonu - Rakip HP'si daha yüksek!");
+        } else {
+          logDetails.push("6. Round sonu - Berabere!");
+        }
       }
 
       return {
         ...prev,
-        round: currentRound,
         playerHP: newPlayerHP,
         opponentHP: newOpponentHP,
         playerDeck: p1Deck,
@@ -284,7 +393,7 @@ export function useGameState() {
           opponentDamage: result.p2DamageTaken,
           details: logDetails
         },
-        phase: phase,
+        phase,
       };
     });
   }, []);
@@ -295,31 +404,50 @@ export function useGameState() {
         return { ...prev, phase: "end" };
       }
 
-      const cardsToDeal = 5;
-      const { dealt: playerCards, remaining: playerRemaining } = localDealCards(prev.playerDeck, cardsToDeal);
-      const { dealt: opponentCards, remaining: opponentRemaining } = localDealCards(prev.opponentDeck, cardsToDeal);
+      // Cards not played carry over (player hand already has unplayed cards)
+      // Deal new cards to reach 6 total
+      const cardsNeeded = Math.max(0, 6 - prev.playerHand.length);
+      const botCardsNeeded = Math.max(0, 6 - prev.opponentHand.length);
       
-      // We overwrite hand (assuming previous cards are discarded/consumed)
-      // "Her round 5 kart oynanır" -> implies consumption.
+      const { dealt: playerCards, remaining: playerRemaining } = localDealCards(prev.playerDeck, cardsNeeded);
+      const { dealt: opponentCards, remaining: opponentRemaining } = localDealCards(prev.opponentDeck, botCardsNeeded);
       
       return {
         ...prev,
         round: prev.round + 1,
         playerDeck: playerRemaining,
         opponentDeck: opponentRemaining,
-        playerHand: playerCards,
-        opponentHand: opponentCards,
+        playerHand: [...prev.playerHand, ...playerCards],
+        opponentHand: [...prev.opponentHand, ...opponentCards],
         playerField: [null, null, null, null, null],
         opponentField: [null, null, null, null, null],
-        phase: "placement",
+        phase: "placement" as const,
         damageResult: null,
+        playerMust4Cards: false,
+        opponentMust4Cards: false,
       };
     });
   }, []);
 
   const handleCardSelection = useCallback((selectedIndices: number[]) => {
-     // Implement if needed for card-swapping mechanics (Siren/Oracle etc)
-     setGameState(prev => ({ ...prev, cardSelectionMode: false }));
+    setGameState(prev => {
+      if (selectedIndices.length !== 2) return { ...prev, cardSelectionMode: false };
+      
+      // Remove selected cards and draw 2 new
+      const selectedCards = selectedIndices.map(i => prev.playerHand[i]);
+      let newHand = prev.playerHand.filter((_, i) => !selectedIndices.includes(i));
+      let newDeck = shuffleDeck([...prev.playerDeck, ...selectedCards]);
+      
+      const { dealt, remaining } = localDealCards(newDeck, 2);
+      newHand = [...newHand, ...dealt];
+      
+      return { 
+        ...prev, 
+        cardSelectionMode: false,
+        playerHand: newHand,
+        playerDeck: remaining,
+      };
+    });
   }, []);
 
   return {

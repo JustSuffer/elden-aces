@@ -1,7 +1,7 @@
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { GameCard } from "./GameCard";
-import { Card } from "@/data/cards";
+import { Card } from "@/types/game";
 
 interface DraggableCardProps {
   card: Card;

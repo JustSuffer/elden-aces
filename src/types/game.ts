@@ -2,17 +2,17 @@ export type CardType = "numeric" | "special";
 export type SpecialCardType = "twisted" | "deflate" | "gamma" | "delta" | "sigma" | "die";
 
 export type ClassName = 
-  | "Vitalist" 
-  | "Slayer" 
-  | "Fateweaver" 
-  | "Oracle" 
-  | "Chronokeeper" 
-  | "Cryomancer" 
-  | "Incinerator" 
-  | "Siren" 
-  | "Augmentor" 
-  | "Conjurer" 
-  | "Mimic";
+  | "Vitalist"      // Φ - Green - Tank
+  | "Slayer"        // Ω - Red - DPS
+  | "Fateweaver"    // Π - White Gold - Gambler
+  | "Oracle"        // Ψ - Purple - Self-Mill
+  | "Chronokeeper"  // τ - White - Stall
+  | "Cryomancer"    // Ξ - Frozen White - Control
+  | "Incinerator"   // ρ - Brown - Mill
+  | "Siren"         // η - Pink - Thief
+  | "Augmentor"     // Θ - Blue - Scaler
+  | "Conjurer"      // μ - Orange - Summoner
+  | "Mimic";        // ν - Grey - Copycat
 
 export interface Card {
   id: string;

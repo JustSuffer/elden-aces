@@ -1,6 +1,6 @@
 import { useDroppable, useDraggable } from "@dnd-kit/core";
 import { GameCard } from "./GameCard";
-import { Card } from "@/data/cards";
+import { Card } from "@/types/game";
 import { ReactNode } from "react";
 
 interface DroppableSlotProps {
