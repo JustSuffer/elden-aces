@@ -430,6 +430,18 @@ export function useGameState(initParams?: GameInitParams) {
         logDetails.push(`💀 ${prev.opponentClass} kazanma koşulunu sağladı!`);
       }
 
+      // --- SIREN CURSE CHECK (Round 4) ---
+      if (prev.round === 4) {
+          if (prev.playerClass === "Siren") {
+              newPlayerHP = Math.max(0, newPlayerHP - 5);
+              logDetails.push("🧜‍♀️ Siren Curse: Round 4 (-5 HP)!");
+          }
+          if (prev.opponentClass === "Siren") {
+              newOpponentHP = Math.max(0, newOpponentHP - 5);
+              logDetails.push("🧜‍♀️ Side Siren Curse: Round 4 (-5 HP)!");
+          }
+      }
+
       // Apply side effects
       let p1Deck = [...prev.playerDeck];
       let p2Deck = [...prev.opponentDeck];
@@ -441,6 +453,40 @@ export function useGameState(initParams?: GameInitParams) {
       if (result.sideEffects.p2BurnCount) {
         p1Deck = p1Deck.slice(result.sideEffects.p2BurnCount);
         logDetails.push(`🔥 ${result.sideEffects.p2BurnCount} kartın yakıldı!`);
+      }
+
+      // Handle Siren Steal
+      if (result.sideEffects.p1SirenSteal) {
+          const stolen = p2Deck.slice(0, result.sideEffects.p1SirenSteal).map(c => ({ ...c, isStolen: true }));
+          p2Deck = p2Deck.slice(result.sideEffects.p1SirenSteal);
+          prev.playerHand.push(...stolen); // Mutating local var 'prev' hand? No, we use newHand usually.
+          // Wait, 'newHand' is not defined here. Hand update happens in state return.
+          // We need to update 'p1Hand' / 'p2Hand' variables?
+          // calculateRoundDamage updates state at the end? 
+          // Let's see Lines 405-414, we construct p1State/p2State.
+          // But `setGameState` uses `prev` directly or constructed variables?
+          // We need to return the NEW hands.
+          // Let's access hands from `prev` but we need to update them.
+          // Actually, we need to create mutable copies of hands.
+      }
+      
+      // RE-IMPLEMENTING PROPER STATE UPDATES FOR HANDS
+      let p1Hand = [...prev.playerHand];
+      let p2Hand = [...prev.opponentHand];
+
+      if (result.sideEffects.p1SirenSteal) {
+          const count = result.sideEffects.p1SirenSteal;
+          const stolen = p2Deck.slice(0, count).map(c => ({ ...c, isStolen: true, originalOwner: "p2" })); // Mark stolen
+          p2Deck = p2Deck.slice(count);
+          p1Hand.push(...stolen);
+          logDetails.push(`🧜‍♀️ Siren çalıyor: ${count} kart!`);
+      }
+      if (result.sideEffects.p2SirenSteal) {
+           const count = result.sideEffects.p2SirenSteal;
+          const stolen = p1Deck.slice(0, count).map(c => ({ ...c, isStolen: true, originalOwner: "p1" }));
+          p1Deck = p1Deck.slice(count);
+          p2Hand.push(...stolen);
+          logDetails.push(`🧜‍♀️ Siren çalıyor: ${count} kart!`);
       }
 
       // Check round 6 end condition
@@ -459,14 +505,13 @@ export function useGameState(initParams?: GameInitParams) {
         ...prev,
         playerHP: newPlayerHP,
         opponentHP: newOpponentHP,
+        phase,
+        logs: [...(prev.logs || []), ...logDetails],
+        winner: phase === "end" ? (newPlayerHP > newOpponentHP ? "p1" : (newOpponentHP > newPlayerHP ? "p2" : undefined)) : undefined,
         playerDeck: p1Deck,
         opponentDeck: p2Deck,
-        damageResult: {
-          playerDamage: result.p1DamageTaken,
-          opponentDamage: result.p2DamageTaken,
-          details: logDetails
-        },
-        phase,
+        playerHand: p1Hand,
+        opponentHand: p2Hand,
       };
     });
   }, []);

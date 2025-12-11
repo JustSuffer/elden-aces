@@ -274,18 +274,23 @@ function applyStep5Abilities(
         break;
 
       case "Siren": // (η)
-        // Steal "Çal"
-        let steal = 0;
-        switch (count) {
-          case 2: steal = 2; break;
-          case 3: steal = 3; break;
-          case 4: steal = 4; break;
-          case 5: steal = 5; break;
-        }
-        if (steal > 0) {
-           if (isP1) targetEffects.p1StealCount = steal; else targetEffects.p2StealCount = steal;
-           res.logs.push(`Siren (${count}): ${steal} Çal`);
-        }
+        // Siren Logic: Steal cards from opponent DECK (not hand)
+      // Steal N cards based on scale.
+      const sirenStealCount = count >= 5 ? 5 : (count >= 4 ? 4 : (count >= 3 ? 3 : (count >= 2 ? 2 : 0)));
+      if (sirenStealCount > 0) {
+        // We need to signal to Main Logic to move cards from Deck to Hand.
+        // SideEffects can handle "draw" but stealing is specific.
+        // Let's pass the count in effects.
+        // But logic for "which cards" is random or top? 
+        // Previously assumed "Steal from Deck".
+        // Let's invoke a side effect "sirenSteal".
+        if (isP1) targetEffects.p1SirenSteal = sirenStealCount; else targetEffects.p2SirenSteal = sirenStealCount;
+        
+        // IMPORTANT: The actual moving of cards happens in useGameState usually if we return effects.
+        // But wait, `resolveGameRound` returns `sideEffects`. 
+        // We need to implement the HANDLER in `useGameState.ts` to actually move the cards AND mark them `isStolen`.
+        res.logs.push(`Siren (${count}): ${sirenStealCount} Çal`);
+      }
         break;
 
       case "Incinerator": // (ρ)
@@ -386,6 +391,28 @@ export function resolveGameRound(
 ): DamageResult {
   const logs: string[] = [];
   const effects: GameSideEffects = {};
+  
+  // --- SIREN CURSE (Round 4) ---
+  // If player is Siren and Round is 4, take 5 Damage (Side Effect)
+  // We don't have Round Number passed here directly? 
+  // Wait, resolveGameRound inputs are: p1Cards, p2Cards, p1Class, p2Class.
+  // We need current Round number. 
+  // Logic doesn't receive "Round". 
+  // We should modify the signature of resolveGameRound or handle it in useGameState.
+  // The prompt says "Siren classının losecon u kaldırılsın... 4. roundda -5 damage yiyecek otomatik".
+  // Let's modify useGameState to check this logic instead since it has Round state.
+  // BUT we are editing gameLogic.ts. Let's see if we can pass it or use SideEffects?
+  // Actually, modifying `useGameState.ts` is cleaner for "Round based events" that are not Card-Combat related.
+  // Let's leave a comment here or if needed modify signature. 
+  // gameLogic.ts is for "Combat Resolution". Round 4 automatic damage is an "Environment/Curse" effect.
+  // Better place: useGameState check before/after resolve. 
+  // However, I already planned to edit gameLogic.ts. 
+  // Let's switch to useGameState.ts for this implementation as it owns "Round".
+  // Changing plan to edit useGameState.ts for Step 1 Logic.
+  
+  // Wait, I can't ask user to approve plan change easily. I will just do it in useGameState which is effectively "Game Logic". 
+  // I will skip gameLogic.ts modification for Siren Round 4 and do it in useGameState.ts.
+
 
   // --- STEP 0: CRYOMANCER FREEZE (Pre-Calculation) ---
   // "Rakibin oyuna sürdüğü kartları dondur (Değer 0, Classız)"

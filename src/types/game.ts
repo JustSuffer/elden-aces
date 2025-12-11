@@ -24,6 +24,7 @@ export interface Card {
   classSymbol?: string; // To track which class this numeric card belongs to (for scaling)
   description?: string;
   originalOwner?: string; // For Siren/Mimic tracking
+  isStolen?: boolean; // For Siren visual effect
   isFrozen?: boolean;
   color?: string;
 }
@@ -47,6 +48,19 @@ export interface ClassData {
   counterLogic?: {
     [key in ClassName]?: string;
   };
+}
+
+export interface GameSideEffects {
+  p1DamageTaken?: number;
+  p2DamageTaken?: number;
+  p1Heal?: number;
+  p2Heal?: number;
+  p1CardsAdded?: Card[];
+  p2CardsAdded?: Card[];
+  p1BurnCount?: number;
+  p2BurnCount?: number;
+  p1SirenSteal?: number;
+  p2SirenSteal?: number;
 }
 
 export interface PlayerState {

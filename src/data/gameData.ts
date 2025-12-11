@@ -133,7 +133,7 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
     symbol: "η",
     role: "Thief",
     initialHP: 40,
-    passiveDescription: "Steals cards.",
+    passiveDescription: "Steals cards. Takes 5 Dmg at R4.",
     abilityScales: [
         { count: 1, effectDescription: "-" },
         { count: 2, effectDescription: "2 Çal" },
@@ -142,7 +142,6 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
         { count: 5, effectDescription: "5 Çal" },
     ],
     winCondition: "5 Çalıntı Kart Oyna",
-    loseCondition: "Take 10 Dmg at R4.",
   },
   Augmentor: {
     name: "Augmentor",

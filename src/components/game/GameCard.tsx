@@ -65,6 +65,7 @@ export function GameCard({ card, onClick, isPlaceholder = false, className, face
             "cursor-pointer hover:-translate-y-2 hover:shadow-xl hover:scale-105",
             faceDown ? "bg-card border-border shadow-inner" : "",
             card.type === "special" && !faceDown && "hover:shadow-primary/50",
+            card.isStolen && !faceDown && "ring-2 ring-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.5)] animate-pulse", // SHINY EFFECT
             className
           )}
         >
