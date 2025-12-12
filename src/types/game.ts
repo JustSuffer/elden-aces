@@ -102,5 +102,20 @@ export interface GameState {
   mimicCounter?: { p1: number; p2: number };
   diceUsed?: number;
   playerMust4Cards?: boolean;
-  pendingRoundSkip?: number;
+}
+
+export interface ClassAbilityResult {
+  hpChange: number;
+  logs: string[];
+}
+
+export interface GameResult {
+  p1DamageTaken: number;
+  p2DamageTaken: number;
+  logs: string[];
+  sideEffects: GameSideEffects;
+  abilityResults: {
+    p1: ClassAbilityResult;
+    p2: ClassAbilityResult;
+  };
 }

@@ -1,4 +1,4 @@
-import { Card, ClassName, GameResult } from "@/types/game";
+import { Card, ClassName, GameResult, PlayerState, ClassAbilityResult } from "@/types/game";
 import { SPECIAL_CARDS_DATA, MASTER_CLASSES } from "@/data/gameData";
 
 function createSpecialCard(type: keyof typeof SPECIAL_CARDS_DATA): Card {
