@@ -262,11 +262,18 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
                   variant="default"
                   size="lg"
                   onClick={handleRollDice}
-                  disabled={gameState.diceUsed >= 2 || (gameState.playerClass === "Fateweaver" && gameState.round < 3)}
+                  disabled={
+                    gameState.playerClass === "Fateweaver"
+                      ? (gameState.playerDiceRolls || 0) <= 0
+                      : (gameState.diceUsed || 0) >= 2
+                  }
                   className="gap-2 bg-psi hover:bg-psi/80"
                 >
                   <Dices className="w-5 h-5" />
-                  Zar Π ({gameState.diceUsed}/2)
+                  {gameState.playerClass === "Fateweaver" 
+                    ? `Kader Zarı (${gameState.playerDiceRolls || 0})`
+                    : `Zar Π (${gameState.diceUsed || 0}/2)`
+                  }
                 </Button>
 
                 <Button

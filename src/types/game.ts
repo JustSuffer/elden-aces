@@ -96,4 +96,7 @@ export interface GameState {
   phase: "setup" | "draw" | "play" | "resolve" | "end";
   winner?: string; // Player ID
   logs: string[];
+  playerDiceRolls?: number;
+  diceUsed?: number;
+  playerMust4Cards?: boolean;
 }
