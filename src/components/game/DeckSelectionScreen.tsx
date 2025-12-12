@@ -25,10 +25,28 @@ export const DeckSelectionScreen = ({ onStartGame }: DeckSelectionScreenProps) =
   useEffect(() => {
     const stored = localStorage.getItem("acoria-saved-decks");
     if (stored) {
-      const decks = JSON.parse(stored);
-      setSavedDecks(decks);
-      if (decks.length > 0) {
-        setSelectedDeck(decks[0]);
+      try {
+        let decks = JSON.parse(stored);
+        
+        // Migration: Old Class Names -> New
+        decks = decks.map((d: any) => ({
+          ...d,
+          mainClass: d.mainClass === "Incinerator" ? "Decay" : (d.mainClass === "Conjurer" ? "Vessel" : d.mainClass),
+          secondaryClasses: d.secondaryClasses ? d.secondaryClasses.map((c: any) => 
+             c === "Incinerator" ? "Decay" : (c === "Conjurer" ? "Vessel" : c)
+          ) : []
+        })).filter((d: any) => MASTER_CLASSES[d.mainClass as ClassName]);
+
+        setSavedDecks(decks);
+        if (decks.length > 0) {
+          setSelectedDeck(decks[0]);
+        }
+        
+        // Save back sanitized version
+        localStorage.setItem("acoria-saved-decks", JSON.stringify(decks));
+      } catch (e) {
+        console.error("Failed to load decks", e);
+        // Do not clear immediately to avoid data loss on simple json error, but safe to ignore.
       }
     }
     // Randomly select opponent class
