@@ -67,6 +67,7 @@ export function GameCard({ card, onClick, isPlaceholder = false, className, face
             card.type === "special" && !faceDown && "hover:shadow-primary/50",
             card.isStolen && !faceDown && "ring-4 ring-yellow-400/80 shadow-[0_0_20px_rgba(250,204,21,0.8)] animate-pulse z-10",
             card.isFrozen && !faceDown && "ring-4 ring-cyan-300 shadow-[0_0_20px_rgba(103,232,249,0.5)] bg-cyan-900/20 grayscale-[0.5] contrast-125 z-10",
+            card.specialType === "gamma" && !faceDown && "ring-4 ring-amber-500 shadow-[0_0_30px_rgba(245,158,11,0.8)] border-amber-300 bg-gradient-to-br from-amber-950/50 to-yellow-900/20 z-10 hover:shadow-amber-500/50",
             className
           )}
         >

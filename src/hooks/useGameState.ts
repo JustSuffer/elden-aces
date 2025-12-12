@@ -283,7 +283,7 @@ export function useGameState(initParams?: GameInitParams) {
     });
   }, []);
 
-  const rollDice = useCallback(() => {
+  const startRollingDice = useCallback(() => {
     // Check if Fateweaver and round >= 3
     setGameState((prev) => {
       if (prev.playerClass === "Fateweaver" && prev.round < 3) {
@@ -297,16 +297,22 @@ export function useGameState(initParams?: GameInitParams) {
       const result = Math.floor(Math.random() * 20) + 1;
       let effect = "";
       
-      if (result >= 1 && result <= 5) {
-        effect = "Bu tur sadece 4 kart oynayabilirsin!";
-      } else if (result >= 6 && result <= 10) {
-        effect = "2 kart elinden desteye karıştı, 2 yeni kart çektin!";
-      } else if (result >= 11 && result <= 15) {
-        effect = "2 kart seç: desteye at ve 2 yeni kart çek!";
-      } else if (result >= 16 && result <= 18) {
-        effect = "Eline 1 adet Twisted (α) eklendi!";
+      if (prev.playerClass === "Fateweaver") {
+          if (result <= 13) {
+              effect = "Kaderin Cilvesi: Elinize Twisted (α) veya Deflate (β) eklenecek.";
+          } else {
+              effect = "KADER ÖRÜLDÜ: Efsanevi Gamma (γ) Kartı eklendi!";
+          }
       } else {
-        effect = "Eline 1 adet Gamma (γ) eklendi!";
+          if (result <= 5) {
+             effect = "Kötü Şans: Elinden rastgele 1 kart silinecek!";
+          } else if (result <= 10) {
+             effect = "Şans: Twisted (α) veya Deflate (β) kazanacaksın!";
+          } else if (result <= 17) {
+             effect = "Büyük Şans: Delta (Δ) veya Sigma (Σ) kazanacaksın!";
+          } else {
+             effect = "EFSANEVİ: Gamma (γ) Kartı kazanacaksın!";
+          }
       }
 
       return {
@@ -321,44 +327,41 @@ export function useGameState(initParams?: GameInitParams) {
       if (!prev.pendingDiceResult) return prev;
       
       const result = prev.pendingDiceResult.result;
+      const isFateweaver = prev.playerClass === "Fateweaver";
       let newHand = [...prev.playerHand];
-      let newDeck = [...prev.playerDeck];
-      let must4Cards = prev.playerMust4Cards;
-      let cardSelectionMode = false;
+      
+      const addSpecial = (type: keyof typeof SPECIAL_CARDS_DATA) => {
+          const base = SPECIAL_CARDS_DATA[type];
+           newHand.push({
+              id: `dice-${type}-${Date.now()}`,
+              name: base.name,
+              symbol: base.symbol,
+              type: "special",
+              specialType: type,
+              value: 0,
+              description: base.description
+           });
+      };
 
-      if (result >= 1 && result <= 5) {
-        must4Cards = true;
-      } else if (result >= 6 && result <= 10) {
-        // Swap 2 random cards
-        const toSwap = newHand.splice(0, Math.min(2, newHand.length));
-        newDeck = shuffleDeck([...newDeck, ...toSwap]);
-        const { dealt, remaining } = localDealCards(newDeck, 2);
-        newHand = [...newHand, ...dealt];
-        newDeck = remaining;
-      } else if (result >= 11 && result <= 15) {
-        cardSelectionMode = true;
-      } else if (result >= 16 && result <= 18) {
-        // Add Twisted
-        newHand.push({
-          id: `dice-twisted-${Date.now()}`,
-          name: SPECIAL_CARDS_DATA.twisted.name,
-          symbol: SPECIAL_CARDS_DATA.twisted.symbol,
-          type: "special",
-          specialType: "twisted",
-          value: 0,
-          description: SPECIAL_CARDS_DATA.twisted.description,
-        });
+      if (isFateweaver) {
+          if (result <= 13) {
+               Math.random() < 0.5 ? addSpecial("twisted") : addSpecial("deflate");
+          } else {
+               addSpecial("gamma");
+          }
       } else {
-        // Add Gamma
-        newHand.push({
-          id: `dice-gamma-${Date.now()}`,
-          name: SPECIAL_CARDS_DATA.gamma.name,
-          symbol: SPECIAL_CARDS_DATA.gamma.symbol,
-          type: "special",
-          specialType: "gamma",
-          value: 0,
-          description: SPECIAL_CARDS_DATA.gamma.description,
-        });
+          if (result <= 5) {
+               if (newHand.length > 0) {
+                   const r = Math.floor(Math.random() * newHand.length);
+                   newHand.splice(r, 1);
+               }
+          } else if (result <= 10) {
+              Math.random() < 0.5 ? addSpecial("twisted") : addSpecial("deflate");
+          } else if (result <= 17) {
+               Math.random() < 0.5 ? addSpecial("delta") : addSpecial("sigma");
+          } else {
+              addSpecial("gamma");
+          }
       }
 
       return {
@@ -366,9 +369,8 @@ export function useGameState(initParams?: GameInitParams) {
         diceUsed: prev.diceUsed + 1,
         pendingDiceResult: null,
         playerHand: newHand,
-        playerDeck: newDeck,
-        playerMust4Cards: must4Cards,
-        cardSelectionMode,
+        playerMust4Cards: false,
+        cardSelectionMode: false,
       };
     });
   }, []);
