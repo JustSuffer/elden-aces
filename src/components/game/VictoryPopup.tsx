@@ -1,3 +1,4 @@
+```
 import { Button } from "@/components/ui/button";
 import { Trophy, Skull, Coins, Swords, Shield, Crown, Sparkles } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -9,8 +10,9 @@ interface VictoryPopupProps {
   playerHP: number;
   opponentHP: number;
   winReason?: string;
+  damageDetails?: string[];
   onReturnToMenu: () => void;
-  delayMs?: number; // Delay before showing popup (for win condition animations)
+  delayMs?: number; 
 }
 
 export function VictoryPopup({ 
@@ -19,6 +21,7 @@ export function VictoryPopup({
   playerHP, 
   opponentHP, 
   winReason,
+  damageDetails,
   onReturnToMenu,
   delayMs = 0 
 }: VictoryPopupProps) {
@@ -230,9 +233,23 @@ export function VictoryPopup({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.7 }}
-              className="text-center mb-6 text-sm text-muted-foreground"
+              className="text-center mb-6"
             >
-              HP Farkı: <span className="font-bold text-foreground">{hpDiff}</span>
+              <div className="text-sm text-muted-foreground mb-4">
+                 HP Farkı: <span className="font-bold text-foreground">{hpDiff}</span>
+              </div>
+
+               {/* Damage Details (Last Round Info) */}
+                {damageDetails && damageDetails.length > 0 && (
+                  <div className="p-3 rounded-lg bg-black/40 border border-white/10 text-center">
+                    <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Son Çarpışma Özeti</h3>
+                    <div className="space-y-1 text-xs text-slate-300">
+                        {damageDetails.map((detail, i) => (
+                            <div key={i}>{detail}</div>
+                        ))}
+                    </div>
+                  </div>
+                )}
             </motion.div>
 
             {/* Reward */}

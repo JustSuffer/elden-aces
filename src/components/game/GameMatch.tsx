@@ -10,9 +10,10 @@ import { KnifeBar } from "@/components/game/KnifeBar";
 import { Button } from "@/components/ui/button";
 import { useGameState } from "@/hooks/useGameState";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Dices, Eye, Snowflake, Heart } from "lucide-react";
+
 import { toast } from "sonner";
 import { DndContext, DragEndEvent } from "@dnd-kit/core";
+import { ArrowLeft, Dices, Eye, Snowflake, Heart, Settings } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import { GameCard } from "@/components/game/GameCard";
 import { AudioManager } from "@/utils/AudioManager";
@@ -225,6 +226,14 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
         setShowWinConAnimation(true);
       } else if (isMimicVsMimic && (gameState.mimicCounter.p1 >= 12 || gameState.mimicCounter.p2 >= 12)) {
         setWinConAnimationType("mimic");
+        setShowWinConAnimation(true);
+      } else if (gameState.playerClass === "Augmentor" && gameState.winner === "p1") {
+        // Augmentor Win (Generic or specific?)
+        // User asked for "Augmentor Winconu için mühendislik animasyonu"
+        // If they played 5 cards (Exodia-like) or just Won?
+        // Usually Augmentor wins by Damage/Buffs.
+        // Assuming any Augmentor Win triggers this blue animation.
+        setWinConAnimationType("augmentor");
         setShowWinConAnimation(true);
       } else {
         setShowWinConAnimation(false);
@@ -528,16 +537,7 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
           />
         )}
 
-        {/* Victory Popup - Shows AFTER win condition animation */}
-        <VictoryPopup
-          open={gameState.phase === "end"}
-          isVictory={gameState.playerHP > gameState.opponentHP || 
-            (isMimicVsMimic && gameState.mimicCounter.p1 >= 12 && gameState.mimicCounter.p2 < 12)}
-          playerHP={gameState.playerHP}
-          opponentHP={gameState.opponentHP}
-          onReturnToMenu={() => navigate("/")}
-          delayMs={showWinConAnimation ? 4000 : 0}
-        />
+        {/* Victory Popup Removed (Duplicate) */}
 
         {/* Card Selection Popup */}
         <CardSelectionPopup
@@ -622,12 +622,29 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
           </div>
         )}
 
+        {/* Augmentor Win Animation */}
+        {showWinConAnimation && winConAnimationType === "augmentor" && (
+          <div className="fixed inset-0 z-50 bg-blue-950/90 flex flex-col items-center justify-center animate-in fade-in duration-1000">
+               <div className="relative flex items-center justify-center">
+                  <Settings className="w-[300px] h-[300px] text-blue-500/30 animate-[spin_10s_linear_infinite]" />
+                  <Settings className="absolute w-[150px] h-[150px] text-cyan-400/50 animate-[spin_5s_linear_infinite_reverse]" />
+               </div>
+               <h1 className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-300 to-blue-400 mt-8 font-cinzel animate-in slide-in-from-bottom duration-1000">
+                   MÜHENDİSLİK HARİKASI
+               </h1>
+               <p className="text-xl text-blue-200/80 mt-4 tracking-[0.5em] animate-in fade-in delay-500 duration-1000">
+                   KUSURSUZ HESAPLAMA
+               </p>
+          </div>
+        )}
+
         <VictoryPopup 
           open={gameState.phase === "end"}
           isVictory={gameState.winner === "p1"}
           playerHP={gameState.playerHP}
           opponentHP={gameState.opponentHP}
           winReason={gameState.winReason}
+          damageDetails={gameState.damageResult?.details}
           onReturnToMenu={() => navigate("/")}
           delayMs={4000} 
         />
