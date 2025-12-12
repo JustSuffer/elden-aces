@@ -645,14 +645,14 @@ export function useGameState(initParams?: GameInitParams) {
       // Augmentor Logic (Buffs)
       if (result.sideEffects.p1CardValueBuff) {
            const buff = result.sideEffects.p1CardValueBuff;
-           p1Hand.forEach(c => c.value = (c.value || 0) + buff);
-           p1Deck.forEach(c => c.value = (c.value || 0) + buff);
+           p1Hand.forEach(c => { c.value = (c.value || 0) + buff; c.isBuffed = true; });
+           p1Deck.forEach(c => { c.value = (c.value || 0) + buff; c.isBuffed = true; });
            logDetails.push(`📈 Augmentor (P1): +${buff} Değer (Tüm Kartlar)!`);
       }
       if (result.sideEffects.p2CardValueBuff) {
            const buff = result.sideEffects.p2CardValueBuff;
-           p2Hand.forEach(c => c.value = (c.value || 0) + buff);
-           p2Deck.forEach(c => c.value = (c.value || 0) + buff);
+           p2Hand.forEach(c => { c.value = (c.value || 0) + buff; c.isBuffed = true; });
+           p2Deck.forEach(c => { c.value = (c.value || 0) + buff; c.isBuffed = true; });
            logDetails.push(`📈 Augmentor (P2): +${buff} Değer (Tüm Kartlar)!`);
       }
 

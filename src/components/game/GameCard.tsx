@@ -91,7 +91,10 @@ export function GameCard({ card, onClick, isPlaceholder = false, className, face
 
             {/* Value or special indicator in middle */}
             {card.type === "numeric" && (
-              <div className={cn("text-5xl font-bold text-foreground", card.value === 0 && card.isFrozen && "text-cyan-200")}>
+              <div className={cn("text-5xl font-bold text-foreground", 
+                  card.value === 0 && card.isFrozen && "text-cyan-200",
+                  card.isBuffed && "text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.8)]"
+              )}>
                   {card.value}
               </div>
             )}

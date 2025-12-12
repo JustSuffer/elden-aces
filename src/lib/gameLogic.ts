@@ -337,8 +337,8 @@ function applyStep5Abilities(
         let draw = 0;
         switch (count) {
           case 2: sDmg = 2; draw = 2; break;
-          case 3: sDmg = 5; draw = 3; break;
-          case 4: sDmg = 8; draw = 4; break;
+          case 3: sDmg = 5; draw = 5; break;
+          case 4: sDmg = 8; draw = 8; break;
           case 5: sDmg = 10; draw = 10; break;
         }
         if (sDmg > 0 || draw > 0) {

@@ -66,8 +66,8 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
     abilityScales: [
         { count: 1, effectDescription: "0 Dmg/Draw", value: 0 },
         { count: 2, effectDescription: "2 Self-Dmg / 2 Draw", value: 2 },
-        { count: 3, effectDescription: "5 Self-Dmg / 3 Draw", value: 5 },
-        { count: 4, effectDescription: "8 Self-Dmg / 4 Draw", value: 8 },
+        { count: 3, effectDescription: "5 Self-Dmg / 5 Draw", value: 5 },
+        { count: 4, effectDescription: "8 Self-Dmg / 8 Draw", value: 8 },
         { count: 5, effectDescription: "10 Self-Dmg / 10 Draw", value: 10 },
     ],
     winCondition: "Deste Bitir (Self-Mill)",
