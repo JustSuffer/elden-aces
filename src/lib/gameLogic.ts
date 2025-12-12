@@ -265,28 +265,8 @@ function applyStep5Abilities(
          }
          break;
 
-      case "Augmentor": // (Θ)
-        switch (count) {
-          case 1: break;
-          case 2:
-             if (isP1) targetEffects.p1ValueBuff = 1; else targetEffects.p2ValueBuff = 1;
-             res.logs.push("Augmentor (2): +1 Değer");
-             break;
-          case 3:
-             if (isP1) targetEffects.p1ValueBuff = 2; else targetEffects.p2ValueBuff = 2;
-             res.logs.push("Augmentor (3): +2 Değer");
-             break;
-          case 4:
-             if (isP1) targetEffects.p1ValueBuff = 3; else targetEffects.p2ValueBuff = 3;
-             res.logs.push("Augmentor (4): +3 Değer");
-             break;
-          case 5:
-             if (isP1) targetEffects.p1ValueBuff = 6; else targetEffects.p2ValueBuff = 6;
-             // Set 30? "Set 30" might mean something else. Assuming Value Buff +6 for now.
-             res.logs.push("Augmentor (5): +6 Değer / Set 30");
-             break;
-        }
-        break;
+      // Old Augmentor case removed
+
 
       case "Cryomancer": // (Ξ)
         // Handled in Step 0 (Pre-Calculation)

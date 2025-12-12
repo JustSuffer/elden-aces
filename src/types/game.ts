@@ -128,6 +128,7 @@ export interface GameState {
   pendingRoundSkip: number;
   logs: string[];
   mimicCounter?: { p1: number; p2: number };
+  winReason?: string;
 }
 
 export interface ClassAbilityResult {

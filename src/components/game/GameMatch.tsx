@@ -378,9 +378,76 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
             )}
 
             {gameState.phase === "end" && (
-              <Button variant="default" size="lg" onClick={() => navigate("/")} className="gap-2">
-                Menüye Dön
-              </Button>
+              <div className="flex flex-col items-center gap-4 z-50">
+                {/* Visual Victory Effects */}
+                {gameState.winner === "p1" && gameState.playerClass === "Vitalist" && (
+                    <div className="absolute inset-0 pointer-events-none overflow-hidden flex flex-col items-center justify-center">
+                        {Array.from({length: 30}).map((_, i) => (
+                            <div key={i} 
+                                 className="absolute text-5xl opacity-0 animate-[ping_3s_ease-in-out_infinite]"
+                                 style={{ 
+                                     left: `${Math.random() * 100}%`, 
+                                     top: `${Math.random() * 100}%`,
+                                     animationDelay: `${Math.random() * 2}s`,
+                                     color: "#22c55e"
+                                 }}
+                            >
+                                🍃
+                            </div>
+                        ))}
+                        <div className="text-6xl font-bold text-green-500 animate-bounce mt-20 drop-shadow-[0_0_20px_rgba(34,197,94,0.8)]">🌿 DOĞA ZAFERİ 🌿</div>
+                    </div>
+                )}
+                
+                {gameState.winner === "p1" && gameState.playerClass === "Decay" && (
+                    <div className="absolute inset-0 pointer-events-none overflow-hidden flex flex-col items-center justify-center bg-orange-900/10">
+                         {Array.from({length: 30}).map((_, i) => (
+                            <div key={i} 
+                                 className="absolute text-6xl opacity-70 animate-[pulse_1s_ease-in-out_infinite]"
+                                 style={{ 
+                                     left: `${Math.random() * 100}%`, 
+                                     top: `${Math.random() * 100}%`,
+                                     animationDelay: `${Math.random() * 1}s`,
+                                     color: "#fdba74"
+                                 }}
+                            >
+                                🔥
+                            </div>
+                        ))}
+                        <div className="text-6xl font-bold text-orange-500 animate-pulse drop-shadow-[0_0_30px_rgba(249,115,22,1)] z-50">
+                             🔥 YAKIP YOK ETTİN! 🔥
+                        </div>
+                    </div>
+                )}
+
+                {gameState.winner === "p1" && gameState.playerClass === "Slayer" && (
+                    <div className="absolute inset-0 pointer-events-none overflow-hidden flex flex-col items-center justify-center bg-red-950/30">
+                         {Array.from({length: 40}).map((_, i) => (
+                            <div key={i} 
+                                 className="absolute text-5xl opacity-80 animate-[ping_4s_ease-in-out_infinite]"
+                                 style={{ 
+                                     left: `${Math.random() * 100}%`, 
+                                     top: `${Math.random() * 100}%`,
+                                     animationDelay: `${Math.random() * 2}s`,
+                                     color: "#ef4444",
+                                     transform: `scale(${Math.random() + 0.5})`
+                                 }}
+                            >
+                                🩸
+                            </div>
+                        ))}
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_#450a0a_100%)] opacity-60 animate-pulse"></div>
+                        <div className="text-7xl font-cinzel font-black text-red-600 animate-bounce mt-10 drop-shadow-[0_0_50px_rgba(220,38,38,1)] z-50 tracking-widest uppercase">
+                             🩸 KATLİAM! 🩸
+                        </div>
+                        <div className="text-2xl text-red-400 font-bold mt-4 animate-pulse">12+ HASAR: TEK OP VURUŞ</div>
+                    </div>
+                )}
+
+                <Button variant="default" size="lg" onClick={() => navigate("/")} className="gap-2 relative z-50 mt-10">
+                  Menüye Dön
+                </Button>
+              </div>
             )}
           </div>
 
@@ -554,6 +621,16 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
               </p>
           </div>
         )}
+
+        <VictoryPopup 
+          open={gameState.phase === "end"}
+          isVictory={gameState.winner === "p1"}
+          playerHP={gameState.playerHP}
+          opponentHP={gameState.opponentHP}
+          winReason={gameState.winReason}
+          onReturnToMenu={() => navigate("/")}
+          delayMs={4000} 
+        />
 
       </div>
     </DndContext>
