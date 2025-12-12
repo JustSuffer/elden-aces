@@ -299,17 +299,17 @@ const DeckBuilder = () => {
         {mainClass && (
           <section className="bg-card/50 backdrop-blur-sm border border-primary/30 rounded-lg p-6">
             <h2 className="text-2xl font-bold text-primary glow-gold mb-4 font-cinzel">
-              2. Yardımcı Sınıflar (3 Adet)
+              2. Yardımcı Sınıflar ({mainClass === "Conjurer" ? "4" : "3"} Adet)
             </h2>
             <p className="text-muted-foreground mb-4">
-              Desteye eklemek için 3 sınıf seç. Her sınıf 6 sayısal kart (1-6) ekler.
-              <span className="text-primary font-bold"> ({secondaryClasses.length}/3 seçildi)</span>
+              Desteye eklemek için {mainClass === "Conjurer" ? "4" : "3"} sınıf seç. Her sınıf 6 sayısal kart (1-6) ekler.
+              <span className="text-primary font-bold"> ({secondaryClasses.length}/{mainClass === "Conjurer" ? "4" : "3"} seçildi)</span>
             </p>
             <div className="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-5 gap-3">
               {availableSecondary.map((className) => {
                 const classData = MASTER_CLASSES[className];
                 const isSelected = secondaryClasses.includes(className);
-                const isDisabled = !isSelected && secondaryClasses.length >= 3;
+                const isDisabled = !isSelected && secondaryClasses.length >= (mainClass === "Conjurer" ? 4 : 3);
                 return (
                   <button
                     key={className}
@@ -358,7 +358,7 @@ const DeckBuilder = () => {
                   </p>
                 </div>
                 <div className="text-right space-y-1">
-                  <p className="text-lg font-bold text-primary">{customDeck.length}/30 Kart</p>
+                  <p className="text-lg font-bold text-primary">{customDeck.length}/{mainClass === "Conjurer" ? 36 : 30} Kart</p>
                   <p className="text-sm text-muted-foreground">
                     {numericCards.length} Sayısal | {specialCards.length} Özel
                   </p>

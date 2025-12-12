@@ -398,6 +398,7 @@ const HowToPlay = () => {
                    <div className="space-y-2 text-sm text-gray-300">
                       <p><strong className="text-gray-400">Mantık:</strong> "Sen neysen, ben daha iyisiyim."</p>
                       <p><strong className="text-white">Mekanik:</strong> <span className="text-gray-200">Copycat:</span> Rakibin destesini kopyalar.</p>
+                      <p className="text-xs text-yellow-500 mt-1 font-bold">*Özel Durum vs Conjurer: Rakibin 36 kartını kopyalar + kendi 6 kartı = 42 Kart!</p>
                       <p className="text-xs italic text-gray-500 pt-2 border-t border-gray-500/20">Strateji: Rakibini kendi silahıyla vur.</p>
                    </div>
                 </div>

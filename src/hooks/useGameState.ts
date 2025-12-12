@@ -72,9 +72,11 @@ function createBotDeck(className: ClassName): Card[] {
     });
   });
 
-  // 18 Filler cards from 3 random other classes
+  // 18 Filler cards from 3 random other classes (or 24 from 4 for Conjurer)
+  const isConjurer = className === "Conjurer";
+  const limit = isConjurer ? 4 : 3;
   const otherClasses = Object.keys(MASTER_CLASSES).filter(c => c !== className) as ClassName[];
-  const shuffledOthers = otherClasses.sort(() => Math.random() - 0.5).slice(0, 3);
+  const shuffledOthers = otherClasses.sort(() => Math.random() - 0.5).slice(0, limit);
   
   shuffledOthers.forEach((fillerClass) => {
     const fillerData = MASTER_CLASSES[fillerClass];
@@ -111,7 +113,7 @@ export function useGameState(initParams?: GameInitParams) {
     let playerDeck: Card[];
 
     if (pClass === "Mimic") {
-        // Mimic Logic: Copy Opponent's entire deck (30 cards) + Add 6 Mimic Cards = 36 Total
+        // Mimic Logic: Copy Opponent's entire deck (30 or 36 cards) + Add 6 Mimic Cards = 36/42 Total
         const mimicClassData = MASTER_CLASSES["Mimic"];
         const mimicCards: Card[] = [];
         for (let i = 1; i <= 6; i++) {

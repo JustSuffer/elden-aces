@@ -1,4 +1,20 @@
-import { Card, ClassName, PlayerState } from "../types/game";
+```typescript
+import { Card, ClassName, GameResult, GameSideEffects } from "@/types/game";
+import { SPECIAL_CARDS_DATA } from "@/data/gameData";
+
+function createSpecialCard(type: keyof typeof SPECIAL_CARDS_DATA): Card {
+    const base = SPECIAL_CARDS_DATA[type];
+    return {
+        id: `conjurer-${type}-${Date.now()}-${Math.random()}`,
+        name: base.name,
+        symbol: base.symbol,
+        type: "special",
+        specialType: type,
+        value: 0,
+        description: base.description
+    };
+}
+
 import { MASTER_CLASSES } from "../data/gameData";
 
 export interface GameSideEffects {
@@ -257,17 +273,6 @@ function applyStep5Abilities(
         break;
 
       case "Fateweaver": // (Π)
-        // Handled mostly by Dice logic in useGameState
-         switch (count) {
-          case 1: break;
-          case 2: res.logs.push("Fateweaver (2): +2 Zar Puanı"); break;
-          case 3: res.logs.push("Fateweaver (3): +4 Zar Puanı"); break;
-          case 4: res.logs.push("Fateweaver (4): +8 Zar Puanı"); break;
-          case 5: res.logs.push("Fateweaver (5): Nova (Tüm Zarlar)"); break; 
-        }
-        break;
-
-      case "Fateweaver": // (Π)
          let fDice = 0;
          let fGamma = false;
          switch (count) {
@@ -389,13 +394,40 @@ function applyStep5Abilities(
         break;
 
       case "Conjurer": // (μ)
-        // "Random" for 2,3,4. "5 Kart + Gamma" for 5.
-        // Random effect? Maybe random card?
+        // 1: 0
+        // 2: 1 Twisted/Deflate
+        // 3: 1 Sigma/Delta
+        // 4: 2 Sigma/Delta
+        // 5: 3 Sigma/Delta + Gamma
+        const conjurerCards: Card[] = [];
+        
         switch (count) {
-           case 2: res.logs.push("Conjurer (2): Random"); break;
-           case 3: res.logs.push("Conjurer (3): Random"); break;
-           case 4: res.logs.push("Conjurer (4): Random"); break;
-           case 5: res.logs.push("Conjurer (5): 5 Kart + Gamma"); break;
+            case 2:
+                // 1 Twisted or Deflate
+                 conjurerCards.push(createSpecialCard(Math.random() < 0.5 ? "twisted" : "deflate"));
+                 res.logs.push("Conjurer (2): +1 Twisted/Deflate");
+                 break;
+            case 3:
+                 // 1 Sigma or Delta
+                 conjurerCards.push(createSpecialCard(Math.random() < 0.5 ? "sigma" : "delta"));
+                 res.logs.push("Conjurer (3): +1 Sigma/Delta");
+                 break;
+            case 4:
+                 // 2 Sigma or Delta
+                 for(let i=0; i<2; i++) conjurerCards.push(createSpecialCard(Math.random() < 0.5 ? "sigma" : "delta"));
+                 res.logs.push("Conjurer (4): +2 Sigma/Delta");
+                 break;
+            case 5:
+                  // 3 Sigma or Delta + Gamma
+                 for(let i=0; i<3; i++) conjurerCards.push(createSpecialCard(Math.random() < 0.5 ? "sigma" : "delta"));
+                 conjurerCards.push(createSpecialCard("gamma"));
+                 res.logs.push("Conjurer (5): +3 Sigma/Delta + Gamma");
+                 break;
+        }
+        
+        if (conjurerCards.length > 0) {
+            if (isP1) targetEffects.p1CardsAdded = conjurerCards;
+            else targetEffects.p2CardsAdded = conjurerCards;
         }
         break;
 
