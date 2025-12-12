@@ -62,7 +62,15 @@ interface DamageResult {
  * Calculates the numeric total of a set of cards (Step 2).
  */
 export function calculateNumericTotal(cards: Card[]): number {
-  return cards.reduce((sum, card) => sum + (card.value || 0), 0);
+  let total = cards.reduce((sum, card) => sum + (card.value || 0), 0);
+  
+  // Gamma (γ) Effect: Doubles total damage
+  const gammaCount = cards.filter(c => c.specialType === "gamma").length;
+  if (gammaCount > 0) {
+      total = total * Math.pow(2, gammaCount);
+  }
+  
+  return total;
 }
 
 /**

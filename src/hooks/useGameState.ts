@@ -372,12 +372,12 @@ export function useGameState(initParams?: GameInitParams) {
 
       return {
         ...prev,
-        diceUsed: prev.diceUsed + 1,
+
         pendingDiceResult: null,
         playerHand: newHand,
         playerMust4Cards: false,
         cardSelectionMode: false,
-        playerDiceRolls: isFateweaver ? (prev.playerDiceRolls || 0) - 1 : prev.playerDiceRolls,
+        // playerDiceRolls handled in rollDice
       };
     });
   }, []);
