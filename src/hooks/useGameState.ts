@@ -440,6 +440,10 @@ export function useGameState(initParams?: GameInitParams) {
       if (prev.playerClass === "Siren" && p1Cards.filter(c => c.isStolen).length >= 5) {
           logDetails.push("❤️ KADERİN KALBİNE HÜKMETTİM: Siren Kazandı!");
           newOpponentHP = 0;
+          if (newPlayerHP <= 0) {
+             newPlayerHP = 1; // Prevent death if win condition met
+             logDetails.push("❤️ Aşk Ölümden Güçlüdür: Siren Hayatta!");
+          }
       }
 
       let phase: "placement" | "reveal" | "damage" | "end" = newPlayerHP <= 0 || newOpponentHP <= 0 ? "end" : "damage";
@@ -646,6 +650,10 @@ export function useGameState(initParams?: GameInitParams) {
         opponentHand: p2Hand,
         playerDiceRolls: newPlayerDiceRolls,
         pendingRoundSkip: totalSkip,
+        mimicCounter: {
+            p1: (prev.mimicCounter?.p1 || 0) + (prev.playerClass === "Mimic" ? p1Cards.length : 0),
+            p2: (prev.mimicCounter?.p2 || 0) + (prev.opponentClass === "Mimic" ? p2Cards.length : 0)
+        },
         damageResult: {
           playerDamage: result.p1DamageTaken,
           opponentDamage: result.p2DamageTaken,

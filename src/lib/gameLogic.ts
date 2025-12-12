@@ -28,15 +28,7 @@ interface DamageResult {
  * Calculates the numeric total of a set of cards (Step 2).
  */
 export function calculateNumericTotal(cards: Card[]): number {
-  let total = cards.reduce((sum, card) => sum + (card.value || 0), 0);
-  
-  // Gamma (γ) Effect: Doubles total damage
-  const gammaCount = cards.filter(c => c.specialType === "gamma").length;
-  if (gammaCount > 0) {
-      total = total * Math.pow(2, gammaCount);
-  }
-  
-  return total;
+  return cards.reduce((sum, card) => sum + (card.value || 0), 0);
 }
 
 /**
@@ -616,6 +608,24 @@ export function resolveGameRound(
   let p1Total = calculateNumericTotal(p1Cards);
   let p2Total = calculateNumericTotal(p2Cards);
 
+  // --- Gamma (γ) Amplification (Subject to Deflate) ---
+  if (isP1SpecialActive) {
+      const gCount = p1Cards.filter(c => c.specialType === "gamma").length;
+      if (gCount > 0) {
+          const mult = Math.pow(2, gCount);
+          p1Total *= mult;
+          logs.push(`⚡ Gamma (γ) x${mult}: P1 Total Doubled to ${p1Total}!`);
+      }
+  }
+  if (isP2SpecialActive) {
+      const gCount = p2Cards.filter(c => c.specialType === "gamma").length;
+      if (gCount > 0) {
+          const mult = Math.pow(2, gCount);
+          p2Total *= mult;
+          logs.push(`⚡ Gamma (γ) x${mult}: P2 Total Doubled to ${p2Total}!`);
+      }
+  }
+
   // --- STEP 3: Numeric Combinations (Subject to Reflection) ---
   // Added to Base Total BEFORE difference calc to be part of the "Reflectable" payload?
   // "Bu hasarlar da ADIM 2'deki yönlendirme kurallarına tabidir."
@@ -706,6 +716,20 @@ export function resolveGameRound(
   // Final Summation
   p1DamageTaken += p2True + abilityRes.p2ExtraDmg;
   p2DamageTaken += p1True + abilityRes.p1ExtraDmg;
+
+  // --- Gamma Invulnerability (Last Step) ---
+  if (isP1SpecialActive && p1Cards.some(c => c.specialType === "gamma")) {
+      if (p1DamageTaken > 0) {
+          logs.push("🛡️ Gamma (γ) Safe: P1 Hasar Almaz!");
+          p1DamageTaken = 0;
+      }
+  }
+  if (isP2SpecialActive && p2Cards.some(c => c.specialType === "gamma")) {
+      if (p2DamageTaken > 0) {
+          logs.push("🛡️ Gamma (γ) Safe: P2 Hasar Almaz!");
+          p2DamageTaken = 0;
+      }
+  }
 
   return {
     p1DamageTaken,
