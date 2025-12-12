@@ -509,18 +509,7 @@ export function useGameState(initParams?: GameInitParams) {
           }
       }
 
-       if (result.sideEffects.p2DrawCount) {
-          const count = result.sideEffects.p2DrawCount;
-          const drawn = p2Deck.slice(0, count);
-          p2Deck = p2Deck.slice(count);
-          p2Hand.push(...drawn);
-          logDetails.push(`🔮 Rakip Oracle kart çekiyor: ${count} (Kalan: ${p2Deck.length})`);
-          
-          if (p2Deck.length === 0 && prev.opponentClass === "Oracle") {
-              logDetails.push("🔮 RAKİP KEHANETİ TAMAMLADI: Oracle Kazandı!");
-              newPlayerHP = 0;
-          }
-      }
+
 
       // --- FATEWEAVER LOGIC (Dice Gain + Gamma) ---
       let newPlayerDiceRolls = prev.playerDiceRolls;

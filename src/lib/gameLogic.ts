@@ -267,6 +267,25 @@ function applyStep5Abilities(
         }
         break;
 
+      case "Fateweaver": // (Π)
+         let fDice = 0;
+         let fGamma = false;
+         switch (count) {
+             case 2: fDice = 2; break;
+             case 3: fDice = 3; break;
+             case 4: fDice = 5; break;
+             case 5: fDice = 6; fGamma = true; break;
+         }
+         if (fDice > 0) {
+             if (isP1) targetEffects.p1DiceGain = fDice; else targetEffects.p2DiceGain = fDice;
+             res.logs.push(`Fateweaver (${count}): +${fDice} Zar Hakkı`);
+         }
+         if (fGamma) {
+             if (isP1) targetEffects.p1GammaReward = true; else targetEffects.p2GammaReward = true;
+             res.logs.push(`Fateweaver (5): Gamma (γ) Ödülü`);
+         }
+         break;
+
       case "Augmentor": // (Θ)
         switch (count) {
           case 1: break;

@@ -90,7 +90,7 @@ export const DeckSelectionScreen = ({ onStartGame }: DeckSelectionScreenProps) =
             Desteni Seç
           </h2>
           
-          <div className="space-y-3 max-h-[400px] overflow-y-auto">
+          <div className="space-y-3 max-h-[400px] overflow-y-auto acoria-scrollbar pr-2">
             {savedDecks.map((deck) => {
               const classData = MASTER_CLASSES[deck.mainClass];
               const isSelected = selectedDeck?.id === deck.id;
