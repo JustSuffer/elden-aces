@@ -57,6 +57,8 @@ export interface GameSideEffects {
   p2SelfDamage?: number;
   p1Heal?: number;
   p2Heal?: number;
+  p1CardValueBuff?: number;
+  p2CardValueBuff?: number;
   p1CardsAdded?: Card[];
   p2CardsAdded?: Card[];
   p1BurnCount?: number;

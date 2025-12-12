@@ -413,6 +413,21 @@ function applyStep5Abilities(
         }
         break;
         
+      case "Augmentor": // (Θ)
+        let buff = 0;
+        switch (count) {
+          case 2: buff = 1; break;
+          case 3: buff = 2; break;
+          case 4: buff = 3; break;
+          case 5: buff = 6; break;
+        }
+        if (buff > 0) {
+           if (isP1) targetEffects.p1CardValueBuff = buff; 
+           else targetEffects.p2CardValueBuff = buff;
+           res.logs.push(`Augmentor (${count}): +${buff} Değer (Tüm Deste/El Buff)`);
+        }
+        break;
+
       default:
         break;
     }
@@ -830,8 +845,10 @@ export function checkCounterWinCondition(
 
     // Augmentor
     if (pClass === "Augmentor") {
-        const hasNine = player.playedCardsInRound.some(c => c.symbol === MASTER_CLASSES.Augmentor.symbol && c.value === 9);
-        if (hasNine) return true;
+        const hasTwelve = player.playedCardsInRound.some(c => 
+             (c.symbol === MASTER_CLASSES.Augmentor.symbol || c.classSymbol === MASTER_CLASSES.Augmentor.symbol) && (c.value || 0) >= 12
+        );
+        if (hasTwelve) return true;
     }
   
     // Vessel

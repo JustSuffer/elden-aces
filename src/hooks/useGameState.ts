@@ -642,13 +642,41 @@ export function useGameState(initParams?: GameInitParams) {
           logDetails.push(`⏳ ZAMAN ATLAMASI: ${totalSkip} Round ileri sarılıyor!`);
       }
 
+      // Augmentor Logic (Buffs)
+      if (result.sideEffects.p1CardValueBuff) {
+           const buff = result.sideEffects.p1CardValueBuff;
+           p1Hand.forEach(c => c.value = (c.value || 0) + buff);
+           p1Deck.forEach(c => c.value = (c.value || 0) + buff);
+           logDetails.push(`📈 Augmentor (P1): +${buff} Değer (Tüm Kartlar)!`);
+      }
+      if (result.sideEffects.p2CardValueBuff) {
+           const buff = result.sideEffects.p2CardValueBuff;
+           p2Hand.forEach(c => c.value = (c.value || 0) + buff);
+           p2Deck.forEach(c => c.value = (c.value || 0) + buff);
+           logDetails.push(`📈 Augmentor (P2): +${buff} Değer (Tüm Kartlar)!`);
+      }
+
+      // Mimic Logic
+      const mimicSymbol = "V";
+      const p1MimicAdded = prev.playerClass === "Mimic" ? p1Cards.filter(c => c.symbol === mimicSymbol).length : 0;
+      const p2MimicAdded = prev.opponentClass === "Mimic" ? p2Cards.filter(c => c.symbol === mimicSymbol).length : 0;
+      const newMimicP1 = (prev.mimicCounter?.p1 || 0) + p1MimicAdded;
+      const newMimicP2 = (prev.mimicCounter?.p2 || 0) + p2MimicAdded;
+
+      let specialWinner = winner;
+      if (prev.playerClass === "Mimic" && prev.opponentClass === "Mimic") {
+          if (newMimicP1 >= 12 && newMimicP2 < 12) specialWinner = "p1";
+          else if (newMimicP2 >= 12 && newMimicP1 < 12) specialWinner = "p2";
+          else if (newMimicP1 >= 12 && newMimicP2 >= 12) specialWinner = "draw";
+      }
+
       return {
         ...prev,
         playerHP: newPlayerHP,
         opponentHP: newOpponentHP,
-        phase, // Keeps "damage" or "end" if already dead
+        phase,
         logs: [...(prev.logs || []), ...logDetails],
-        winner: (newPlayerHP <= 0 ? "p2" : (newOpponentHP <= 0 ? "p1" : winner)), // Check death OR R7 logic
+        winner: specialWinner || (newPlayerHP <= 0 ? "p2" : (newOpponentHP <= 0 ? "p1" : winner)),
         playerDeck: p1Deck,
         opponentDeck: p2Deck,
         playerHand: p1Hand,
@@ -656,8 +684,8 @@ export function useGameState(initParams?: GameInitParams) {
         playerDiceRolls: newPlayerDiceRolls,
         pendingRoundSkip: totalSkip,
         mimicCounter: {
-            p1: (prev.mimicCounter?.p1 || 0) + (prev.playerClass === "Mimic" ? p1Cards.length : 0),
-            p2: (prev.mimicCounter?.p2 || 0) + (prev.opponentClass === "Mimic" ? p2Cards.length : 0)
+            p1: newMimicP1,
+            p2: newMimicP2
         },
         damageResult: {
           playerDamage: result.p1DamageTaken,

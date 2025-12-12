@@ -247,15 +247,15 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
                       isOpponent 
                     />
                   </div>
-                  {gameState.opponentClass === "Mimic" && (
+                  {gameState.opponentClass === "Mimic" && gameState.playerClass === "Mimic" && (
                     <div className="mt-1 pl-10 w-full">
                        <div className="h-2 bg-slate-900/50 rounded-full border border-slate-700/50 overflow-hidden relative group">
                            <div 
-                              className="h-full bg-gradient-to-r from-slate-500 to-white transition-all duration-500"
-                              style={{ width: `${Math.min(100, (gameState.mimicCounter?.p2 || 0) * 5)}%` }} // Assumes max 20 cards stolen logic approx
+                              className="h-full bg-gradient-to-r from-purple-500 to-white transition-all duration-500"
+                              style={{ width: `${Math.min(100, ((gameState.mimicCounter?.p2 || 0) / 12) * 100)}%` }}
                            />
-                           <span className="absolute inset-0 flex items-center justify-center text-[8px] font-bold text-white/80 tracking-widest">
-                              KNIFE: {gameState.mimicCounter?.p2 || 0}
+                           <span className="absolute inset-0 flex items-center justify-center text-[8px] font-bold text-white/90 tracking-widest shadow-black drop-shadow-md">
+                              Knife {gameState.mimicCounter?.p2 || 0}/12
                            </span>
                        </div>
                     </div>
@@ -390,15 +390,15 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
                       label={`Sen (${gameState.playerClass})`} 
                     />
                   </div>
-                  {gameState.playerClass === "Mimic" && (
+                  {gameState.playerClass === "Mimic" && gameState.opponentClass === "Mimic" && (
                     <div className="mt-1 pl-10 w-full mb-4 md:mb-8">
                        <div className="h-2 bg-slate-900/50 rounded-full border border-slate-700/50 overflow-hidden relative group">
                            <div 
-                              className="h-full bg-gradient-to-r from-slate-500 to-white transition-all duration-500"
-                              style={{ width: `${Math.min(100, (gameState.mimicCounter?.p1 || 0) * 5)}%` }}
+                              className="h-full bg-gradient-to-r from-purple-500 to-white transition-all duration-500"
+                              style={{ width: `${Math.min(100, ((gameState.mimicCounter?.p1 || 0) / 12) * 100)}%` }}
                            />
-                           <span className="absolute inset-0 flex items-center justify-center text-[8px] font-bold text-white/80 tracking-widest">
-                              KNIFE: {gameState.mimicCounter?.p1 || 0}
+                           <span className="absolute inset-0 flex items-center justify-center text-[8px] font-bold text-white/90 tracking-widest shadow-black drop-shadow-md">
+                              Knife {gameState.mimicCounter?.p1 || 0}/12
                            </span>
                        </div>
                     </div>
