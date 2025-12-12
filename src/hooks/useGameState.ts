@@ -283,7 +283,7 @@ export function useGameState(initParams?: GameInitParams) {
     });
   }, []);
 
-  const startRollingDice = useCallback(() => {
+  const rollDice = useCallback(() => {
     // Check if Fateweaver and round >= 3
     setGameState((prev) => {
       if (prev.playerClass === "Fateweaver" && prev.round < 3) {
