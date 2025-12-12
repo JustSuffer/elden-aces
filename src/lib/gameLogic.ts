@@ -226,22 +226,22 @@ function applyStep5Abilities(
           case 2:
              if (isP1) { p1ExtraDmg += 2; targetEffects.p1DrawCount = (targetEffects.p1DrawCount || 0) + 2; } 
              else { p2ExtraDmg += 2; targetEffects.p2DrawCount = (targetEffects.p2DrawCount || 0) + 2; }
-             res.logs.push("Oracle (2): 2 Hasar + 2 Çek");
+             res.logs.push("Oracle (2): 2 Hasar");
              break;
           case 3:
              if (isP1) { p1ExtraDmg += 3; targetEffects.p1DrawCount = (targetEffects.p1DrawCount || 0) + 3; }
              else { p2ExtraDmg += 3; targetEffects.p2DrawCount = (targetEffects.p2DrawCount || 0) + 3; }
-             res.logs.push("Oracle (3): 3 Hasar + 3 Çek");
+             res.logs.push("Oracle (3): 3 Hasar");
              break;
           case 4:
              if (isP1) { p1ExtraDmg += 4; targetEffects.p1DrawCount = (targetEffects.p1DrawCount || 0) + 4; }
              else { p2ExtraDmg += 4; targetEffects.p2DrawCount = (targetEffects.p2DrawCount || 0) + 4; }
-             res.logs.push("Oracle (4): 4 Hasar + 4 Çek");
+             res.logs.push("Oracle (4): 4 Hasar");
              break;
           case 5:
              if (isP1) { p1ExtraDmg += 10; targetEffects.p1DrawCount = (targetEffects.p1DrawCount || 0) + 5; }
              else { p2ExtraDmg += 10; targetEffects.p2DrawCount = (targetEffects.p2DrawCount || 0) + 5; }
-             res.logs.push("Oracle (5): 10 Hasar + 5 Çek");
+             res.logs.push("Oracle (5): 10 Hasar");
              break;
         }
         break;
@@ -307,8 +307,10 @@ function applyStep5Abilities(
              break;
         }
         if (burn > 0) {
-           if (isP1) targetEffects.p2BurnCount = burn; else targetEffects.p1BurnCount = burn;
-           res.logs.push(`Incinerator (${count}): ${burn} Yak`);
+           // P1 triggers logic -> Sets p1BurnCount (meaning "P1 causes burn")
+           // useGameState interprets p1BurnCount as "P1 burns P2"
+           if (isP1) targetEffects.p1BurnCount = burn; else targetEffects.p2BurnCount = burn;
+           res.logs.push(`Decay (${count}): ${burn} Yak`);
         }
         break;
 

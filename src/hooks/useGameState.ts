@@ -725,23 +725,11 @@ export function useGameState(initParams?: GameInitParams) {
       // Cards not played carry over (player hand already has unplayed cards)
       // Deal new cards to reach 6 total (IGNORING STOLEN CARDS FOR SIREN)
       // Special: Oracle draws fixed 2 cards per round.
-      const isOracle = prev.playerClass === "Oracle";
-      let cardsNeeded = 0;
-      if (isOracle) {
-         cardsNeeded = 2;
-      } else {
-         const currentNormalCards = prev.playerHand.filter(c => !c.isStolen).length;
-         cardsNeeded = Math.max(0, 6 - currentNormalCards);
-      }
+      const currentNormalCards = prev.playerHand.filter(c => !c.isStolen).length;
+      const cardsNeeded = Math.max(0, 6 - currentNormalCards);
       
-      const isBotOracle = prev.opponentClass === "Oracle";
-      let botCardsNeeded = 0;
-      if (isBotOracle) {
-         botCardsNeeded = 2;
-      } else {
-         const botNormalCards = prev.opponentHand.filter(c => !c.isStolen).length;
-         botCardsNeeded = Math.max(0, 6 - botNormalCards);
-      }
+      const botNormalCards = prev.opponentHand.filter(c => !c.isStolen).length;
+      const botCardsNeeded = Math.max(0, 6 - botNormalCards);
       
       const { dealt: playerCards, remaining: playerRemaining } = localDealCards(prev.playerDeck, cardsNeeded);
       const { dealt: opponentCards, remaining: opponentRemaining } = localDealCards(prev.opponentDeck, botCardsNeeded);
