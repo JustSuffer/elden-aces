@@ -1,127 +1,286 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Trophy, Skull } from "lucide-react";
+import { Trophy, Skull, Coins, Swords, Shield, Crown, Sparkles } from "lucide-react";
 import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface VictoryPopupProps {
   open: boolean;
   isVictory: boolean;
   playerHP: number;
   opponentHP: number;
+  winReason?: string;
   onReturnToMenu: () => void;
+  delayMs?: number; // Delay before showing popup (for win condition animations)
 }
 
-export function VictoryPopup({ open, isVictory, playerHP, opponentHP, onReturnToMenu }: VictoryPopupProps) {
+export function VictoryPopup({ 
+  open, 
+  isVictory, 
+  playerHP, 
+  opponentHP, 
+  winReason,
+  onReturnToMenu,
+  delayMs = 0 
+}: VictoryPopupProps) {
   const reward = isVictory ? 10 : 2;
-  const [showExplanation, setShowExplanation] = useState(true);
-  const [currentStep, setCurrentStep] = useState(0);
-
-  const explanationSteps = [
-    "Calculating base damage from numeric totals...",
-    "Applying sequential combo bonuses...",
-    "Applying symbol combo bonuses...",
-    "Resolving special card effects...",
-    "Final damage calculation complete!"
-  ];
+  const [showPopup, setShowPopup] = useState(false);
+  const [showContent, setShowContent] = useState(false);
+  const hpDiff = Math.abs(playerHP - opponentHP);
 
   useEffect(() => {
     if (open) {
-      setShowExplanation(true);
-      setCurrentStep(0);
+      // Wait for animations to complete
+      const timer = setTimeout(() => {
+        setShowPopup(true);
+        setTimeout(() => setShowContent(true), 400);
+      }, delayMs);
       
-      const interval = setInterval(() => {
-        setCurrentStep((prev) => {
-          if (prev >= explanationSteps.length - 1) {
-            clearInterval(interval);
-            setTimeout(() => setShowExplanation(false), 1000);
-            return prev;
-          }
-          return prev + 1;
-        });
-      }, 800);
-
-      return () => clearInterval(interval);
+      return () => clearTimeout(timer);
+    } else {
+      setShowPopup(false);
+      setShowContent(false);
     }
-  }, [open]);
+  }, [open, delayMs]);
+
+  if (!showPopup) return null;
 
   return (
-    <Dialog open={open} onOpenChange={() => {}}>
-      <DialogContent className="sm:max-w-md">
-        {showExplanation ? (
-          <div className="flex flex-col items-center gap-6 py-12">
-            <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-            <div className="text-center space-y-2">
-              <p className="text-lg font-bold text-primary glow-gold">
-                {explanationSteps[currentStep]}
-              </p>
-              <div className="flex gap-2 justify-center mt-4">
-                {explanationSteps.map((_, index) => (
-                  <div
-                    key={index}
-                    className={`w-2 h-2 rounded-full transition-all ${
-                      index <= currentStep ? "bg-primary" : "bg-muted"
-                    }`}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-        ) : (
-          <>
-            <DialogHeader>
-              <DialogTitle className="text-center text-3xl flex items-center justify-center gap-3">
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[100] flex items-center justify-center"
+      >
+        {/* Backdrop */}
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className={`absolute inset-0 ${
+            isVictory 
+              ? "bg-gradient-to-b from-amber-950/90 via-black/95 to-black" 
+              : "bg-gradient-to-b from-red-950/90 via-black/95 to-black"
+          }`}
+        />
+
+        {/* Floating particles */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {Array.from({ length: 20 }).map((_, i) => (
+            <motion.div
+              key={i}
+              initial={{ 
+                y: "100vh", 
+                x: `${Math.random() * 100}vw`,
+                opacity: 0 
+              }}
+              animate={{ 
+                y: "-10vh", 
+                opacity: [0, 1, 0],
+                transition: { 
+                  duration: 4 + Math.random() * 3,
+                  delay: Math.random() * 2,
+                  repeat: Infinity 
+                }
+              }}
+              className={`absolute w-2 h-2 rounded-full ${
+                isVictory ? "bg-amber-400" : "bg-red-500"
+              }`}
+            />
+          ))}
+        </div>
+
+        {/* Main Content */}
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0, y: 50 }}
+          animate={{ scale: 1, opacity: 1, y: 0 }}
+          transition={{ type: "spring", damping: 20, stiffness: 100, delay: 0.2 }}
+          className="relative z-10 w-full max-w-lg mx-4"
+        >
+          {/* Decorative top border */}
+          <div className={`h-1 rounded-t-xl ${
+            isVictory 
+              ? "bg-gradient-to-r from-transparent via-amber-400 to-transparent" 
+              : "bg-gradient-to-r from-transparent via-red-500 to-transparent"
+          }`} />
+
+          <div className={`
+            backdrop-blur-xl rounded-b-xl border-x border-b p-8
+            ${isVictory 
+              ? "bg-gradient-to-b from-amber-950/40 to-card/80 border-amber-500/30" 
+              : "bg-gradient-to-b from-red-950/40 to-card/80 border-red-500/30"
+            }
+          `}>
+            {/* Icon */}
+            <motion.div
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ type: "spring", damping: 10, delay: 0.4 }}
+              className="flex justify-center mb-6"
+            >
+              <div className={`
+                relative p-6 rounded-full
+                ${isVictory 
+                  ? "bg-gradient-to-br from-amber-500 to-yellow-600 shadow-[0_0_60px_rgba(251,191,36,0.5)]" 
+                  : "bg-gradient-to-br from-red-600 to-red-800 shadow-[0_0_60px_rgba(239,68,68,0.5)]"
+                }
+              `}>
                 {isVictory ? (
-                  <>
-                    <Trophy className="w-10 h-10 text-primary" />
-                    <span className="text-primary glow-gold">Victory!</span>
-                  </>
+                  <Crown className="w-16 h-16 text-amber-950" />
                 ) : (
+                  <Skull className="w-16 h-16 text-red-200" />
+                )}
+                
+                {/* Orbiting sparkles for victory */}
+                {isVictory && (
                   <>
-                    <Skull className="w-10 h-10 text-destructive" />
-                    <span className="text-destructive">Defeat</span>
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                      className="absolute inset-0"
+                    >
+                      <Sparkles className="absolute -top-2 left-1/2 -translate-x-1/2 w-5 h-5 text-amber-300" />
+                    </motion.div>
+                    <motion.div
+                      animate={{ rotate: -360 }}
+                      transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                      className="absolute inset-0"
+                    >
+                      <Sparkles className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 text-yellow-300" />
+                    </motion.div>
                   </>
                 )}
-              </DialogTitle>
-            </DialogHeader>
-            <div className="flex flex-col items-center gap-6 py-6 animate-fade-in">
-              <div className="text-center space-y-2">
-                <p className="text-lg">
-                  Your HP: <span className="font-bold text-theta">{playerHP}</span>
-                </p>
-                <p className="text-lg">
-                  Opponent HP: <span className="font-bold text-omega">{opponentHP}</span>
-                </p>
               </div>
-              
-              <div className="bg-muted/30 border border-border rounded-lg p-4 w-full">
-                <p className="text-sm text-center text-muted-foreground mb-2">
-                  {isVictory 
-                    ? "Your strategic mastery led to victory!" 
-                    : "A valiant effort, but defeat teaches valuable lessons."}
-                </p>
-                <p className="text-center text-sm text-foreground/70">
-                  HP Difference: {Math.abs(playerHP - opponentHP)}
-                </p>
+            </motion.div>
+
+            {/* Title */}
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className={`
+                text-5xl font-bold text-center font-cinzel mb-2
+                ${isVictory 
+                  ? "text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-300" 
+                  : "text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-red-300 to-red-400"
+                }
+              `}
+              style={{ 
+                textShadow: isVictory 
+                  ? "0 0 40px rgba(251,191,36,0.6)" 
+                  : "0 0 40px rgba(239,68,68,0.6)" 
+              }}
+            >
+              {isVictory ? "ZAFER!" : "YENİLGİ"}
+            </motion.h1>
+
+            {/* Win reason if provided */}
+            {winReason && (
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.6 }}
+                className="text-center text-muted-foreground text-sm mb-6"
+              >
+                {winReason}
+              </motion.p>
+            )}
+
+            {/* HP Stats */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              className="grid grid-cols-2 gap-4 mb-6"
+            >
+              {/* Player HP */}
+              <div className={`
+                p-4 rounded-lg border text-center
+                ${playerHP > opponentHP 
+                  ? "bg-green-950/30 border-green-500/30" 
+                  : "bg-card/30 border-border/50"
+                }
+              `}>
+                <div className="flex items-center justify-center gap-2 mb-1">
+                  <Shield className="w-4 h-4 text-green-400" />
+                  <span className="text-sm text-muted-foreground">Sen</span>
+                </div>
+                <span className="text-3xl font-bold text-green-400">{playerHP}</span>
+                <span className="text-lg text-muted-foreground"> HP</span>
               </div>
 
-              <div className="bg-card/50 border border-primary/30 rounded-lg p-4 w-full">
-                <p className="text-center text-xl font-bold text-primary glow-gold">
-                  +{reward} DivineCoin
-                </p>
+              {/* Opponent HP */}
+              <div className={`
+                p-4 rounded-lg border text-center
+                ${opponentHP > playerHP 
+                  ? "bg-red-950/30 border-red-500/30" 
+                  : "bg-card/30 border-border/50"
+                }
+              `}>
+                <div className="flex items-center justify-center gap-2 mb-1">
+                  <Swords className="w-4 h-4 text-red-400" />
+                  <span className="text-sm text-muted-foreground">Rakip</span>
+                </div>
+                <span className="text-3xl font-bold text-red-400">{opponentHP}</span>
+                <span className="text-lg text-muted-foreground"> HP</span>
               </div>
-              
+            </motion.div>
+
+            {/* HP Difference */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.7 }}
+              className="text-center mb-6 text-sm text-muted-foreground"
+            >
+              HP Farkı: <span className="font-bold text-foreground">{hpDiff}</span>
+            </motion.div>
+
+            {/* Reward */}
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", delay: 0.8 }}
+              className={`
+                p-4 rounded-lg mb-6 flex items-center justify-center gap-3
+                ${isVictory 
+                  ? "bg-gradient-to-r from-amber-950/50 via-amber-900/30 to-amber-950/50 border border-amber-500/30" 
+                  : "bg-card/30 border border-border/50"
+                }
+              `}
+            >
+              <Coins className={`w-8 h-8 ${isVictory ? "text-amber-400" : "text-muted-foreground"}`} />
+              <span className={`
+                text-2xl font-bold font-cinzel
+                ${isVictory ? "text-amber-300 glow-gold" : "text-muted-foreground"}
+              `}>
+                +{reward} DivineCoin
+              </span>
+            </motion.div>
+
+            {/* Return Button */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.9 }}
+            >
               <Button
                 variant="default"
                 size="lg"
                 onClick={onReturnToMenu}
-                className="w-full"
+                className={`
+                  w-full text-lg font-cinzel py-6
+                  ${isVictory 
+                    ? "bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-amber-950" 
+                    : ""
+                  }
+                `}
               >
-                Return to Menu
+                Menüye Dön
               </Button>
-            </div>
-          </>
-        )}
-      </DialogContent>
-    </Dialog>
+            </motion.div>
+          </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
   );
 }
