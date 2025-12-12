@@ -310,7 +310,7 @@ export function useGameState(initParams?: GameInitParams) {
       let effect = "";
       
       if (isFateweaverBehavior) {
-          if (result <= 13) {
+          if (result < 11) {
               effect = "Kaderin Cilvesi: Elinize Twisted (α) veya Deflate (β) eklenecek.";
           } else {
               effect = "KADER ÖRÜLDÜ: Efsanevi Gamma (γ) Kartı eklendi!";
@@ -358,7 +358,7 @@ export function useGameState(initParams?: GameInitParams) {
       };
 
       if (isFateweaver) {
-          if (result <= 13) {
+          if (result < 11) {
                Math.random() < 0.5 ? addSpecial("twisted") : addSpecial("deflate");
           } else {
                addSpecial("gamma");

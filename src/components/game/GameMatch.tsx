@@ -646,7 +646,7 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
           winReason={gameState.winReason}
           damageDetails={gameState.damageResult?.details}
           onReturnToMenu={() => navigate("/")}
-          delayMs={4000} 
+          delayMs={showWinConAnimation ? 4000 : 0} 
         />
 
       </div>
