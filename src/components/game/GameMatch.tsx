@@ -104,14 +104,18 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
   };
 
   const handleRollDice = () => {
-    if (gameState.playerClass === "Fateweaver" && gameState.round < 3) {
-      toast.error("Fateweaver sadece 3. rounddan itibaren zar atabilir!");
-      return;
-    }
-    
-    if (gameState.diceUsed >= 2) {
-      toast.error("Zar hakkın bitti! (Maç başına 2)");
-      return;
+    // Fateweaver Logic: Check if they have dice
+    if (gameState.playerClass === "Fateweaver") {
+        if ((gameState.playerDiceRolls || 0) <= 0) {
+            toast.error("Zar hakkınız kalmadı! (Fateweaver)");
+            return;
+        }
+    } else {
+        // Standard Logic: Max 2
+        if (gameState.diceUsed >= 2) {
+            toast.error("Zar hakkın bitti! (Maç başına 2)");
+            return;
+        }
     }
 
     rollDice();
