@@ -28,6 +28,7 @@ interface GameMatchProps {
 export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
   const navigate = useNavigate();
   const [vfxEffects, setVfxEffects] = useState<VfxEffect[]>([]);
+  const [showHourglass, setShowHourglass] = useState(false);
 
   const { 
     gameState, 
@@ -168,6 +169,20 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
 
   const handleNextRound = () => {
     const maxRounds = gameState.maxRounds || 7;
+
+    if (gameState.pendingRoundSkip && gameState.pendingRoundSkip > 0) {
+       setShowHourglass(true);
+       setTimeout(() => {
+           setShowHourglass(false);
+            if (gameState.round >= maxRounds || gameState.playerHP <= 0 || gameState.opponentHP <= 0) {
+              navigate("/");
+              return;
+            }
+           nextRound();
+       }, 2500);
+       return;
+    }
+
     if (gameState.round >= maxRounds || gameState.playerHP <= 0 || gameState.opponentHP <= 0) {
       navigate("/");
       return;
@@ -401,6 +416,22 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
           cards={gameState.playerHand}
           onConfirm={handleCardSelection}
         />
+
+        {/* Hourglass Time Skip Overlay */}
+        {showHourglass && (
+          <div className="fixed inset-0 z-50 bg-black/80 flex flex-col items-center justify-center animate-in fade-in duration-500">
+            <div className="animate-pulse">
+                <div className="text-6xl md:text-8xl mb-6">⏳</div>
+            </div>
+            <h2 className="text-4xl md:text-6xl font-bold text-amber-500 font-cinzel glow-text text-center animate-bounce">
+              ZAMAN ATLANIYOR...
+            </h2>
+            <p className="text-xl md:text-2xl text-amber-200/80 mt-4 text-center font-cinzel">
+              +{gameState.pendingRoundSkip} ROUND
+            </p>
+          </div>
+        )}
+
       </div>
     </DndContext>
   );

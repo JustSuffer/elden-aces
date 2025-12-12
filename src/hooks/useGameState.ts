@@ -286,8 +286,9 @@ export function useGameState(initParams?: GameInitParams) {
   const rollDice = useCallback(() => {
     // Check if Fateweaver and round >= 3
     setGameState((prev) => {
-      if (prev.playerClass === "Fateweaver" && prev.round < 3) {
-        return prev; // Can't roll yet
+      if (prev.playerClass === "Fateweaver") {
+        if (prev.round < 3) return prev;
+        if ((prev.playerDiceRolls || 0) <= 0) return prev;
       }
       
       if (prev.diceUsed >= 2 && prev.playerClass !== "Fateweaver") {
@@ -371,6 +372,7 @@ export function useGameState(initParams?: GameInitParams) {
         playerHand: newHand,
         playerMust4Cards: false,
         cardSelectionMode: false,
+        playerDiceRolls: isFateweaver ? (prev.playerDiceRolls || 0) - 1 : prev.playerDiceRolls,
       };
     });
   }, []);
@@ -512,12 +514,12 @@ export function useGameState(initParams?: GameInitParams) {
 
 
       // --- FATEWEAVER LOGIC (Dice Gain + Gamma) ---
-      let newPlayerDiceRolls = prev.playerDiceRolls;
+      let newPlayerDiceRolls = 0; // Reset pool - Dice do not carry over. Formula: 2 (Base) + Gain.
       
       if (result.sideEffects.p1DiceGain) {
           const gain = result.sideEffects.p1DiceGain;
-          newPlayerDiceRolls += gain;
-          logDetails.push(`🎲 Fateweaver Zarları Topluyor: +${gain} Zar Hakkı! (Toplam: ${newPlayerDiceRolls})`);
+          newPlayerDiceRolls = gain; // Store gain to be added to Base in nextRound (or effectively here)
+          logDetails.push(`🎲 Fateweaver Zarları Topluyor: +${gain} Zar Hakkı! (Gelecek Tur: 2 + ${gain})`);
       }
       if (result.sideEffects.p1GammaReward) {
           // Add Gamma
@@ -596,6 +598,15 @@ export function useGameState(initParams?: GameInitParams) {
           }
       }
 
+      // Check for Chronokeeper Round Skip
+      const p1Skip = result.sideEffects.p1RoundsSkip || 0;
+      const p2Skip = result.sideEffects.p2RoundsSkip || 0;
+      const totalSkip = p1Skip + p2Skip;
+
+      if (totalSkip > 0) {
+          logDetails.push(`⏳ ZAMAN ATLAMASI: ${totalSkip} Round ileri sarılıyor!`);
+      }
+
       return {
         ...prev,
         playerHP: newPlayerHP,
@@ -608,6 +619,7 @@ export function useGameState(initParams?: GameInitParams) {
         playerHand: p1Hand,
         opponentHand: p2Hand,
         playerDiceRolls: newPlayerDiceRolls,
+        pendingRoundSkip: totalSkip,
         damageResult: {
           playerDamage: result.p1DamageTaken,
           opponentDamage: result.p2DamageTaken,
@@ -633,7 +645,8 @@ export function useGameState(initParams?: GameInitParams) {
       
       return {
         ...prev,
-        round: prev.round + 1,
+        round: prev.round + 1 + (prev.pendingRoundSkip || 0),
+        pendingRoundSkip: 0,
         playerDeck: playerRemaining,
         opponentDeck: opponentRemaining,
         playerHand: [...prev.playerHand, ...playerCards],

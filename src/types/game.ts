@@ -66,7 +66,8 @@ export interface GameSideEffects {
   p1DiceGain?: number;
   p2DiceGain?: number;
   p1GammaReward?: boolean;
-  p2GammaReward?: boolean;
+  p1RoundsSkip?: number;
+  p2RoundsSkip?: number;
 }
 
 export interface PlayerState {
@@ -99,4 +100,5 @@ export interface GameState {
   playerDiceRolls?: number;
   diceUsed?: number;
   playerMust4Cards?: boolean;
+  pendingRoundSkip?: number;
 }
