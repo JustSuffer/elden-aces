@@ -113,7 +113,7 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
     symbol: "ρ",
     role: "Aggro Miller",
     initialHP: 40,
-    passiveDescription: "Burns deck.",
+    passiveDescription: "Rakip desteyi yakar.",
     abilityScales: [
         { count: 1, effectDescription: "-" },
         { count: 2, effectDescription: "3 Yak" },
@@ -121,8 +121,8 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
         { count: 4, effectDescription: "5 Yak" },
         { count: 5, effectDescription: "8 Yak + NoDeath" },
     ],
-    winCondition: "R4 Rakip Deste 0",
-    loseCondition: "Die if opponent has cards at R4.",
+    winCondition: "R5 sonunda Rakip Deste 0",
+    loseCondition: "Die if opponent has cards at R5.",
   },
   Siren: {
     name: "Siren",

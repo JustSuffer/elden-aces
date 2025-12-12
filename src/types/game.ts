@@ -59,6 +59,8 @@ export interface GameSideEffects {
   p2Heal?: number;
   p1CardValueBuff?: number;
   p2CardValueBuff?: number;
+  p1NoDeath?: boolean;
+  p2NoDeath?: boolean;
   p1CardsAdded?: Card[];
   p2CardsAdded?: Card[];
   p1BurnCount?: number;
@@ -101,20 +103,30 @@ export interface PlayerState {
 }
 
 export interface GameState {
-  round: number; // Current round (1-6)
+  round: number;
   maxRounds: number;
-  players: {
-    player: PlayerState;
-    opponent: PlayerState;
-  };
-  phase: "setup" | "draw" | "play" | "resolve" | "end";
-  winner?: string; // Player ID
-  logs: string[];
+  playerHP: number;
+  opponentHP: number;
+  playerDeck: Card[];
+  opponentDeck: Card[];
+  playerHand: Card[];
+  opponentHand: Card[];
+  playerField: (Card | null)[];
+  opponentField: (Card | null)[];
+  diceUsed: number;
+  phase: "placement" | "reveal" | "damage" | "end";
+  opponentMust4Cards: boolean;
+  playerMust4Cards: boolean;
+  cardSelectionMode: boolean;
+  pendingDiceResult: number | null;
+  damageResult: GameResult | null;
+  playerClass: ClassName;
+  opponentClass: ClassName;
   playerDiceRolls?: number;
-  pendingRoundSkip?: number;
+  carryOverCards: Card[];
+  pendingRoundSkip: number;
+  logs: string[];
   mimicCounter?: { p1: number; p2: number };
-  diceUsed?: number;
-  playerMust4Cards?: boolean;
 }
 
 export interface ClassAbilityResult {

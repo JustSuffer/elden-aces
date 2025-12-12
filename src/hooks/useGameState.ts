@@ -548,6 +548,47 @@ export function useGameState(initParams?: GameInitParams) {
 
 
 
+      // --- DECAY BURN LOGIC ---
+      if (result.sideEffects.p1BurnCount) {
+          const count = result.sideEffects.p1BurnCount;
+          p2Deck = p2Deck.slice(count);
+          logDetails.push(`🔥 Decay (P1): ${count} kart YAKTI! (Rakip Kalan: ${p2Deck.length})`);
+      }
+      if (result.sideEffects.p2BurnCount) {
+          const count = result.sideEffects.p2BurnCount;
+          p1Deck = p1Deck.slice(count);
+          logDetails.push(`🔥 Decay (P2): ${count} kart YAKTI! (Kalan: ${p1Deck.length})`);
+      }
+
+      // --- DECAY R5 CHECK ---
+      const isDecayP1 = prev.playerClass === "Decay";
+      const isDecayP2 = prev.opponentClass === "Decay";
+
+      if (prev.round === 5) {
+          if (isDecayP1) {
+              if (p2Deck.length === 0) {
+                  logDetails.push("🔥 DECAY ZAFERİ: Rakip Deste Kül Oldu!");
+                  newOpponentHP = 0;
+              } else if (!result.sideEffects.p1NoDeath) {
+                  logDetails.push("💀 DECAY CEZASI: Rakip Deste Bitmedi -> ÖLÜM.");
+                  newPlayerHP = 0;
+              } else {
+                  logDetails.push("🛡️ Decay Kurtuldu: NoDeath Aktif!");
+              }
+          }
+          if (isDecayP2) {
+              if (p1Deck.length === 0) {
+                  logDetails.push("🔥 RAKİP DECAY ZAFERİ!");
+                  newPlayerHP = 0;
+              } else if (!result.sideEffects.p2NoDeath) {
+                  logDetails.push("💀 Rakip Decay Cezası: Ölüm.");
+                  newOpponentHP = 0;
+              } else {
+                   logDetails.push("🛡️ Rakip Decay Kurtuldu!");
+              }
+          }
+      }
+
       // --- FATEWEAVER LOGIC (Dice Gain + Gamma) ---
       let newPlayerDiceRolls = prev.playerClass === "Fateweaver" ? (prev.playerDiceRolls || 0) : 0; // Carry over
       
@@ -643,21 +684,22 @@ export function useGameState(initParams?: GameInitParams) {
       }
 
       // Augmentor Logic (Buffs)
+      // Augmentor Logic (Buffs)
       if (result.sideEffects.p1CardValueBuff) {
            const buff = result.sideEffects.p1CardValueBuff;
-           p1Hand.forEach(c => { c.value = (c.value || 0) + buff; c.isBuffed = true; });
-           p1Deck.forEach(c => { c.value = (c.value || 0) + buff; c.isBuffed = true; });
+           p1Hand = p1Hand.map(c => ({...c, value: (c.value || 0) + buff, isBuffed: true}));
+           p1Deck = p1Deck.map(c => ({...c, value: (c.value || 0) + buff, isBuffed: true}));
            logDetails.push(`📈 Augmentor (P1): +${buff} Değer (Tüm Kartlar)!`);
       }
       if (result.sideEffects.p2CardValueBuff) {
            const buff = result.sideEffects.p2CardValueBuff;
-           p2Hand.forEach(c => { c.value = (c.value || 0) + buff; c.isBuffed = true; });
-           p2Deck.forEach(c => { c.value = (c.value || 0) + buff; c.isBuffed = true; });
+           p2Hand = p2Hand.map(c => ({...c, value: (c.value || 0) + buff, isBuffed: true}));
+           p2Deck = p2Deck.map(c => ({...c, value: (c.value || 0) + buff, isBuffed: true}));
            logDetails.push(`📈 Augmentor (P2): +${buff} Değer (Tüm Kartlar)!`);
       }
 
       // Mimic Logic
-      const mimicSymbol = "V";
+      const mimicSymbol = MASTER_CLASSES.Mimic.symbol;
       const p1MimicAdded = prev.playerClass === "Mimic" ? p1Cards.filter(c => c.symbol === mimicSymbol).length : 0;
       const p2MimicAdded = prev.opponentClass === "Mimic" ? p2Cards.filter(c => c.symbol === mimicSymbol).length : 0;
       const newMimicP1 = (prev.mimicCounter?.p1 || 0) + p1MimicAdded;

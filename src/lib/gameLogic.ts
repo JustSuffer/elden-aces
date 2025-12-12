@@ -321,8 +321,9 @@ function applyStep5Abilities(
           case 3: burn = 4; break;
           case 4: burn = 5; break;
           case 5: 
-             burn = 8; 
-             res.logs.push("Incinerator (5): NoDeath Active");
+             burn = 8;
+             if (isP1) targetEffects.p1NoDeath = true; else targetEffects.p2NoDeath = true;
+             res.logs.push("Decay (5): NoDeath Active!");
              break;
         }
         if (burn > 0) {
