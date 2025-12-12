@@ -113,7 +113,7 @@ export function useGameState(initParams?: GameInitParams) {
     let playerDeck: Card[];
 
     if (pClass === "Mimic") {
-        // Mimic Logic: Copy Opponent's entire deck (30 or 36 cards) + Add 6 Mimic Cards = 36/42 Total
+        // Mimic Logic: Copy Opponent's entire deck (30 or 36 cards) + Add 6 Mimic Cards = 36/42 Total.
         const mimicClassData = MASTER_CLASSES["Mimic"];
         const mimicCards: Card[] = [];
         for (let i = 1; i <= 6; i++) {
