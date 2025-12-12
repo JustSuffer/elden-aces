@@ -59,6 +59,10 @@ export interface GameSideEffects {
   p2CardsAdded?: Card[];
   p1BurnCount?: number;
   p2BurnCount?: number;
+  p1FreezeCount?: number;
+  p2FreezeCount?: number;
+  p1StealCount?: number;
+  p2StealCount?: number;
   p1SirenSteal?: number;
   p2SirenSteal?: number;
   p1DrawCount?: number;
@@ -66,8 +70,13 @@ export interface GameSideEffects {
   p1DiceGain?: number;
   p2DiceGain?: number;
   p1GammaReward?: boolean;
+  p2GammaReward?: boolean;
   p1RoundsSkip?: number;
   p2RoundsSkip?: number;
+  p1ValueBuff?: number;
+  p2ValueBuff?: number;
+  p1SetMax?: boolean;
+  p2SetMax?: boolean;
 }
 
 export interface PlayerState {
