@@ -491,14 +491,7 @@ export function useGameState(initParams?: GameInitParams) {
       let p1Deck = [...prev.playerDeck];
       let p2Deck = [...prev.opponentDeck];
 
-      if (result.sideEffects.p1BurnCount) {
-        p2Deck = p2Deck.slice(result.sideEffects.p1BurnCount);
-        logDetails.push(`🔥 ${result.sideEffects.p1BurnCount} rakip kartı yakıldı!`);
-      }
-      if (result.sideEffects.p2BurnCount) {
-        p1Deck = p1Deck.slice(result.sideEffects.p2BurnCount);
-        logDetails.push(`🔥 ${result.sideEffects.p2BurnCount} kartın yakıldı!`);
-      }
+
 
 
       // RE-IMPLEMENTING PROPER STATE UPDATES FOR HANDS
