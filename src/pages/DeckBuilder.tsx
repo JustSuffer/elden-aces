@@ -83,10 +83,11 @@ const DeckBuilder = () => {
   };
 
   const handleSecondaryToggle = (className: ClassName) => {
+    const limit = mainClass === "Conjurer" ? 4 : 3;
     setSecondaryClasses(prev => {
       if (prev.includes(className)) {
         return prev.filter(c => c !== className);
-      } else if (prev.length < 3) {
+      } else if (prev.length < limit) {
         return [...prev, className];
       }
       return prev;

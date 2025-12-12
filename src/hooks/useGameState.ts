@@ -286,10 +286,9 @@ export function useGameState(initParams?: GameInitParams) {
   }, []);
 
   const rollDice = useCallback(() => {
-    // Check if Fateweaver and round >= 3
+    // Check if Fateweaver and dice available
     setGameState((prev) => {
       if (prev.playerClass === "Fateweaver") {
-        if (prev.round < 3) return prev;
         if ((prev.playerDiceRolls || 0) <= 0) return prev;
       }
       
@@ -516,12 +515,12 @@ export function useGameState(initParams?: GameInitParams) {
 
 
       // --- FATEWEAVER LOGIC (Dice Gain + Gamma) ---
-      let newPlayerDiceRolls = 0; // Reset pool - Dice do not carry over. Formula: 2 (Base) + Gain.
+      let newPlayerDiceRolls = prev.playerClass === "Fateweaver" ? (prev.playerDiceRolls || 0) : 0; // Carry over
       
       if (result.sideEffects.p1DiceGain) {
           const gain = result.sideEffects.p1DiceGain;
-          newPlayerDiceRolls = gain; // Store gain to be added to Base in nextRound (or effectively here)
-          logDetails.push(`🎲 Fateweaver Zarları Topluyor: +${gain} Zar Hakkı! (Gelecek Tur: 2 + ${gain})`);
+          newPlayerDiceRolls += gain; 
+          logDetails.push(`🎲 Fateweaver Zarları Topluyor: +${gain} Zar Hakkı!`);
       }
       if (result.sideEffects.p1GammaReward) {
           // Add Gamma
