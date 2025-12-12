@@ -1,9 +1,17 @@
 import { MenuButton } from "@/components/ui/menu-button";
 import logo from "@/assets/acoria-logo.png";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { LogOut } from "lucide-react";
 
-const Index = () => {
+const Menu = () => {
   const navigate = useNavigate();
+  const { signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
+  };
 
   return (
     <div className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden bg-background">
@@ -37,32 +45,41 @@ const Index = () => {
         {/* Menu Items */}
         <div className="flex flex-col space-y-4 w-full max-w-md">
           <MenuButton onClick={() => navigate("/play")} variant="primary">
-            Play
+            Çevrimiçi Oyna
           </MenuButton>
           <MenuButton onClick={() => navigate("/game")}>
-            Play vs Bot
+            Bot ile Oyna
           </MenuButton>
           <MenuButton onClick={() => navigate("/profile")}>
-            Profile
+            Profil
           </MenuButton>
           <MenuButton onClick={() => navigate("/card-library")}>
-            Card Library
+            Kart Kütüphanesi
           </MenuButton>
           <MenuButton onClick={() => navigate("/deck-builder")}>
-            Deck Builder
+            Deste Oluşturucu
           </MenuButton>
           <MenuButton onClick={() => navigate("/settings")}>
-            Settings
+            Ayarlar
           </MenuButton>
           <MenuButton onClick={() => navigate("/credits")}>
-            Credits
+            Ekip
           </MenuButton>
           <MenuButton onClick={() => navigate("/how-to-play")}>
-            How to Play
+            Nasıl Oynanır
           </MenuButton>
           <MenuButton onClick={() => navigate("/tutorial")}>
-            Tutorial
+            Eğitim
           </MenuButton>
+          
+          {/* Logout Button */}
+          <button
+            onClick={handleSignOut}
+            className="flex items-center justify-center gap-2 py-3 px-6 text-muted-foreground/70 hover:text-red-400 transition-colors"
+          >
+            <LogOut className="w-4 h-4" />
+            <span className="text-sm tracking-wider">Çıkış Yap</span>
+          </button>
         </div>
 
         {/* Version Info */}
@@ -78,4 +95,4 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default Menu;

@@ -12,6 +12,7 @@ function localDealCards(deck: Card[], count: number): { dealt: Card[]; remaining
 
 export interface GameState {
   round: number;
+  maxRounds: number;
   playerHP: number;
   opponentHP: number;
   playerDeck: Card[];
@@ -38,6 +39,8 @@ export interface GameState {
   opponentClass: ClassName;
   playerDiceRolls: number; // Accumulated dice rolls for Fateweaver
   carryOverCards: Card[]; // Cards carried over from previous round
+  pendingRoundSkip: number; // Chronokeeper round skip
+  logs: string[]; // Game event logs
 }
 
 // Generate bot deck based on class
@@ -147,6 +150,7 @@ export function useGameState(initParams?: GameInitParams) {
 
     return {
       round: 1,
+      maxRounds: 7,
       playerHP: MASTER_CLASSES[pClass].initialHP,
       opponentHP: MASTER_CLASSES[oClass].initialHP,
       playerDeck: remainP,
@@ -166,7 +170,7 @@ export function useGameState(initParams?: GameInitParams) {
       opponentClass: oClass,
       playerDiceRolls: pClass === "Fateweaver" ? 2 : 0,
       carryOverCards: [],
-      maxRounds: 7,
+      pendingRoundSkip: 0,
       logs: [],
     };
   });

@@ -1,4 +1,4 @@
-import { Card, ClassName, GameResult, PlayerState, ClassAbilityResult } from "@/types/game";
+import { Card, ClassName, GameResult, PlayerState, ClassAbilityResult, GameSideEffects } from "@/types/game";
 import { SPECIAL_CARDS_DATA, MASTER_CLASSES } from "@/data/gameData";
 
 function createSpecialCard(type: keyof typeof SPECIAL_CARDS_DATA): Card {
@@ -12,40 +12,6 @@ function createSpecialCard(type: keyof typeof SPECIAL_CARDS_DATA): Card {
         value: 0,
         description: base.description
     };
-}
-
-export interface GameSideEffects {
-  p1FreezeCount?: number;
-  p2FreezeCount?: number;
-  p1BurnCount?: number;
-  p2BurnCount?: number;
-  p1StealCount?: number;
-  p2StealCount?: number;
-  p1DrawCount?: number;
-  p2DrawCount?: number;
-  p1RoundsSkip?: number;
-  p2RoundsSkip?: number;
-  // Augmentor
-  p1ValueBuff?: number;
-  p2ValueBuff?: number;
-  p1SetMax?: boolean;
-  p2SetMax?: boolean;
-  // Siren
-  p1SirenSteal?: number;
-  p2SirenSteal?: number;
-  // Fateweaver
-  p1DiceGain?: number;
-  p2DiceGain?: number;
-  p1GammaReward?: boolean;
-  p2GammaReward?: boolean;
-  // Conjurer
-  p1CardsAdded?: Card[];
-  p2CardsAdded?: Card[];
-}
-
-export interface ClassAbilityResult {
-  hpChange: number;
-  logs: string[];
 }
 
 interface DamageResult {
