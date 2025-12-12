@@ -144,9 +144,11 @@ export function useGameState(initParams?: GameInitParams) {
           : createBotDeck(pClass);
     }
     
-    // Deal 6 cards for round 1
-    const { dealt: initialP, remaining: remainP } = localDealCards(playerDeck, 6);
-    const { dealt: initialO, remaining: remainO } = localDealCards(opponentDeck, 6);
+    // Deal 6 cards for round 1 (or 8 for Oracle)
+    const p1StartCount = pClass === "Oracle" ? 8 : 6;
+    const p2StartCount = oClass === "Oracle" ? 8 : 6;
+    const { dealt: initialP, remaining: remainP } = localDealCards(playerDeck, p1StartCount);
+    const { dealt: initialO, remaining: remainO } = localDealCards(opponentDeck, p2StartCount);
 
     return {
       round: 1,
@@ -674,12 +676,24 @@ export function useGameState(initParams?: GameInitParams) {
 
       // Cards not played carry over (player hand already has unplayed cards)
       // Deal new cards to reach 6 total (IGNORING STOLEN CARDS FOR SIREN)
-      // Stolen cards do not count towards the 6-card limit.
-      const currentNormalCards = prev.playerHand.filter(c => !c.isStolen).length;
-      const cardsNeeded = Math.max(0, 6 - currentNormalCards);
+      // Special: Oracle draws fixed 2 cards per round.
+      const isOracle = prev.playerClass === "Oracle";
+      let cardsNeeded = 0;
+      if (isOracle) {
+         cardsNeeded = 2;
+      } else {
+         const currentNormalCards = prev.playerHand.filter(c => !c.isStolen).length;
+         cardsNeeded = Math.max(0, 6 - currentNormalCards);
+      }
       
-      const botNormalCards = prev.opponentHand.filter(c => !c.isStolen).length; // Bot logic too
-      const botCardsNeeded = Math.max(0, 6 - botNormalCards);
+      const isBotOracle = prev.opponentClass === "Oracle";
+      let botCardsNeeded = 0;
+      if (isBotOracle) {
+         botCardsNeeded = 2;
+      } else {
+         const botNormalCards = prev.opponentHand.filter(c => !c.isStolen).length;
+         botCardsNeeded = Math.max(0, 6 - botNormalCards);
+      }
       
       const { dealt: playerCards, remaining: playerRemaining } = localDealCards(prev.playerDeck, cardsNeeded);
       const { dealt: opponentCards, remaining: opponentRemaining } = localDealCards(prev.opponentDeck, botCardsNeeded);

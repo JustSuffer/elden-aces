@@ -232,19 +232,34 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
           <div className="w-full max-w-6xl flex items-start gap-4">
             <DeckCounter count={gameState.opponentDeck.length} isOpponent />
             <div className="flex-1 flex flex-col items-center gap-4">
-              <div className="flex items-center gap-3">
-                <span 
-                  className="text-3xl font-bold"
-                  style={{ color: opponentClassData.color }}
-                >
-                  {opponentClassData.symbol}
-                </span>
-                <HPBar 
-                  current={gameState.opponentHP} 
-                  max={opponentClassData.initialHP} 
-                  label={`Rakip (${gameState.opponentClass})`} 
-                  isOpponent 
-                />
+              <div className="flex flex-col w-full max-w-[200px] md:max-w-[300px]">
+                  <div className="flex items-center gap-3">
+                    <span 
+                      className="text-3xl font-bold"
+                      style={{ color: opponentClassData.color }}
+                    >
+                      {opponentClassData.symbol}
+                    </span>
+                    <HPBar 
+                      current={gameState.opponentHP} 
+                      max={opponentClassData.initialHP} 
+                      label={`Rakip (${gameState.opponentClass})`} 
+                      isOpponent 
+                    />
+                  </div>
+                  {gameState.opponentClass === "Mimic" && (
+                    <div className="mt-1 pl-10 w-full">
+                       <div className="h-2 bg-slate-900/50 rounded-full border border-slate-700/50 overflow-hidden relative group">
+                           <div 
+                              className="h-full bg-gradient-to-r from-slate-500 to-white transition-all duration-500"
+                              style={{ width: `${Math.min(100, (gameState.mimicCounter?.p2 || 0) * 5)}%` }} // Assumes max 20 cards stolen logic approx
+                           />
+                           <span className="absolute inset-0 flex items-center justify-center text-[8px] font-bold text-white/80 tracking-widest">
+                              KNIFE: {gameState.mimicCounter?.p2 || 0}
+                           </span>
+                       </div>
+                    </div>
+                  )}
               </div>
               {/* Opponent Field */}
               <div className="grid grid-cols-5 gap-2 md:gap-4 justify-items-center">
@@ -361,19 +376,34 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
                 ))}
               </div>
 
-              <div className="flex items-center gap-3">
-                <span 
-                  className="text-3xl font-bold"
-                  style={{ color: playerClassData.color }}
-                >
-                  {playerClassData.symbol}
-                </span>
-                <HPBar 
-                  current={gameState.playerHP} 
-                  max={playerClassData.initialHP} 
-                  label={`Sen (${gameState.playerClass})`} 
-                  className="mb-4 md:mb-8" 
-                />
+              <div className="flex flex-col w-full max-w-[200px] md:max-w-[300px]">
+                  <div className="flex items-center gap-3">
+                    <span 
+                      className="text-3xl font-bold"
+                      style={{ color: playerClassData.color }}
+                    >
+                      {playerClassData.symbol}
+                    </span>
+                    <HPBar 
+                      current={gameState.playerHP} 
+                      max={playerClassData.initialHP} 
+                      label={`Sen (${gameState.playerClass})`} 
+                    />
+                  </div>
+                  {gameState.playerClass === "Mimic" && (
+                    <div className="mt-1 pl-10 w-full mb-4 md:mb-8">
+                       <div className="h-2 bg-slate-900/50 rounded-full border border-slate-700/50 overflow-hidden relative group">
+                           <div 
+                              className="h-full bg-gradient-to-r from-slate-500 to-white transition-all duration-500"
+                              style={{ width: `${Math.min(100, (gameState.mimicCounter?.p1 || 0) * 5)}%` }}
+                           />
+                           <span className="absolute inset-0 flex items-center justify-center text-[8px] font-bold text-white/80 tracking-widest">
+                              KNIFE: {gameState.mimicCounter?.p1 || 0}
+                           </span>
+                       </div>
+                    </div>
+                  )}
+                  {gameState.playerClass !== "Mimic" && <div className="h-4 md:h-8" />} 
               </div>
 
               {/* Player Hand - Draggable Cards */}

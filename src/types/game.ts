@@ -53,6 +53,8 @@ export interface ClassData {
 export interface GameSideEffects {
   p1DamageTaken?: number;
   p2DamageTaken?: number;
+  p1SelfDamage?: number;
+  p2SelfDamage?: number;
   p1Heal?: number;
   p2Heal?: number;
   p1CardsAdded?: Card[];

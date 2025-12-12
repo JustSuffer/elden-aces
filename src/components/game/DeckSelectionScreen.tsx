@@ -212,7 +212,6 @@ export const DeckSelectionScreen = ({ onStartGame }: DeckSelectionScreenProps) =
                 </p>
               </div>
 
-              {/* Counter Logic Display */}
               {selectedDeck && MASTER_CLASSES[selectedDeck.mainClass].counterLogic?.[opponentClass] && (
                 <div className="mt-4 p-4 bg-yellow-500/10 rounded-lg border border-yellow-500/30 w-full max-w-sm">
                   <h4 className="text-sm font-bold text-yellow-500 mb-2">⚠️ Özel Eşleşme Kuralı:</h4>
@@ -221,6 +220,35 @@ export const DeckSelectionScreen = ({ onStartGame }: DeckSelectionScreenProps) =
                   </p>
                 </div>
               )}
+
+              <div className="w-full border-t border-border/50 my-6" />
+              
+              <div className="w-full">
+                <h3 className="text-xs font-bold text-muted-foreground mb-3 text-center uppercase tracking-widest">
+                    Veya Listeden Seçin
+                </h3>
+                <div className="grid grid-cols-4 gap-2 max-h-[200px] overflow-y-auto acoria-scrollbar p-1">
+                    {ALL_CLASSES.map((cls) => (
+                        <button
+                            key={cls}
+                            onClick={() => setOpponentClass(cls)}
+                            className={cn(
+                                "flex flex-col items-center justify-center p-2 rounded border transition-all h-16",
+                                opponentClass === cls 
+                                ? "bg-destructive/20 border-destructive shadow-[0_0_10px_rgba(239,68,68,0.3)] scale-105" 
+                                : "bg-background/30 border-border/50 hover:bg-destructive/10 hover:border-destructive/50"
+                            )}
+                        >
+                            <span className="text-xl font-bold" style={{ color: MASTER_CLASSES[cls].color }}>
+                                {MASTER_CLASSES[cls].symbol}
+                            </span>
+                             <span className="text-[10px] font-bold text-muted-foreground mt-1 truncate w-full text-center">
+                                {cls}
+                            </span>
+                        </button>
+                    ))}
+                </div>
+              </div>
             </div>
           )}
         </div>

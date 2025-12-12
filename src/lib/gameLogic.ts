@@ -332,20 +332,19 @@ function applyStep5Abilities(
         break;
 
       case "Oracle": // (Ψ)
-        // Dmg/Draw
-        // "2 Dmg/Draw" -> Deals 2 Dmg AND Draws 2?
-        let dmg = 0;
+        // Self-Dmg / Draw
+        let sDmg = 0;
         let draw = 0;
         switch (count) {
-          case 2: dmg = 2; draw = 2; break;
-          case 3: dmg = 3; draw = 3; break;
-          case 4: dmg = 4; draw = 4; break;
-          case 5: dmg = 10; draw = 5; break;
+          case 2: sDmg = 2; draw = 2; break;
+          case 3: sDmg = 5; draw = 3; break;
+          case 4: sDmg = 8; draw = 4; break;
+          case 5: sDmg = 10; draw = 10; break;
         }
-        if (dmg > 0) {
-          if (isP1) { p1ExtraDmg += dmg; targetEffects.p1DrawCount = draw; }
-          else { p2ExtraDmg += dmg; targetEffects.p2DrawCount = draw; }
-          res.logs.push(`Oracle (${count}): ${dmg} Dmg + ${draw} Draw`);
+        if (sDmg > 0 || draw > 0) {
+          if (isP1) { targetEffects.p1SelfDamage = sDmg; targetEffects.p1DrawCount = draw; }
+          else { targetEffects.p2SelfDamage = sDmg; targetEffects.p2DrawCount = draw; }
+          res.logs.push(`Oracle (${count}): ${sDmg} Self-Dmg + ${draw} Draw`);
         }
         break;
 
@@ -714,6 +713,16 @@ export function resolveGameRound(
   if (abilityRes.p2ExtraDmg > 0) logs.push(`P2 Class Ability deals ${abilityRes.p2ExtraDmg} dmg.`);
 
   // Final Summation
+  // Add Self Damage (Oracle)
+  if (effects.p1SelfDamage) {
+      p1DamageTaken += effects.p1SelfDamage;
+      logs.push(`⚠️ Oracle Kehaneti: Kendine ${effects.p1SelfDamage} hasar vurdu!`);
+  }
+  if (effects.p2SelfDamage) {
+      p2DamageTaken += effects.p2SelfDamage;
+      logs.push(`⚠️ Rakip Oracle Kendine ${effects.p2SelfDamage} hasar vurdu!`);
+  }
+
   p1DamageTaken += p2True + abilityRes.p2ExtraDmg;
   p2DamageTaken += p1True + abilityRes.p1ExtraDmg;
 
