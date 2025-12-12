@@ -428,8 +428,15 @@ export function useGameState(initParams?: GameInitParams) {
 
       if (p1InstantWin) {
         newOpponentHP = 0;
+        // Fateweaver Invincibility: If I win instantly, I cannot die this round.
+        if (newPlayerHP <= 0) newPlayerHP = 1;
+        
         phase = "end";
         logDetails.push(`🏆 ${prev.playerClass} kazanma koşulunu sağladı!`);
+        
+        if (prev.playerClass === "Fateweaver") {
+             logDetails.push("👁️ KADERİN GÖZÜ AÇILDI: MUTLAK ZAFER!");
+        }
       }
       if (p2InstantWin) {
         newPlayerHP = 0;

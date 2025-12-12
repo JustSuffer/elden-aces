@@ -105,7 +105,7 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
         { count: 4, effectDescription: "4 Dondur" },
         { count: 5, effectDescription: "TÜMÜNÜ Dondur" },
     ],
-    winCondition: "3 Özel Kart Dondur",
+    winCondition: "2 Özel Kart Dondur",
   },
   Incinerator: {
     name: "Incinerator",

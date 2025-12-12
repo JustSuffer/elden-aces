@@ -9,7 +9,7 @@ import { VfxLayer, VfxEffect } from "@/components/game/VfxLayer";
 import { Button } from "@/components/ui/button";
 import { useGameState } from "@/hooks/useGameState";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Dices } from "lucide-react";
+import { ArrowLeft, Dices, Eye, Snowflake } from "lucide-react";
 import { toast } from "sonner";
 import { DndContext, DragEndEvent } from "@dnd-kit/core";
 import { useState, useEffect, useCallback } from "react";
@@ -437,6 +437,37 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
             <p className="text-xl md:text-2xl text-amber-200/80 mt-4 text-center font-cinzel">
               +{gameState.pendingRoundSkip} ROUND
             </p>
+          </div>
+        )}
+
+        {/* Fateweaver Exodia Animation Overlay */}
+        {gameState.phase === "end" && gameState.playerClass === "Fateweaver" && gameState.opponentHP <= 0 && gameState.damageResult?.details?.some(l => l.includes("KADERİN GÖZÜ")) && (
+          <div className="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center animate-in fade-in duration-1000">
+              <div className="relative">
+                  <Dices className="w-48 h-48 text-psi animate-spin-slow opacity-50 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 blur-md" />
+                  <Eye className="w-64 h-64 text-yellow-400 glow-gold animate-pulse relative z-10" />
+              </div>
+              <h1 className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-psi to-yellow-500 mt-8 font-cinzel animate-in slide-in-from-bottom duration-1000">
+                  MUTLAK KADER
+              </h1>
+              <p className="text-xl text-psi/80 mt-4 tracking-[0.5em] animate-in fade-in delay-500 duration-1000">
+                  GELECEK YAZILDI
+              </p>
+          </div>
+        )}
+
+        {/* Cryomancer Win Animation */}
+        {gameState.phase === "end" && gameState.playerClass === "Cryomancer" && gameState.damageResult?.details?.some(l => l.includes("kazanma koşulunu sağladı")) && (
+          <div className="fixed inset-0 z-50 bg-blue-950/80 flex flex-col items-center justify-center animate-in fade-in duration-1000">
+              <div className="relative animate-pulse">
+                  <Snowflake className="w-64 h-64 text-cyan-200 glow-cyan animate-spin-slow duration-[3s]" />
+              </div>
+              <h1 className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-200 to-white mt-8 font-cinzel animate-in slide-in-from-bottom duration-1000">
+                  EBEDİ KIŞ
+              </h1>
+              <p className="text-xl text-cyan-100/80 mt-4 tracking-[0.5em] animate-in fade-in delay-500 duration-1000">
+                  DÜNYA DONDU
+              </p>
           </div>
         )}
 

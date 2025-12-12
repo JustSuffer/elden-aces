@@ -828,5 +828,11 @@ export function checkCounterWinCondition(
         if (hasSigma && hasDelta) return true;
     }
 
+    // Cryomancer
+    if (pClass === "Cryomancer") {
+        const frozenSpecials = opponent.playedCardsInRound.filter(c => c.isFrozen && c.type === "special").length;
+        if (frozenSpecials >= 2) return true;
+    }
+
     return undefined;
 }
