@@ -1,6 +1,5 @@
-```typescript
-import { Card, ClassName, GameResult, GameSideEffects } from "@/types/game";
-import { SPECIAL_CARDS_DATA } from "@/data/gameData";
+import { Card, ClassName, GameResult } from "@/types/game";
+import { SPECIAL_CARDS_DATA, MASTER_CLASSES } from "@/data/gameData";
 
 function createSpecialCard(type: keyof typeof SPECIAL_CARDS_DATA): Card {
     const base = SPECIAL_CARDS_DATA[type];
@@ -14,8 +13,6 @@ function createSpecialCard(type: keyof typeof SPECIAL_CARDS_DATA): Card {
         description: base.description
     };
 }
-
-import { MASTER_CLASSES } from "../data/gameData";
 
 export interface GameSideEffects {
   p1FreezeCount?: number;
@@ -33,6 +30,17 @@ export interface GameSideEffects {
   p2ValueBuff?: number;
   p1SetMax?: boolean;
   p2SetMax?: boolean;
+  // Siren
+  p1SirenSteal?: number;
+  p2SirenSteal?: number;
+  // Fateweaver
+  p1DiceGain?: number;
+  p2DiceGain?: number;
+  p1GammaReward?: boolean;
+  p2GammaReward?: boolean;
+  // Conjurer
+  p1CardsAdded?: Card[];
+  p2CardsAdded?: Card[];
 }
 
 export interface ClassAbilityResult {
