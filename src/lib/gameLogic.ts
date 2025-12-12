@@ -313,7 +313,7 @@ function applyStep5Abilities(
       }
         break;
 
-      case "Incinerator": // (ρ)
+      case "Decay": // (ρ)
         // Burn "Yak"
         let burn = 0;
         switch (count) {
@@ -367,7 +367,7 @@ function applyStep5Abilities(
         }
         break;
 
-      case "Conjurer": // (μ)
+      case "Vessel": // (μ)
         // 1: 0
         // 2: 1 Twisted/Deflate
         // 3: 1 Sigma/Delta
@@ -825,8 +825,8 @@ export function checkCounterWinCondition(
         if (hasNine) return true;
     }
   
-    // Conjurer
-    if (pClass === "Conjurer") {
+    // Vessel
+    if (pClass === "Vessel") {
         const hasSigma = player.playedCardsInRound.some(c => c.specialType === "sigma");
         const hasDelta = player.playedCardsInRound.some(c => c.specialType === "delta");
         if (hasSigma && hasDelta) return true;

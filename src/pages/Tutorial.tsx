@@ -89,10 +89,10 @@ const Tutorial = () => {
                <strong className="text-blue-400">Augmentor (Θ):</strong> <em>Buffer.</em> Kartları güçlendirir.
              </div>
              <div className="p-2 border border-slate-700/50 rounded bg-slate-900/30">
-               <strong className="text-orange-300">Conjurer (μ):</strong> <em>Summoner.</em> Sahayı minik ruhlarla doldurur.
+               <strong className="text-orange-300">Vessel (μ):</strong> <em>Summoner.</em> Sahayı minik ruhlarla doldurur.
              </div>
              <div className="p-2 border border-slate-700/50 rounded bg-slate-900/30">
-               <strong className="text-red-800">Incinerator (ρ):</strong> <em>Glass Cannon.</em> Kendini yakarak alan hasarı verir.
+               <strong className="text-red-800">Decay (ρ):</strong> <em>Glass Cannon.</em> Kendini yakarak alan hasarı verir.
              </div>
           </div>
         </div>

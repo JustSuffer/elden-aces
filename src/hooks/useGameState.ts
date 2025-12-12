@@ -76,8 +76,8 @@ function createBotDeck(className: ClassName): Card[] {
   });
 
   // 18 Filler cards from 3 random other classes (or 24 from 4 for Conjurer)
-  const isConjurer = className === "Conjurer";
-  const limit = isConjurer ? 4 : 3;
+  const isVessel = className === "Vessel";
+  const limit = isVessel ? 4 : 3;
   const otherClasses = Object.keys(MASTER_CLASSES).filter(c => c !== className) as ClassName[];
   const shuffledOthers = otherClasses.sort(() => Math.random() - 0.5).slice(0, limit);
   
@@ -458,6 +458,9 @@ export function useGameState(initParams?: GameInitParams) {
         
         if (prev.playerClass === "Fateweaver") {
              logDetails.push("👁️ KADERİN GÖZÜ AÇILDI: MUTLAK ZAFER!");
+        }
+        if (prev.playerClass === "Mimic") {
+             logDetails.push("🔪 YÜZÜNÜ ALDIM, ŞİMDİ CANINI ALIYORUM!");
         }
       }
       if (p2InstantWin) {

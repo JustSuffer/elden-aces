@@ -442,7 +442,7 @@ const HowToPlay = () => {
                 {/* Conjurer */}
                 <div className="bg-gradient-to-br from-orange-900/40 to-black border border-orange-500/50 rounded-xl p-5 shadow-lg relative overflow-hidden group hover:scale-[1.02] transition-transform">
                    <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 pointer-events-none text-6xl">μ</div>
-                   <h4 className="text-xl font-bold text-orange-400 mb-1">Conjurer (μ)</h4>
+                   <h4 className="text-xl font-bold text-orange-400 mb-1">Vessel (μ)</h4>
                    <p className="text-xs font-mono text-orange-300/70 mb-3">SUMMONER</p>
                    <div className="space-y-2 text-sm text-gray-300">
                       <p><strong className="text-orange-400">Mantık:</strong> "Çoklukta kuvvet vardır."</p>
@@ -454,7 +454,7 @@ const HowToPlay = () => {
                  {/* Incinerator */}
                 <div className="bg-gradient-to-br from-red-950/40 to-black border border-red-800/50 rounded-xl p-5 shadow-lg relative overflow-hidden group hover:scale-[1.02] transition-transform">
                    <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 pointer-events-none text-6xl">ρ</div>
-                   <h4 className="text-xl font-bold text-red-700 mb-1">Incinerator (ρ)</h4>
+                   <h4 className="text-xl font-bold text-red-700 mb-1">Decay (ρ)</h4>
                    <p className="text-xs font-mono text-red-500/70 mb-3">GLASS CANNON</p>
                    <div className="space-y-2 text-sm text-gray-300">
                       <p><strong className="text-red-600">Mantık:</strong> "Yanan sönmez."</p>

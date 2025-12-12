@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 
 const ALL_CLASSES: ClassName[] = [
   "Vitalist", "Slayer", "Fateweaver", "Oracle", "Chronokeeper",
-  "Cryomancer", "Incinerator", "Siren", "Augmentor", "Conjurer", "Mimic"
+  "Cryomancer", "Decay", "Siren", "Augmentor", "Vessel", "Mimic"
 ];
 
 interface DeckSelectionScreenProps {

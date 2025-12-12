@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 
 const ALL_CLASSES: ClassName[] = [
   "Vitalist", "Slayer", "Fateweaver", "Oracle", "Chronokeeper",
-  "Cryomancer", "Incinerator", "Siren", "Augmentor", "Conjurer", "Mimic"
+  "Cryomancer", "Decay", "Siren", "Augmentor", "Vessel", "Mimic"
 ];
 
 function generateClassCards(className: ClassName): Card[] {
@@ -83,7 +83,7 @@ const DeckBuilder = () => {
   };
 
   const handleSecondaryToggle = (className: ClassName) => {
-    const limit = mainClass === "Conjurer" ? 4 : 3;
+    const limit = mainClass === "Vessel" ? 4 : 3;
     setSecondaryClasses(prev => {
       if (prev.includes(className)) {
         return prev.filter(c => c !== className);
@@ -103,7 +103,7 @@ const DeckBuilder = () => {
   };
 
   const handleSaveDeck = () => {
-    const requiredCount = mainClass === "Conjurer" ? 4 : 3;
+    const requiredCount = mainClass === "Vessel" ? 4 : 3;
     if (!mainClass || secondaryClasses.length !== requiredCount) {
       toast.error(`Ana sınıf ve ${requiredCount} yardımcı sınıf seçmelisiniz!`);
       return;
@@ -154,7 +154,7 @@ const DeckBuilder = () => {
     toast.success("Deste silindi!");
   };
 
-  const isComplete = mainClass && secondaryClasses.length === (mainClass === "Conjurer" ? 4 : 3);
+  const isComplete = mainClass && secondaryClasses.length === (mainClass === "Vessel" ? 4 : 3);
   const numericCards = customDeck.filter((c) => c.type === "numeric");
   const specialCards = customDeck.filter((c) => c.type === "special");
 
@@ -301,11 +301,11 @@ const DeckBuilder = () => {
         {mainClass && (
           <section className="bg-card/50 backdrop-blur-sm border border-primary/30 rounded-lg p-6">
             <h2 className="text-2xl font-bold text-primary glow-gold mb-4 font-cinzel">
-              2. Yardımcı Sınıflar ({mainClass === "Conjurer" ? "4" : "3"} Adet)
+              2. Yardımcı Sınıflar ({mainClass === "Vessel" ? "4" : "3"} Adet)
             </h2>
             <p className="text-muted-foreground mb-4">
-              Desteye eklemek için {mainClass === "Conjurer" ? "4" : "3"} sınıf seç. Her sınıf 6 sayısal kart (1-6) ekler.
-              <span className="text-primary font-bold"> ({secondaryClasses.length}/{mainClass === "Conjurer" ? "4" : "3"} seçildi)</span>
+              Desteye eklemek için {mainClass === "Vessel" ? "4" : "3"} sınıf seç. Her sınıf 6 sayısal kart (1-6) ekler.
+              <span className="text-primary font-bold"> ({secondaryClasses.length}/{mainClass === "Vessel" ? "4" : "3"} seçildi)</span>
             </p>
             <div className="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-5 gap-3">
               {availableSecondary.map((className) => {

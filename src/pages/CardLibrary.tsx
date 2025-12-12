@@ -7,7 +7,7 @@ import { ClassName, Card, SpecialCardType } from "@/types/game";
 
 const ALL_CLASSES: ClassName[] = [
   "Vitalist", "Slayer", "Fateweaver", "Oracle", "Chronokeeper",
-  "Cryomancer", "Incinerator", "Siren", "Augmentor", "Conjurer", "Mimic"
+  "Cryomancer", "Decay", "Siren", "Augmentor", "Vessel", "Mimic"
 ];
 
 const SPECIAL_TYPES: SpecialCardType[] = ["twisted", "deflate", "gamma", "delta", "sigma", "die"];

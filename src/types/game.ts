@@ -8,10 +8,10 @@ export type ClassName =
   | "Oracle"        // Ψ - Purple - Self-Mill
   | "Chronokeeper"  // τ - White - Stall
   | "Cryomancer"    // Ξ - Frozen White - Control
-  | "Incinerator"   // ρ - Brown - Mill
+  | "Decay"         // ρ - Brown - Mill
   | "Siren"         // η - Pink - Thief
   | "Augmentor"     // Θ - Blue - Scaler
-  | "Conjurer"      // μ - Orange - Summoner
+  | "Vessel"        // μ - Orange - Summoner
   | "Mimic";        // ν - Grey - Copycat
 
 export interface Card {

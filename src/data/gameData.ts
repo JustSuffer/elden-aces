@@ -107,8 +107,8 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
     ],
     winCondition: "2 Özel Kart Dondur",
   },
-  Incinerator: {
-    name: "Incinerator",
+  Decay: {
+    name: "Decay",
     color: "#78350f", // Brown
     symbol: "ρ",
     role: "Aggro Miller",
@@ -156,8 +156,8 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
     ],
     winCondition: "9 Değerli Kart Oyna",
   },
-  Conjurer: {
-    name: "Conjurer",
+  Vessel: {
+    name: "Vessel",
     color: "#f97316", // Orange
     symbol: "μ",
     role: "Summoner",
