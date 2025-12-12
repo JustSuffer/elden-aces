@@ -129,6 +129,7 @@ export interface GameState {
   logs: string[];
   mimicCounter?: { p1: number; p2: number };
   winReason?: string;
+  winner?: "p1" | "p2" | "draw"; // p1 = player, p2 = opponent
 }
 
 export interface ClassAbilityResult {

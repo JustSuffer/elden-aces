@@ -1,4 +1,4 @@
-```
+
 import { Button } from "@/components/ui/button";
 import { Trophy, Skull, Coins, Swords, Shield, Crown, Sparkles } from "lucide-react";
 import { useState, useEffect } from "react";
