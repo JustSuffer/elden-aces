@@ -41,6 +41,7 @@ export interface GameState {
   carryOverCards: Card[]; // Cards carried over from previous round
   pendingRoundSkip: number; // Chronokeeper round skip
   logs: string[]; // Game event logs
+  mimicCounter: { p1: number; p2: number }; // Mimic vs Mimic knife counter
 }
 
 // Generate bot deck based on class
@@ -174,6 +175,7 @@ export function useGameState(initParams?: GameInitParams) {
       carryOverCards: [],
       pendingRoundSkip: 0,
       logs: [],
+      mimicCounter: { p1: 0, p2: 0 },
     };
   });
 

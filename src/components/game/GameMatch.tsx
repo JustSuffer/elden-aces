@@ -6,6 +6,7 @@ import { DiceRollPopup } from "@/components/game/DiceRollPopup";
 import { VictoryPopup } from "@/components/game/VictoryPopup";
 import { CardSelectionPopup } from "@/components/game/CardSelectionPopup";
 import { VfxLayer, VfxEffect } from "@/components/game/VfxLayer";
+import { KnifeBar } from "@/components/game/KnifeBar";
 import { Button } from "@/components/ui/button";
 import { useGameState } from "@/hooks/useGameState";
 import { useNavigate } from "react-router-dom";
@@ -30,6 +31,8 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
   const navigate = useNavigate();
   const [vfxEffects, setVfxEffects] = useState<VfxEffect[]>([]);
   const [showHourglass, setShowHourglass] = useState(false);
+  const [showWinConAnimation, setShowWinConAnimation] = useState(false);
+  const [winConAnimationType, setWinConAnimationType] = useState<string | null>(null);
 
   const { 
     gameState, 
@@ -201,9 +204,34 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
 
   const requiredCards = gameState.playerMust4Cards ? 4 : 5;
   const canPlaceCards = gameState.playerField.filter((c) => c !== null).length < requiredCards;
+  const isMimicVsMimic = gameState.playerClass === "Mimic" && gameState.opponentClass === "Mimic";
 
   const playerClassData = MASTER_CLASSES[gameState.playerClass];
   const opponentClassData = MASTER_CLASSES[gameState.opponentClass];
+
+  // Check for win condition animations
+  useEffect(() => {
+    if (gameState.phase === "end") {
+      const details = gameState.damageResult?.details || [];
+      // Check various win conditions
+      if (gameState.playerClass === "Fateweaver" && details.some(l => l.includes("KADERİN GÖZÜ"))) {
+        setWinConAnimationType("fateweaver");
+        setShowWinConAnimation(true);
+      } else if (gameState.playerClass === "Cryomancer" && details.some(l => l.includes("kazanma koşulunu sağladı"))) {
+        setWinConAnimationType("cryomancer");
+        setShowWinConAnimation(true);
+      } else if (gameState.playerClass === "Siren" && details.some(l => l.includes("KADERİN KALBİNE"))) {
+        setWinConAnimationType("siren");
+        setShowWinConAnimation(true);
+      } else if (isMimicVsMimic && (gameState.mimicCounter.p1 >= 12 || gameState.mimicCounter.p2 >= 12)) {
+        setWinConAnimationType("mimic");
+        setShowWinConAnimation(true);
+      } else {
+        setShowWinConAnimation(false);
+        setWinConAnimationType(null);
+      }
+    }
+  }, [gameState.phase, gameState.damageResult, isMimicVsMimic, gameState.mimicCounter, gameState.playerClass]);
 
   return (
     <DndContext onDragEnd={handleDragEnd}>
@@ -247,31 +275,28 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
                       isOpponent 
                     />
                   </div>
-                  {gameState.opponentClass === "Mimic" && gameState.playerClass === "Mimic" && (
-                    <div className="mt-1 pl-10 w-full">
-                       <div className="h-2 bg-slate-900/50 rounded-full border border-slate-700/50 overflow-hidden relative group">
-                           <div 
-                              className="h-full bg-gradient-to-r from-purple-500 to-white transition-all duration-500"
-                              style={{ width: `${Math.min(100, ((gameState.mimicCounter?.p2 || 0) / 12) * 100)}%` }}
-                           />
-                           <span className="absolute inset-0 flex items-center justify-center text-[8px] font-bold text-white/90 tracking-widest shadow-black drop-shadow-md">
-                              Knife {gameState.mimicCounter?.p2 || 0}/12
-                           </span>
-                       </div>
-                    </div>
-                  )}
               </div>
-              {/* Opponent Field */}
-              <div className="grid grid-cols-5 gap-2 md:gap-4 justify-items-center">
-                {gameState.opponentField.map((card, i) => (
-                  <GameCard 
-                    key={i} 
-                    card={card} 
-                    isPlaceholder={!card} 
-                    faceDown={gameState.phase === "placement"}
-                    showEyeIcon={!!(card && gameState.phase !== "placement")}
+              {/* Opponent Field with Knife Bar */}
+              <div className="flex items-center gap-4">
+                <div className="grid grid-cols-5 gap-2 md:gap-4 justify-items-center">
+                  {gameState.opponentField.map((card, i) => (
+                    <GameCard 
+                      key={i} 
+                      card={card} 
+                      isPlaceholder={!card} 
+                      faceDown={gameState.phase === "placement"}
+                      showEyeIcon={!!(card && gameState.phase !== "placement")}
+                    />
+                  ))}
+                </div>
+                {/* Opponent Knife Bar - Right side of field */}
+                {isMimicVsMimic && (
+                  <KnifeBar 
+                    count={gameState.mimicCounter.p2} 
+                    isOpponent 
+                    className="ml-4"
                   />
-                ))}
+                )}
               </div>
             </div>
           </div>
@@ -363,17 +388,26 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
           <div className="w-full max-w-6xl flex items-end gap-4">
             <DeckCounter count={gameState.playerDeck.length} />
             <div className="flex-1 flex flex-col items-center gap-4">
-              {/* Player Field - Droppable Slots */}
-              <div className="grid grid-cols-5 gap-2 md:gap-4 mb-4 justify-items-center">
-                {gameState.playerField.map((card, i) => (
-                  <div key={i} data-slot={i}>
-                    <DroppableSlot
-                      id={`field-${i}`}
-                      card={card}
-                      onRemove={card ? () => handleFieldCardClick(i) : undefined}
-                    />
-                  </div>
-                ))}
+              {/* Player Field - Droppable Slots with Knife Bar */}
+              <div className="flex items-center gap-4">
+                <div className="grid grid-cols-5 gap-2 md:gap-4 mb-4 justify-items-center">
+                  {gameState.playerField.map((card, i) => (
+                    <div key={i} data-slot={i}>
+                      <DroppableSlot
+                        id={`field-${i}`}
+                        card={card}
+                        onRemove={card ? () => handleFieldCardClick(i) : undefined}
+                      />
+                    </div>
+                  ))}
+                </div>
+                {/* Player Knife Bar - Right side of field */}
+                {isMimicVsMimic && (
+                  <KnifeBar 
+                    count={gameState.mimicCounter.p1} 
+                    className="ml-4"
+                  />
+                )}
               </div>
 
               <div className="flex flex-col w-full max-w-[200px] md:max-w-[300px]">
@@ -390,20 +424,6 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
                       label={`Sen (${gameState.playerClass})`} 
                     />
                   </div>
-                  {gameState.playerClass === "Mimic" && gameState.opponentClass === "Mimic" && (
-                    <div className="mt-1 pl-10 w-full mb-4 md:mb-8">
-                       <div className="h-2 bg-slate-900/50 rounded-full border border-slate-700/50 overflow-hidden relative group">
-                           <div 
-                              className="h-full bg-gradient-to-r from-purple-500 to-white transition-all duration-500"
-                              style={{ width: `${Math.min(100, ((gameState.mimicCounter?.p1 || 0) / 12) * 100)}%` }}
-                           />
-                           <span className="absolute inset-0 flex items-center justify-center text-[8px] font-bold text-white/90 tracking-widest shadow-black drop-shadow-md">
-                              Knife {gameState.mimicCounter?.p1 || 0}/12
-                           </span>
-                       </div>
-                    </div>
-                  )}
-                  {gameState.playerClass !== "Mimic" && <div className="h-4 md:h-8" />} 
               </div>
 
               {/* Player Hand - Draggable Cards */}
@@ -441,13 +461,15 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
           />
         )}
 
-        {/* Victory Popup */}
+        {/* Victory Popup - Shows AFTER win condition animation */}
         <VictoryPopup
           open={gameState.phase === "end"}
-          isVictory={gameState.playerHP > gameState.opponentHP}
+          isVictory={gameState.playerHP > gameState.opponentHP || 
+            (isMimicVsMimic && gameState.mimicCounter.p1 >= 12 && gameState.mimicCounter.p2 < 12)}
           playerHP={gameState.playerHP}
           opponentHP={gameState.opponentHP}
           onReturnToMenu={() => navigate("/")}
+          delayMs={showWinConAnimation ? 4000 : 0}
         />
 
         {/* Card Selection Popup */}
@@ -473,7 +495,7 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
         )}
 
         {/* Fateweaver Exodia Animation Overlay */}
-        {gameState.phase === "end" && gameState.playerClass === "Fateweaver" && gameState.opponentHP <= 0 && gameState.damageResult?.details?.some(l => l.includes("KADERİN GÖZÜ")) && (
+        {showWinConAnimation && winConAnimationType === "fateweaver" && (
           <div className="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center animate-in fade-in duration-1000">
               <div className="relative">
                   <Dices className="w-48 h-48 text-psi animate-spin-slow opacity-50 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 blur-md" />
@@ -489,7 +511,7 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
         )}
 
         {/* Cryomancer Win Animation */}
-        {gameState.phase === "end" && gameState.playerClass === "Cryomancer" && gameState.damageResult?.details?.some(l => l.includes("kazanma koşulunu sağladı")) && (
+        {showWinConAnimation && winConAnimationType === "cryomancer" && (
           <div className="fixed inset-0 z-50 bg-blue-950/80 flex flex-col items-center justify-center animate-in fade-in duration-1000">
               <div className="relative animate-pulse">
                   <Snowflake className="w-64 h-64 text-cyan-200 glow-cyan animate-spin-slow duration-[3s]" />
@@ -502,8 +524,9 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
               </p>
           </div>
         )}
+
         {/* Siren Win Animation */}
-        {gameState.phase === "end" && gameState.playerClass === "Siren" && gameState.damageResult?.details?.some(l => l.includes("KADERİN KALBİNE HÜKMETTİM")) && (
+        {showWinConAnimation && winConAnimationType === "siren" && (
           <div className="fixed inset-0 z-50 bg-rose-950/80 flex flex-col items-center justify-center animate-in fade-in duration-1000">
               <div className="relative animate-pulse">
                   <Heart className="w-64 h-64 text-rose-500 glow-rose animate-bounce duration-[2s]" fill="currentColor" />
@@ -513,6 +536,21 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
               </h1>
               <p className="text-xl text-rose-200/80 mt-4 tracking-[0.5em] animate-in fade-in delay-500 duration-1000">
                   KADERİN KALBİNE HÜKMETTİM
+              </p>
+          </div>
+        )}
+
+        {/* Mimic vs Mimic Win Animation */}
+        {showWinConAnimation && winConAnimationType === "mimic" && (
+          <div className="fixed inset-0 z-50 bg-slate-950/90 flex flex-col items-center justify-center animate-in fade-in duration-1000">
+              <div className="relative">
+                  <div className="text-[200px] animate-pulse">🗡️</div>
+              </div>
+              <h1 className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-slate-300 via-white to-slate-300 mt-8 font-cinzel animate-in slide-in-from-bottom duration-1000">
+                  BIÇAK USTASI
+              </h1>
+              <p className="text-xl text-slate-300/80 mt-4 tracking-[0.5em] animate-in fade-in delay-500 duration-1000">
+                  12 BIÇAK TAMAMLANDI
               </p>
           </div>
         )}

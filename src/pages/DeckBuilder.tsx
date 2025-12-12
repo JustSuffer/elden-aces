@@ -311,7 +311,7 @@ const DeckBuilder = () => {
               {availableSecondary.map((className) => {
                 const classData = MASTER_CLASSES[className];
                 const isSelected = secondaryClasses.includes(className);
-                const isDisabled = !isSelected && secondaryClasses.length >= (mainClass === "Conjurer" ? 4 : 3);
+                const isDisabled = !isSelected && secondaryClasses.length >= (mainClass === "Vessel" ? 4 : 3);
                 return (
                   <button
                     key={className}
@@ -360,7 +360,7 @@ const DeckBuilder = () => {
                   </p>
                 </div>
                 <div className="text-right space-y-1">
-                  <p className="text-lg font-bold text-primary">{customDeck.length}/{mainClass === "Conjurer" ? 36 : 30} Kart</p>
+                  <p className="text-lg font-bold text-primary">{customDeck.length}/{mainClass === "Vessel" ? 36 : 30} Kart</p>
                   <p className="text-sm text-muted-foreground">
                     {numericCards.length} Sayısal | {specialCards.length} Özel
                   </p>
