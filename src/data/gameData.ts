@@ -194,12 +194,36 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
 };
 
 export const SPECIAL_CARDS_DATA: Record<SpecialCardType, { symbol: string; name: string; description: string }> = {
-  twisted: { symbol: "α", name: "Twisted", description: "Reflects damage if yours is lower." },
-  deflate: { symbol: "β", name: "Deflate", description: "Cancels all special cards this round." },
-  gamma: { symbol: "γ", name: "Gamma", description: "Invincible. Deal 2x Difference as damage." },
-  die: { symbol: "Π", name: "The Die", description: "Fateweaver only. R3+." },
-  delta: { symbol: "Δ", name: "Delta", description: "Amplifies damage difference." },
-  sigma: { symbol: "Σ", name: "Sigma", description: "Reverses damage difference." },
+  gamma: { 
+      symbol: "γ", 
+      name: "Gamma", 
+      description: "Sadece Zar (18-20) ile gelir. Oynandığında HASAR ALMAZSINIZ. Eğer toplam değeriniz rakipten yüksekse, farkın 2 KATINI vurursunuz. Rakip sonraki tur sadece 4 kart oynayabilir." 
+  },
+  twisted: { 
+      symbol: "α", 
+      name: "Twisted", 
+      description: "Sayısal toplamınız rakipten DÜŞÜKSE, alacağınız tüm hasarı rakibe YANSITIR. Kaybetmeyi kazanmaya çeviren en güçlü savunma kartıdır." 
+  },
+  deflate: { 
+      symbol: "β", 
+      name: "Deflate", 
+      description: "Rakibin oynadığı TÜM özel kartların (Gamma, Twisted, Delta, Sigma) etkilerini İPTAL EDER. Onları sıradan kartlara dönüştürür. Hasar vermez ama büyük komboları bozar." 
+  },
+  die: { 
+      symbol: "Π", 
+      name: "The Die", 
+      description: "Sadece Fateweaver kullanabilir. Maç başına sınırlı kullanım hakkı vardır. Efsanevi kartlar veya ekstra özellikler kazandırabilir." 
+  },
+  delta: { 
+      symbol: "Δ", 
+      name: "Delta", 
+      description: "Eğer 3. pozisyondaysanız, 1. ve 2. kartların toplamına bakar. Farkı 2 ile çarparak hasar verir. Sağında Twisted (α) varsa Sigma'ya dönüşür." 
+  },
+  sigma: { 
+      symbol: "Σ", 
+      name: "Sigma", 
+      description: "Delta'nın tersidir. Düşük olan tarafın kazanmasını sağlar (Sayısal değeri düşük olan, yüksek olana farkın 2 katını vurur). Sağında Twisted (α) varsa Delta'ya dönüşür." 
+  },
 };
 
 export function shuffleDeck(deck: Card[]): Card[] {

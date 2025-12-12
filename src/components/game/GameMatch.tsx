@@ -9,7 +9,7 @@ import { VfxLayer, VfxEffect } from "@/components/game/VfxLayer";
 import { Button } from "@/components/ui/button";
 import { useGameState } from "@/hooks/useGameState";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Dices, Eye, Snowflake } from "lucide-react";
+import { ArrowLeft, Dices, Eye, Snowflake, Heart } from "lucide-react";
 import { toast } from "sonner";
 import { DndContext, DragEndEvent } from "@dnd-kit/core";
 import { useState, useEffect, useCallback } from "react";
@@ -469,6 +469,19 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
               </h1>
               <p className="text-xl text-cyan-100/80 mt-4 tracking-[0.5em] animate-in fade-in delay-500 duration-1000">
                   DÜNYA DONDU
+              </p>
+          </div>
+        {/* Siren Win Animation */}
+        {gameState.phase === "end" && gameState.playerClass === "Siren" && gameState.damageResult?.details?.some(l => l.includes("KADERİN KALBİNE HÜKMETTİM")) && (
+          <div className="fixed inset-0 z-50 bg-rose-950/80 flex flex-col items-center justify-center animate-in fade-in duration-1000">
+              <div className="relative animate-pulse">
+                  <Heart className="w-64 h-64 text-rose-500 glow-rose animate-bounce duration-[2s]" fill="currentColor" />
+              </div>
+              <h1 className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-white mt-8 font-cinzel animate-in slide-in-from-bottom duration-1000">
+                  AŞKIN LANETİ
+              </h1>
+              <p className="text-xl text-rose-200/80 mt-4 tracking-[0.5em] animate-in fade-in delay-500 duration-1000">
+                  KADERİN KALBİNE HÜKMETTİM
               </p>
           </div>
         )}

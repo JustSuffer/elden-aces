@@ -288,18 +288,20 @@ export function useGameState(initParams?: GameInitParams) {
   const rollDice = useCallback(() => {
     // Check if Fateweaver and dice available
     setGameState((prev) => {
-      if (prev.playerClass === "Fateweaver") {
+      const isFateweaverBehavior = prev.playerClass === "Fateweaver" || (prev.playerClass === "Mimic" && prev.opponentClass === "Fateweaver");
+      
+      if (isFateweaverBehavior) {
         if ((prev.playerDiceRolls || 0) <= 0) return prev;
       }
       
-      if (prev.diceUsed >= 2 && prev.playerClass !== "Fateweaver") {
+      if (prev.diceUsed >= 2 && !isFateweaverBehavior) {
         return prev; // Max 2 rolls for non-Fateweaver
       }
 
       const result = Math.floor(Math.random() * 20) + 1;
       let effect = "";
       
-      if (prev.playerClass === "Fateweaver") {
+      if (isFateweaverBehavior) {
           if (result <= 13) {
               effect = "Kaderin Cilvesi: Elinize Twisted (α) veya Deflate (β) eklenecek.";
           } else {
@@ -390,7 +392,10 @@ export function useGameState(initParams?: GameInitParams) {
       const p2Cards = prev.opponentField.filter((c): c is Card => c !== null);
 
       // Resolve round combat (Steps 1-5 including Ability execution)
-      const result = resolveGameRound(p1Cards, p2Cards, prev.playerClass, prev.opponentClass);
+      // MIMIC LOGIC: If Mimic vs X, resolve as X vs X (for scaling).
+      const effectiveP1Class = (prev.playerClass === "Mimic" && prev.opponentClass !== "Mimic") ? prev.opponentClass : prev.playerClass;
+      
+      const result = resolveGameRound(p1Cards, p2Cards, effectiveP1Class, prev.opponentClass);
 
       // Healing is returned in abilityResults, we need to apply it + damage taken
       // result.p1DamageTaken is NET positive damage
@@ -426,6 +431,13 @@ export function useGameState(initParams?: GameInitParams) {
       const p2InstantWin = checkCounterWinCondition(p2State, p1State, prev.round);
 
       let logDetails = result.logs;
+
+      // Siren Win Condition: 5 Stolen Cards
+      if (prev.playerClass === "Siren" && p1Cards.filter(c => c.isStolen).length >= 5) {
+          logDetails.push("❤️ KADERİN KALBİNE HÜKMETTİM: Siren Kazandı!");
+          newOpponentHP = 0;
+      }
+
       let phase: "placement" | "reveal" | "damage" | "end" = newPlayerHP <= 0 || newOpponentHP <= 0 ? "end" : "damage";
 
       if (p1InstantWin) {
@@ -671,7 +683,7 @@ export function useGameState(initParams?: GameInitParams) {
         damageResult: null,
         playerMust4Cards: false,
         opponentMust4Cards: false,
-        playerDiceRolls: prev.playerClass === "Fateweaver" ? prev.playerDiceRolls + 2 : 0,
+        playerDiceRolls: prev.playerClass === "Fateweaver" ? prev.playerDiceRolls : 0,
       };
     });
   }, []);

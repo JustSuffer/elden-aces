@@ -44,13 +44,13 @@ export const SpecialCardInfoPanel = () => {
         {/* Toggle Button */}
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="mt-8 bg-card border border-primary/30 border-r-0 rounded-l-lg p-1 hover:bg-primary/10 transition-colors shadow-lg"
+          className="mt-8 bg-amber-500/20 backdrop-blur border border-amber-500/50 border-r-0 rounded-l-xl p-0 hover:bg-amber-500/40 transition-all shadow-[0_0_15px_rgba(245,158,11,0.3)] hover:shadow-[0_0_25px_rgba(245,158,11,0.6)] group flex items-center justify-center w-10 h-16"
           aria-label={isExpanded ? "Collapse special cards info" : "Expand special cards info"}
         >
           {isExpanded ? (
-            <ChevronRight className="w-4 h-4 text-primary" />
+            <ChevronRight className="w-8 h-8 text-amber-400 group-hover:text-amber-200 transition-colors" />
           ) : (
-            <ChevronLeft className="w-4 h-4 text-primary" />
+            <ChevronLeft className="w-8 h-8 text-amber-400 group-hover:text-amber-200 transition-colors" />
           )}
         </button>
       </div>

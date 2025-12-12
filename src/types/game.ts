@@ -98,6 +98,8 @@ export interface GameState {
   winner?: string; // Player ID
   logs: string[];
   playerDiceRolls?: number;
+  pendingRoundSkip?: number;
+  mimicCounter?: { p1: number; p2: number };
   diceUsed?: number;
   playerMust4Cards?: boolean;
   pendingRoundSkip?: number;

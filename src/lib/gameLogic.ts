@@ -780,6 +780,12 @@ export function checkCounterWinCondition(
     const pClass = player.className;
     const oClass = opponent.className;
     
+    // Mimic Delegation (Copy Opponent's Win Condition)
+    if (pClass === "Mimic" && oClass !== "Mimic") {
+        // Pretend to be the opponent class and check if we win
+        return checkCounterWinCondition({ ...player, className: oClass }, opponent, round);
+    }
+    
     // Vitalist vs Slayer (Override Logic)
     if (pClass === "Vitalist" && oClass === "Slayer") {
        // Only win if HP < Slayer at end of Round 6 (or if checked otherwise)
