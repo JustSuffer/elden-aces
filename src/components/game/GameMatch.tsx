@@ -471,6 +471,7 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
                   DÜNYA DONDU
               </p>
           </div>
+        )}
         {/* Siren Win Animation */}
         {gameState.phase === "end" && gameState.playerClass === "Siren" && gameState.damageResult?.details?.some(l => l.includes("KADERİN KALBİNE HÜKMETTİM")) && (
           <div className="fixed inset-0 z-50 bg-rose-950/80 flex flex-col items-center justify-center animate-in fade-in duration-1000">
