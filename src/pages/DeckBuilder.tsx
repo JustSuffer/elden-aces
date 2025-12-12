@@ -103,8 +103,9 @@ const DeckBuilder = () => {
   };
 
   const handleSaveDeck = () => {
-    if (!mainClass || secondaryClasses.length !== 3) {
-      toast.error("Ana sınıf ve 3 yardımcı sınıf seçmelisiniz!");
+    const requiredCount = mainClass === "Conjurer" ? 4 : 3;
+    if (!mainClass || secondaryClasses.length !== requiredCount) {
+      toast.error(`Ana sınıf ve ${requiredCount} yardımcı sınıf seçmelisiniz!`);
       return;
     }
     
@@ -153,7 +154,7 @@ const DeckBuilder = () => {
     toast.success("Deste silindi!");
   };
 
-  const isComplete = mainClass && secondaryClasses.length === 3;
+  const isComplete = mainClass && secondaryClasses.length === (mainClass === "Conjurer" ? 4 : 3);
   const numericCards = customDeck.filter((c) => c.type === "numeric");
   const specialCards = customDeck.filter((c) => c.type === "special");
 

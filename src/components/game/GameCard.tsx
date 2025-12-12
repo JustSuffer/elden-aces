@@ -111,61 +111,9 @@ export function GameCard({ card, onClick, isPlaceholder = false, className, face
         )}
         </div>
         
-        {showEyeIcon && card && !faceDown && (
-          <button
-            onDoubleClick={handleEyeDoubleClick}
-            className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-primary/30 hover:bg-primary/50 rounded-full p-2 transition-all z-20 border border-primary/50 shadow-lg hover:shadow-primary/50"
-            aria-label="Double click to view card details"
-            title="Çift tıkla detayları gör"
-          >
-            <Eye className="w-4 h-4 text-primary" />
-          </button>
-        )}
       </div>
 
-      {/* Card Details Dialog */}
-      <Dialog open={showDetails} onOpenChange={setShowDetails}>
-        <DialogContent className="max-w-2xl fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-3 text-2xl">
-              <span className="text-4xl" style={textColorStyle}>{card.symbol}</span>
-              {card.name}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 pt-4">
-            {/* Card Type */}
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-primary">Type:</span>
-              <span className="text-sm text-foreground">{card.type === "numeric" ? "Numeric Card" : "Special Card"}</span>
-            </div>
-            
-            {/* Card Value for numeric cards */}
-            {card.type === "numeric" && card.value && (
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold text-primary">Value:</span>
-                <span className="text-3xl font-bold text-foreground">{card.value}</span>
-              </div>
-            )}
-            
-            {/* Special Type Info */}
-            {card.specialType && (
-                 <div className="flex items-center gap-2">
-                 <span className="text-sm font-semibold text-primary">Effect:</span>
-                 <span className="text-sm text-foreground">
-                    {SPECIAL_CARDS_DATA[card.specialType]?.description || "Unknown Effect"}
-                 </span>
-               </div>
-            )}
-            
-            {/* Description */}
-            {card.description && (
-              <div className="bg-muted/50 p-4 rounded-lg border border-primary/20 max-h-96 overflow-y-auto">
-                <p className="text-sm leading-relaxed text-foreground/90 whitespace-pre-line">{card.description}</p>
-              </div>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Card Details Dialog Removed */}
     </>
   );
 }

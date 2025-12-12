@@ -19,6 +19,7 @@ import { SavedDeck } from "@/types/deck";
 import { ClassName } from "@/types/game";
 import { MASTER_CLASSES } from "@/data/gameData";
 import { ClassInfoPanel } from "@/components/game/ClassInfoPanel";
+import { SpecialCardInfoPanel } from "@/components/game/SpecialCardInfoPanel";
 
 interface GameMatchProps {
   playerDeck: SavedDeck;
@@ -208,6 +209,7 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
     <DndContext onDragEnd={handleDragEnd}>
       <div className="min-h-screen bg-background flex flex-col relative">
         <ClassInfoPanel className={gameState.playerClass} />
+        <SpecialCardInfoPanel />
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border">
           <Button variant="ghost" onClick={() => navigate("/")} className="gap-2">

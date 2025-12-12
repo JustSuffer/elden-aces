@@ -320,6 +320,8 @@ export function useGameState(initParams?: GameInitParams) {
       return {
         ...prev,
         pendingDiceResult: { result, effect },
+        diceUsed: prev.diceUsed + 1,
+        playerDiceRolls: prev.playerClass === "Fateweaver" ? (prev.playerDiceRolls || 0) - 1 : prev.playerDiceRolls,
       };
     });
   }, []);
@@ -444,17 +446,17 @@ export function useGameState(initParams?: GameInitParams) {
         logDetails.push(`💀 ${prev.opponentClass} kazanma koşulunu sağladı!`);
       }
 
-      // --- SIREN CURSE (USER REQUEST: ROUND 4 AUTO-DAMAGE) ---
-      if (prev.round === 4) {
+      // --- SIREN CURSE (USER REQUEST: ROUND 6 AUTO-DAMAGE) ---
+      if (prev.round === 6) {
           // Siren Player takes 5 Damage automatically
           if (prev.playerClass === "Siren") {
               newPlayerHP = Math.max(0, newPlayerHP - 5);
-              logDetails.push("🧜‍♀️ LANET: Siren 4. Turda 5 Hasar yedi!");
+              logDetails.push("🧜‍♀️ LANET: Siren 6. Turda 5 Hasar yedi!");
           }
           // Siren Opponent takes 5 Damage automatically
           if (prev.opponentClass === "Siren") {
               newOpponentHP = Math.max(0, newOpponentHP - 5);
-              logDetails.push("🧜‍♀️ LANET: Rakip Siren 4. Turda 5 Hasar yedi!");
+              logDetails.push("🧜‍♀️ LANET: Rakip Siren 6. Turda 5 Hasar yedi!");
           }
       }
 
@@ -644,9 +646,13 @@ export function useGameState(initParams?: GameInitParams) {
       }
 
       // Cards not played carry over (player hand already has unplayed cards)
-      // Deal new cards to reach 6 total
-      const cardsNeeded = Math.max(0, 6 - prev.playerHand.length);
-      const botCardsNeeded = Math.max(0, 6 - prev.opponentHand.length);
+      // Deal new cards to reach 6 total (IGNORING STOLEN CARDS FOR SIREN)
+      // Stolen cards do not count towards the 6-card limit.
+      const currentNormalCards = prev.playerHand.filter(c => !c.isStolen).length;
+      const cardsNeeded = Math.max(0, 6 - currentNormalCards);
+      
+      const botNormalCards = prev.opponentHand.filter(c => !c.isStolen).length; // Bot logic too
+      const botCardsNeeded = Math.max(0, 6 - botNormalCards);
       
       const { dealt: playerCards, remaining: playerRemaining } = localDealCards(prev.playerDeck, cardsNeeded);
       const { dealt: opponentCards, remaining: opponentRemaining } = localDealCards(prev.opponentDeck, botCardsNeeded);

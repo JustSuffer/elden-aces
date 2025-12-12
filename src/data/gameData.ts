@@ -130,7 +130,7 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
     symbol: "η",
     role: "Thief",
     initialHP: 40,
-    passiveDescription: "Steals cards. Takes 5 Dmg at R4.",
+    passiveDescription: "Steals cards. Takes 5 Dmg at R6.",
     abilityScales: [
         { count: 1, effectDescription: "-" },
         { count: 2, effectDescription: "2 Çal" },
