@@ -566,30 +566,7 @@ export function useGameState(initParams?: GameInitParams) {
       const isDecayP1 = prev.playerClass === "Decay";
       const isDecayP2 = prev.opponentClass === "Decay";
 
-      if (prev.round === 5) {
-          if (isDecayP1) {
-              if (p2Deck.length === 0) {
-                  logDetails.push("🔥 DECAY ZAFERİ: Rakip Deste Kül Oldu!");
-                  newOpponentHP = 0;
-              } else if (!result.sideEffects.p1NoDeath) {
-                  logDetails.push("💀 DECAY CEZASI: Rakip Deste Bitmedi -> ÖLÜM.");
-                  newPlayerHP = 0;
-              } else {
-                  logDetails.push("🛡️ Decay Kurtuldu: NoDeath Aktif!");
-              }
-          }
-          if (isDecayP2) {
-              if (p1Deck.length === 0) {
-                  logDetails.push("🔥 RAKİP DECAY ZAFERİ!");
-                  newPlayerHP = 0;
-              } else if (!result.sideEffects.p2NoDeath) {
-                  logDetails.push("💀 Rakip Decay Cezası: Ölüm.");
-                  newOpponentHP = 0;
-              } else {
-                   logDetails.push("🛡️ Rakip Decay Kurtuldu!");
-              }
-          }
-      }
+[]
 
       // --- FATEWEAVER LOGIC (Dice Gain + Gamma) ---
       let newPlayerDiceRolls = prev.playerClass === "Fateweaver" ? (prev.playerDiceRolls || 0) : 0; // Carry over
@@ -651,7 +628,6 @@ export function useGameState(initParams?: GameInitParams) {
       // User said "Son round da hangi hasarı kimin yediği ve kimin ne kosulla kazandığı anlatılacak".
       // If I set HP=0, it looks like a kill.
       // If I want "Vitalist Survived" message, I should add it to logs, and maybe set winner?
-      
       let winner = undefined;
       
       if (prev.round >= 7) {
@@ -720,7 +696,7 @@ export function useGameState(initParams?: GameInitParams) {
         opponentHP: newOpponentHP,
         phase,
         logs: [...(prev.logs || []), ...logDetails],
-        winner: specialWinner || (newPlayerHP <= 0 ? "p2" : (newOpponentHP <= 0 ? "p1" : winner)),
+        winner: specialWinner || (p1InstantWin ? "p1" : (p2InstantWin ? "p2" : (newPlayerHP <= 0 ? "p2" : (newOpponentHP <= 0 ? "p1" : winner)))),
         playerDeck: p1Deck,
         opponentDeck: p2Deck,
         playerHand: p1Hand,

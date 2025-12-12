@@ -13,7 +13,7 @@ import { useNavigate } from "react-router-dom";
 
 import { toast } from "sonner";
 import { DndContext, DragEndEvent } from "@dnd-kit/core";
-import { ArrowLeft, Dices, Eye, Snowflake, Heart, Settings } from "lucide-react";
+import { ArrowLeft, Dices, Eye, Snowflake, Heart, Settings, Flame } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import { GameCard } from "@/components/game/GameCard";
 import { AudioManager } from "@/utils/AudioManager";
@@ -235,6 +235,9 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
         // Assuming any Augmentor Win triggers this blue animation.
         setWinConAnimationType("augmentor");
         setShowWinConAnimation(true);
+      } else if (gameState.playerClass === "Decay" && gameState.winner === "p1") {
+         setWinConAnimationType("decay");
+         setShowWinConAnimation(true);
       } else {
         setShowWinConAnimation(false);
         setWinConAnimationType(null);
@@ -634,6 +637,37 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
                </h1>
                <p className="text-xl text-blue-200/80 mt-4 tracking-[0.5em] animate-in fade-in delay-500 duration-1000">
                    KUSURSUZ HESAPLAMA
+               </p>
+          </div>
+        )}
+
+        {/* Decay Win Animation */}
+        {showWinConAnimation && winConAnimationType === "decay" && (
+          <div className="fixed inset-0 z-50 bg-orange-950/90 flex flex-col items-center justify-center animate-in fade-in duration-1000">
+               <div className="absolute inset-0 overflow-hidden opacity-50">
+                   {Array.from({length: 40}).map((_, i) => (
+                       <Flame 
+                          key={i} 
+                          className="absolute text-orange-500 animate-[pulse_1s_ease-in-out_infinite]"
+                          style={{
+                              left: `${Math.random() * 100}%`,
+                              top: `${Math.random() * 100}%`,
+                              width: `${Math.random() * 60 + 20}px`,
+                              height: `${Math.random() * 60 + 20}px`,
+                              animationDelay: `${Math.random()}s`,
+                              opacity: Math.random() * 0.5 + 0.2
+                          }}
+                       />
+                   ))}
+               </div>
+               <div className="relative z-10 animate-bounce">
+                  <Flame className="w-64 h-64 text-orange-500 glow-orange drop-shadow-[0_0_50px_rgba(249,115,22,0.8)]" fill="currentColor" />
+               </div>
+               <h1 className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-red-500 to-yellow-500 mt-8 font-cinzel animate-in slide-in-from-bottom duration-1000 relative z-10">
+                   KÜL VE DUMAN
+               </h1>
+               <p className="text-xl text-orange-200/80 mt-4 tracking-[0.5em] animate-in fade-in delay-500 duration-1000 relative z-10">
+                   RAKİP DESTE YAKILDI
                </p>
           </div>
         )}
