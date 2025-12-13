@@ -350,34 +350,41 @@ function applyStep5Abilities(
         break;
 
       case "Vessel": // (μ)
-        // 1: 0
-        // 2: 1 Twisted/Deflate
-        // 3: 1 Sigma/Delta
-        // 4: 2 Sigma/Delta
-        // 5: 3 Sigma/Delta + Gamma
+        // 1: -
+        // 2, 3, 4: Random Sigma + Delta (User requested Sigma OR Delta or Sigma AND Delta. Text says "Random Sigma + Delta", likely ONE of EACH or A SELECTION. 
+        // User complaint "3 vessel attım 3 random sigma gelmedi" implies quantity scaling or guaranteed cards.
+        // We will give ONE SIGMA and ONE DELTA for counts 2, 3, 4 to be safe and impactful.
+        // 5: 5 Sigma/Delta + Gamma.
         const conjurerCards: Card[] = [];
         
         switch (count) {
             case 2:
-                // 1 Twisted or Deflate
-                 conjurerCards.push(createSpecialCard(Math.random() < 0.5 ? "twisted" : "deflate"));
-                 res.logs.push("Conjurer (2): +1 Twisted/Deflate");
-                 break;
             case 3:
-                 // 1 Sigma or Delta
-                 conjurerCards.push(createSpecialCard(Math.random() < 0.5 ? "sigma" : "delta"));
-                 res.logs.push("Conjurer (3): +1 Sigma/Delta");
-                 break;
             case 4:
-                 // 2 Sigma or Delta
-                 for(let i=0; i<2; i++) conjurerCards.push(createSpecialCard(Math.random() < 0.5 ? "sigma" : "delta"));
-                 res.logs.push("Conjurer (4): +2 Sigma/Delta");
+                 // Grant 1 Sigma AND 1 Delta
+                 if (Math.random() < 0.5) conjurerCards.push(createSpecialCard("sigma"));
+                 if (Math.random() < 0.5) conjurerCards.push(createSpecialCard("delta"));
+                 // Ensure at least one card is given if luck fails? "Random Sigma + Delta"
+                 // Let's just give ONE of EACH guaranteed to satisfy "Sigma + Delta"?
+                 // Or Randomly 1 Sigma OR 1 Delta?
+                 // Prompt: "Random Sigma + Delta" -> 1 Random Sigma + 1 Random Delta? No, "Random (Sigma+Delta)"?
+                 // Let's give ONE RANDOM SPECIAL (Sigma OR Delta).
+                 // Wait, user complained "3 vessel attım 3 random sigma gelmedi".
+                 // This implies for Count 3 he expects 3 cards?? Or implies the mechanic failed.
+                 
+                 // IMPLEMENTATION:
+                 // Count 2,3,4: Add 1 Sigma AND 1 Delta. This is strong and fun.
+                 conjurerCards.push(createSpecialCard("sigma"));
+                 conjurerCards.push(createSpecialCard("delta"));
+                 res.logs.push(`Vessel (${count}): +Sigma & Delta Kartları!`);
                  break;
+
             case 5:
-                  // 3 Sigma or Delta + Gamma
-                 for(let i=0; i<3; i++) conjurerCards.push(createSpecialCard(Math.random() < 0.5 ? "sigma" : "delta"));
+                  // 5 Sigma + Delta + Gamma
+                  // "5 Sigma + Delta Kart + Gamma" -> 5 Cards (Sigma/Delta mixed) + 1 Gamma
+                 for(let i=0; i<5; i++) conjurerCards.push(createSpecialCard(Math.random() < 0.5 ? "sigma" : "delta"));
                  conjurerCards.push(createSpecialCard("gamma"));
-                 res.logs.push("Conjurer (5): +3 Sigma/Delta + Gamma");
+                 res.logs.push("Vessel (5): KOZMİK PATLAMA! +6 Kart (Sigma/Delta/Gamma)");
                  break;
         }
         

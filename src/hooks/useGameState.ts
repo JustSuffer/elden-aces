@@ -621,6 +621,16 @@ export function useGameState(initParams?: GameInitParams) {
            logDetails.push("✨ Rakip Fateweaver Gamma (γ) kazandı!");
       }
 
+      // --- VESSEL LOGIC (Cards Added) ---
+      if (result.sideEffects.p1CardsAdded) {
+          p1Hand.push(...result.sideEffects.p1CardsAdded);
+          logDetails.push(`🌌 Vessel Kozmik Gücü: ${result.sideEffects.p1CardsAdded.length} özel kart elde edildi!`);
+      }
+      if (result.sideEffects.p2CardsAdded) {
+          p2Hand.push(...result.sideEffects.p2CardsAdded);
+          logDetails.push(`🌌 Rakip Vessel Kozmik Gücü: ${result.sideEffects.p2CardsAdded.length} kart elde etti!`);
+      }
+
       // Check round 7 end condition - REMOVED IMMEDIATE END
       // We allow the "Damage" phase to show the result first.
       // The Transition to "End" phase happens in nextRound() if round >= 7.
@@ -788,12 +798,22 @@ export function useGameState(initParams?: GameInitParams) {
       }
 
       // Cards not played carry over (player hand already has unplayed cards)
-      // Deal new cards to reach 6 total (IGNORING STOLEN CARDS FOR SIREN)
-      // Special: Oracle draws fixed 2 cards per round.
-      const currentNormalCards = prev.playerHand.filter(c => !c.isStolen).length;
+      // Deal new cards to reach 6 total (IGNORING STOLEN CARDS FOR SIREN, SPECIALS FOR VESSEL)
+      const isVesselP1 = prev.playerClass === "Vessel";
+      const currentNormalCards = prev.playerHand.filter(c => {
+         if (c.isStolen) return false;
+         // Vessel keeps Sigma/Delta/Gamma as "Extra"
+         if (isVesselP1 && ["sigma", "delta", "gamma"].includes(c.specialType || "")) return false;
+         return true;
+      }).length;
       const cardsNeeded = Math.max(0, 6 - currentNormalCards);
       
-      const botNormalCards = prev.opponentHand.filter(c => !c.isStolen).length;
+      const isVesselP2 = prev.opponentClass === "Vessel";
+      const botNormalCards = prev.opponentHand.filter(c => {
+         if (c.isStolen) return false;
+         if (isVesselP2 && ["sigma", "delta", "gamma"].includes(c.specialType || "")) return false;
+         return true;
+      }).length;
       const botCardsNeeded = Math.max(0, 6 - botNormalCards);
       
       const { dealt: playerCards, remaining: playerRemaining } = localDealCards(prev.playerDeck, cardsNeeded);
