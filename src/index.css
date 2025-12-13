@@ -185,4 +185,55 @@ All colors MUST be HSL.
     background: hsl(var(--primary-glow));
     box-shadow: 0 0 10px hsl(var(--primary) / 0.5);
   }
+
+  /* --- GLOBAL ANIMATIONS --- */
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 5px hsl(var(--primary) / 0.2); }
+    50% { box-shadow: 0 0 20px hsl(var(--primary) / 0.6); }
+  }
+  .animate-pulse-glow {
+    animation: pulse-glow 3s ease-in-out infinite;
+  }
+
+  @keyframes spin-slow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  .animate-spin-slow {
+    animation: spin-slow 20s linear infinite;
+  }
+
+  @keyframes spin-slower {
+    from { transform: rotate(360deg); }
+    to { transform: rotate(0deg); }
+  }
+  .animate-spin-slower {
+    animation: spin-slower 30s linear infinite;
+  }
+
+  @keyframes slide-up-fade {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-slide-up {
+    animation: slide-up-fade 0.6s ease-out forwards;
+  }
+  
+  /* Game Button 3D Effect */
+  .game-button-3d {
+      transition: all 0.1s;
+      box-shadow: 0 4px 0 hsl(var(--primary) / 0.5);
+  }
+  .game-button-3d:active {
+      transform: translateY(4px);
+      box-shadow: 0 0 0 hsl(var(--primary) / 0.5);
+  }
 }

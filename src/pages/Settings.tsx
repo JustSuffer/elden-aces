@@ -5,13 +5,15 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Volume2, Music, Palette, Mic, MicOff, Upload } from "lucide-react";
+import { ArrowLeft, Volume2, Music, Palette, Mic, MicOff, Upload, Languages } from "lucide-react";
 import { useState, useEffect } from "react";
 import { AudioManager } from "@/utils/AudioManager";
 import { toast } from "sonner";
+import { useLanguage } from "@/hooks/useLanguage";
 
 const Settings = () => {
   const navigate = useNavigate();
+  const { t, language, setLanguage } = useLanguage();
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [musicEnabled, setMusicEnabled] = useState(true);
   const [volume, setVolume] = useState([70]);
@@ -63,27 +65,55 @@ const Settings = () => {
       <div className="flex items-center justify-between p-4 border-b border-border">
         <Button variant="ghost" onClick={() => navigate("/")} className="gap-2">
           <ArrowLeft className="w-4 h-4" />
-          Back
+          {t("menu.back")}
         </Button>
-        <div className="text-xl font-bold text-primary glow-gold">Settings</div>
+        <div className="text-xl font-bold text-primary glow-gold">{t("settings.title")}</div>
         <div className="w-20" />
       </div>
 
       {/* Settings Content */}
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-2xl space-y-6">
+          
+          {/* Language Settings */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Languages className="w-5 h-5" />
+                {t("settings.language")}
+              </CardTitle>
+              <CardDescription>{t("settings.languageDesc")}</CardDescription>
+            </CardHeader>
+            <CardContent className="flex gap-4">
+                <Button 
+                   variant={language === "tr" ? "default" : "outline"} 
+                   onClick={() => setLanguage("tr")}
+                   className="flex-1"
+                >
+                    🇹🇷 Türkçe
+                </Button>
+                <Button 
+                   variant={language === "en" ? "default" : "outline"} 
+                   onClick={() => setLanguage("en")}
+                   className="flex-1"
+                >
+                    🇬🇧 English
+                </Button>
+            </CardContent>
+          </Card>
+
           {/* Audio Settings */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Volume2 className="w-5 h-5" />
-                Audio Settings
+                {t("settings.audio")}
               </CardTitle>
-              <CardDescription>Manage sound effects and music</CardDescription>
+              <CardDescription>{t("settings.audioDesc")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex items-center justify-between">
-                <Label htmlFor="sound-effects">Sound Effects</Label>
+                <Label htmlFor="sound-effects">{t("settings.soundEffects")}</Label>
                 <Switch
                   id="sound-effects"
                   checked={soundEnabled}
@@ -92,7 +122,7 @@ const Settings = () => {
               </div>
               
               <div className="flex items-center justify-between">
-                <Label htmlFor="music">Background Music</Label>
+                <Label htmlFor="music">{t("settings.music")}</Label>
                 <Switch
                   id="music"
                   checked={musicEnabled}
@@ -106,7 +136,7 @@ const Settings = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="volume">Master Volume: {volume[0]}%</Label>
+                <Label htmlFor="volume">{t("settings.volume")}: {volume[0]}%</Label>
                 <Slider
                   id="volume"
                   value={volume}
@@ -117,20 +147,8 @@ const Settings = () => {
                 />
               </div>
 
-              <div className="flex items-center justify-between">
-                <Label>Audio Toggle</Label>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={handleToggleMute}
-                  className={isMuted ? "bg-destructive/20" : ""}
-                >
-                  {isMuted ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-                </Button>
-              </div>
-
               <div className="space-y-2">
-                <Label htmlFor="bg-music-upload">Upload Background Music</Label>
+                <Label htmlFor="bg-music-upload">{t("settings.uploadMusic")}</Label>
                 <div className="flex gap-2">
                   <Input
                     id="bg-music-upload"
@@ -143,7 +161,6 @@ const Settings = () => {
                     <Upload className="w-4 h-4" />
                   </Button>
                 </div>
-                <p className="text-xs text-muted-foreground">Max 10MB • MP3, WAV supported</p>
               </div>
             </CardContent>
           </Card>
@@ -153,15 +170,15 @@ const Settings = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Palette className="w-5 h-5" />
-                Visual Settings
+                {t("settings.visual")}
               </CardTitle>
-              <CardDescription>Customize visual experience</CardDescription>
+              <CardDescription>{t("settings.visualDesc")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <Label htmlFor="animations">Card Animations</Label>
-                  <p className="text-sm text-muted-foreground">Enable card flip and movement animations</p>
+                  <Label htmlFor="animations">{t("settings.animations")}</Label>
+                  <p className="text-sm text-muted-foreground">{t("settings.animationsDesc")}</p>
                 </div>
                 <Switch
                   id="animations"
@@ -177,12 +194,12 @@ const Settings = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Music className="w-5 h-5" />
-                About
+                {t("settings.about")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm text-muted-foreground">
               <p>ACORIA - Strategic Card Game</p>
-              <p>Version 1.0.0</p>
+              <p>{t("common.version")}</p>
               <p>© 2025 All rights reserved</p>
             </CardContent>
           </Card>
