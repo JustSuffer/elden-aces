@@ -112,7 +112,26 @@ export function useGameState(initParams?: GameInitParams) {
 
     // Use player's saved deck or create default
     
-    const opponentDeck = createBotDeck(oClass);
+    let opponentDeck = createBotDeck(oClass);
+    
+    if (oClass === "Mimic") {
+        // Bot Mimic: Add 6 Extra Mimic Cards (mimicking the behavior of copying + own class)
+        // Total 36 Cards
+        const mimicClassData = MASTER_CLASSES["Mimic"];
+        const extraMimicCards: Card[] = [];
+        for (let i = 1; i <= 6; i++) {
+             extraMimicCards.push({
+                id: `bot-mimic-extra-${i}-${Date.now()}`,
+                name: `${mimicClassData.name} Card`,
+                symbol: mimicClassData.symbol,
+                value: i,
+                type: "numeric",
+                classSymbol: mimicClassData.symbol,
+                color: mimicClassData.color
+             });
+        }
+        opponentDeck = shuffleDeck([...opponentDeck, ...extraMimicCards]);
+    }
     
     let playerDeck: Card[];
 
@@ -140,8 +159,10 @@ export function useGameState(initParams?: GameInitParams) {
         playerDeck = shuffleDeck([...opponentClones, ...mimicCards]);
     } else {
         // Standard Logic
-        playerDeck = initParams?.playerDeck.cards 
-          ? shuffleDeck([...initParams.playerDeck.cards])
+        // Fix: If cards array is empty, fallback to default deck
+        const inputCards = initParams?.playerDeck.cards;
+        playerDeck = inputCards && inputCards.length > 0
+          ? shuffleDeck([...inputCards])
           : createBotDeck(pClass);
     }
     
