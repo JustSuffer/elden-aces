@@ -13,7 +13,7 @@ import { useNavigate } from "react-router-dom";
 
 import { toast } from "sonner";
 import { DndContext, DragEndEvent } from "@dnd-kit/core";
-import { ArrowLeft, Dices, Eye, Snowflake, Heart, Settings, Flame, Sparkles, Skull, Atom } from "lucide-react";
+import { ArrowLeft, Dices, Eye, Snowflake, Heart, Settings, Flame, Sparkles, Skull, Atom, Hourglass } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import { GameCard } from "@/components/game/GameCard";
 import { AudioManager } from "@/utils/AudioManager";
@@ -35,18 +35,18 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
   const [showWinConAnimation, setShowWinConAnimation] = useState(false);
   const [winConAnimationType, setWinConAnimationType] = useState<string | null>(null);
 
-  const { 
-    gameState, 
-    placeCard, 
-    removeCardFromField, 
-    rearrangeCard, 
-    endPlacement, 
-    rollDice, 
-    acknowledgeDiceResult, 
-    cancelDiceResult, 
-    calculateRoundDamage, 
-    nextRound, 
-    handleCardSelection 
+  const {
+    gameState,
+    placeCard,
+    removeCardFromField,
+    rearrangeCard,
+    endPlacement,
+    rollDice,
+    acknowledgeDiceResult,
+    cancelDiceResult,
+    calculateRoundDamage,
+    nextRound,
+    handleCardSelection
   } = useGameState({ playerDeck, opponentClass });
 
   useEffect(() => {
@@ -72,7 +72,7 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
     if (activeId.startsWith("field-")) {
       const fromIndex = parseInt(activeId.replace("field-", ""));
       const toIndex = parseInt(overId.replace("field-", ""));
-      
+
       if (!isNaN(fromIndex) && !isNaN(toIndex) && fromIndex !== toIndex) {
         rearrangeCard(fromIndex, toIndex);
         AudioManager.play("card-placement", 0.6);
@@ -111,20 +111,20 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
   const handleRollDice = () => {
     // 1. Fateweaver Logic
     if (gameState.playerClass === "Fateweaver") {
-        const rolls = gameState.playerDiceRolls || 0;
-        if (rolls <= 0) {
-            toast.error("Zar hakkınız kalmadı! (Fateweaver)");
-            return;
-        }
-        // Proceed for Fateweaver regardless of diceUsed
-        rollDice();
+      const rolls = gameState.playerDiceRolls || 0;
+      if (rolls <= 0) {
+        toast.error("Zar hakkınız kalmadı! (Fateweaver)");
         return;
+      }
+      // Proceed for Fateweaver regardless of diceUsed
+      rollDice();
+      return;
     }
 
     // 2. Standard Logic (Non-Fateweaver)
     if (gameState.diceUsed >= 2) {
-        toast.error("Zar hakkın bitti! (Maç başına 2)");
-        return;
+      toast.error("Zar hakkın bitti! (Maç başına 2)");
+      return;
     }
 
     rollDice();
@@ -132,7 +132,7 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
 
   const handleEndPlacement = () => {
     const placedCards = gameState.playerField.filter((c) => c !== null).length;
-    
+
     if (placedCards < 1) {
       toast.error(`En az 1 kart yerleştirmelisin!`);
       return;
@@ -143,9 +143,9 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
     // However, if the user explicitly wants to adhere to the table, the table has logic for 4 cards.
     // I will enforce Min 1. The Max is handled in Tap.
     endPlacement();
-    
+
     AudioManager.play("card-flip", 0.7);
-    
+
     setTimeout(() => {
       gameState.playerField.forEach((card, index) => {
         if (card?.specialType === "gamma") {
@@ -155,7 +155,7 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
         }
       });
     }, 600);
-    
+
     setTimeout(() => {
       calculateRoundDamage();
       AudioManager.play("damage-dealt", 0.9);
@@ -165,7 +165,7 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
   const addVfx = (type: "gamma" | "twisted" | "delta-sigma-transform", slotIndex: number) => {
     const slotElement = document.querySelector(`[data-slot="${slotIndex}"]`);
     if (!slotElement) return;
-    
+
     const rect = slotElement.getBoundingClientRect();
     const effect: VfxEffect = {
       type,
@@ -173,7 +173,7 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
       y: rect.top + rect.height / 2,
       id: `${type}-${Date.now()}-${Math.random()}`,
     };
-    
+
     setVfxEffects(prev => [...prev, effect]);
     setTimeout(() => {
       setVfxEffects(prev => prev.filter(e => e.id !== effect.id));
@@ -184,16 +184,16 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
     const maxRounds = gameState.maxRounds || 7;
 
     if (gameState.pendingRoundSkip && gameState.pendingRoundSkip > 0) {
-       setShowHourglass(true);
-       setTimeout(() => {
-           setShowHourglass(false);
-            if (gameState.round >= maxRounds || gameState.playerHP <= 0 || gameState.opponentHP <= 0) {
-              navigate("/");
-              return;
-            }
-           nextRound();
-       }, 2500);
-       return;
+      setShowHourglass(true);
+      setTimeout(() => {
+        setShowHourglass(false);
+        if (gameState.round >= maxRounds || gameState.playerHP <= 0 || gameState.opponentHP <= 0) {
+          navigate("/");
+          return;
+        }
+        nextRound();
+      }, 2500);
+      return;
     }
 
     if (gameState.round >= maxRounds || gameState.playerHP <= 0 || gameState.opponentHP <= 0) {
@@ -211,42 +211,84 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
   const opponentClassData = MASTER_CLASSES[gameState.opponentClass];
 
   // Check for win condition animations
+  // Check for win condition animations
   useEffect(() => {
+    // Only check if we are in END phase. 
+    // We modify logic to allow re-trigger if needed but usually it's one-off.
     if (gameState.phase === "end") {
       const details = gameState.damageResult?.details || [];
-      // Check various win conditions
+
+      // If we already determined a type, don't overwrite unless we want to stack them?
+      // But clearing it (setting to null) allows re-check.
+      // We only want to set it ONCE per end phase encounter.
+      if (showWinConAnimation) return;
+
+      // If we already finished animation (showWinConAnimation became false), we don't want to re-trigger immediately 
+      // unless state changed. But 'end' phase persists.
+      // This is the tricky part. If I dismiss it, next render sees 'end' phase + !showWinConAnimation, so it triggers again?
+      // Hence we need a way to know "We have already shown the animation for this match outcome."
+
+      // However, for now, let's assume the component mounts/updates. 
+      // If I set showWinConAnimation(false) after timeout, this effect runs again.
+      // And since details still say "Win", it will set it to TRUE again. Infinite loop of animations.
+
+      // FIX: Check if we successfully showed it before? 
+      // Effectively we can check if 'winConAnimationType' is set? 
+      // No, we set that to null when dismissing to revert UI.
+
+      // Hack/Fix: We can use a ref or check if we are already in a "post-animation" state?
+      // Or simply: The USER request implies "Animation THEN Popup".
+      // The Popup is conditioned on `!showWinConAnimation`.
+      // If I just leave `winConAnimationType` as "DONE" or something?
+
+      // Let's add a state `hasShownWinAnimation` to prevent loop.
+      // But I can't add state comfortably in this `replace` block without changing the whole component top.
+
+      // Alternative: Use `winConAnimationType` not being null as the flag?
+      // And when "dismissing", we keep `winConAnimationType` as is, but toggle `showWinConAnimation` to false?
+      // The JSX checks `showWinConAnimation && winConAnimationType === '...'`.
+      // If `showWinConAnimation` is false, it won't show.
+      // So if I keep `winConAnimationType` set to "fateweaver" but `showWinConAnimation` = false...
+      // Then this Effect sees `winConAnimationType` is NOT null, so it returns!
+      // This solves the loop.
+
+      if (winConAnimationType !== null) return;
+
+      let type: string | null = null;
+      let duration = 3000;
+
       if (gameState.playerClass === "Fateweaver" && details.some(l => l.includes("KADERİN GÖZÜ"))) {
-        setWinConAnimationType("fateweaver");
-        setShowWinConAnimation(true);
+        type = "fateweaver";
+      } else if (gameState.playerClass === "Chronokeeper" && (details.some(l => l.includes("Chronokeeper zamanın efendisi")) || gameState.winReason === "CHRONO_WIN")) {
+        type = "chronokeeper";
       } else if (gameState.playerClass === "Cryomancer" && details.some(l => l.includes("kazanma koşulunu sağladı"))) {
-        setWinConAnimationType("cryomancer");
-        setShowWinConAnimation(true);
+        type = "cryomancer";
       } else if (gameState.playerClass === "Siren" && details.some(l => l.includes("KADERİN KALBİNE"))) {
-        setWinConAnimationType("siren");
-        setShowWinConAnimation(true);
+        type = "siren";
       } else if (isMimicVsMimic && (gameState.mimicCounter.p1 >= 12 || gameState.mimicCounter.p2 >= 12)) {
-        setWinConAnimationType("mimic");
-        setShowWinConAnimation(true);
+        type = "mimic";
       } else if (gameState.playerClass === "Augmentor" && gameState.winner === "p1") {
-        // Augmentor Win (Generic or specific?)
-        // User asked for "Augmentor Winconu için mühendislik animasyonu"
-        // If they played 5 cards (Exodia-like) or just Won?
-        // Usually Augmentor wins by Damage/Buffs.
-        // Assuming any Augmentor Win triggers this blue animation.
-        setWinConAnimationType("augmentor");
-        setShowWinConAnimation(true);
+        type = "augmentor";
       } else if (gameState.playerClass === "Decay" && gameState.winner === "p1") {
-         setWinConAnimationType("decay");
-         setShowWinConAnimation(true);
+        type = "decay";
       } else if (gameState.winReason === "VESSEL_WIN") {
-         setWinConAnimationType("vessel");
-         setShowWinConAnimation(true);
-      } else {
-        setShowWinConAnimation(false);
-        setWinConAnimationType(null);
+        type = "vessel";
+        duration = 2000; // 2 Seconds for Vessel as requested
+      }
+
+      if (type) {
+        setWinConAnimationType(type);
+        setShowWinConAnimation(true);
+
+        setTimeout(() => {
+          setShowWinConAnimation(false);
+          // We DO NOT reset winConAnimationType here. 
+          // This prevents re-entry into this "if (type)" block.
+          // The Victory Popup will now show because showWinConAnimation is false.
+        }, duration);
       }
     }
-  }, [gameState.phase, gameState.damageResult, isMimicVsMimic, gameState.mimicCounter, gameState.playerClass]);
+  }, [gameState.phase, gameState.damageResult, isMimicVsMimic, gameState.mimicCounter, gameState.playerClass, winConAnimationType, showWinConAnimation, gameState.winReason, gameState.winner]);
 
   return (
     <DndContext onDragEnd={handleDragEnd}>
@@ -276,29 +318,29 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
             <DeckCounter count={gameState.opponentDeck.length} isOpponent />
             <div className="flex-1 flex flex-col items-center gap-4">
               <div className="flex flex-col w-full max-w-[200px] md:max-w-[300px]">
-                  <div className="flex items-center gap-3">
-                    <span 
-                      className="text-3xl font-bold"
-                      style={{ color: opponentClassData.color }}
-                    >
-                      {opponentClassData.symbol}
-                    </span>
-                    <HPBar 
-                      current={gameState.opponentHP} 
-                      max={opponentClassData.initialHP} 
-                      label={`Rakip (${gameState.opponentClass})`} 
-                      isOpponent 
-                    />
-                  </div>
+                <div className="flex items-center gap-3">
+                  <span
+                    className="text-3xl font-bold"
+                    style={{ color: opponentClassData.color }}
+                  >
+                    {opponentClassData.symbol}
+                  </span>
+                  <HPBar
+                    current={gameState.opponentHP}
+                    max={opponentClassData.initialHP}
+                    label={`Rakip (${gameState.opponentClass})`}
+                    isOpponent
+                  />
+                </div>
               </div>
               {/* Opponent Field with Knife Bar */}
               <div className="flex items-center gap-4">
                 <div className="grid grid-cols-5 gap-2 md:gap-4 justify-items-center">
                   {gameState.opponentField.map((card, i) => (
-                    <GameCard 
-                      key={i} 
-                      card={card} 
-                      isPlaceholder={!card} 
+                    <GameCard
+                      key={i}
+                      card={card}
+                      isPlaceholder={!card}
                       faceDown={gameState.phase === "placement"}
                       showEyeIcon={!!(card && gameState.phase !== "placement")}
                     />
@@ -306,9 +348,9 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
                 </div>
                 {/* Opponent Knife Bar - Right side of field */}
                 {isMimicVsMimic && (
-                  <KnifeBar 
-                    count={gameState.mimicCounter.p2} 
-                    isOpponent 
+                  <KnifeBar
+                    count={gameState.mimicCounter.p2}
+                    isOpponent
                     className="ml-4"
                   />
                 )}
@@ -327,8 +369,8 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
                 {gameState.phase === "reveal" && "Kartlar açılıyor!"}
                 {gameState.phase === "damage" && "Round tamamlandı!"}
                 {gameState.phase === "end" && (
-                  gameState.playerHP > gameState.opponentHP ? "Zafer!" : 
-                  gameState.playerHP < gameState.opponentHP ? "Yenilgi!" : "Berabere!"
+                  gameState.playerHP > gameState.opponentHP ? "Zafer!" :
+                    gameState.playerHP < gameState.opponentHP ? "Yenilgi!" : "Berabere!"
                 )}
               </p>
               <p className="text-sm text-muted-foreground mt-1">
@@ -350,7 +392,7 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
                   className="gap-2 bg-psi hover:bg-psi/80"
                 >
                   <Dices className="w-5 h-5" />
-                  {gameState.playerClass === "Fateweaver" 
+                  {gameState.playerClass === "Fateweaver"
                     ? `Kader Zarı (${gameState.playerDiceRolls || 0})`
                     : `Zar Π (${gameState.diceUsed || 0}/2)`
                   }
@@ -385,8 +427,8 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
                   onClick={handleNextRound}
                   className="w-full mt-4"
                 >
-                  {gameState.round >= 6 || gameState.playerHP <= 0 || gameState.opponentHP <= 0 
-                    ? "Menüye Dön" 
+                  {gameState.round >= 6 || gameState.playerHP <= 0 || gameState.opponentHP <= 0
+                    ? "Menüye Dön"
                     : "Sonraki Round"}
                 </Button>
               </div>
@@ -396,67 +438,67 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
               <div className="flex flex-col items-center gap-4 z-50">
                 {/* Visual Victory Effects */}
                 {gameState.winner === "p1" && gameState.playerClass === "Vitalist" && (
-                    <div className="absolute inset-0 pointer-events-none overflow-hidden flex flex-col items-center justify-center">
-                        {Array.from({length: 30}).map((_, i) => (
-                            <div key={i} 
-                                 className="absolute text-5xl opacity-0 animate-[ping_3s_ease-in-out_infinite]"
-                                 style={{ 
-                                     left: `${Math.random() * 100}%`, 
-                                     top: `${Math.random() * 100}%`,
-                                     animationDelay: `${Math.random() * 2}s`,
-                                     color: "#22c55e"
-                                 }}
-                            >
-                                🍃
-                            </div>
-                        ))}
-                        <div className="text-6xl font-bold text-green-500 animate-bounce mt-20 drop-shadow-[0_0_20px_rgba(34,197,94,0.8)]">🌿 DOĞA ZAFERİ 🌿</div>
-                    </div>
+                  <div className="absolute inset-0 pointer-events-none overflow-hidden flex flex-col items-center justify-center">
+                    {Array.from({ length: 30 }).map((_, i) => (
+                      <div key={i}
+                        className="absolute text-5xl opacity-0 animate-[ping_3s_ease-in-out_infinite]"
+                        style={{
+                          left: `${Math.random() * 100}%`,
+                          top: `${Math.random() * 100}%`,
+                          animationDelay: `${Math.random() * 2}s`,
+                          color: "#22c55e"
+                        }}
+                      >
+                        🍃
+                      </div>
+                    ))}
+                    <div className="text-6xl font-bold text-green-500 animate-bounce mt-20 drop-shadow-[0_0_20px_rgba(34,197,94,0.8)]">🌿 DOĞA ZAFERİ 🌿</div>
+                  </div>
                 )}
-                
+
                 {gameState.winner === "p1" && gameState.playerClass === "Decay" && (
-                    <div className="absolute inset-0 pointer-events-none overflow-hidden flex flex-col items-center justify-center bg-orange-900/10">
-                         {Array.from({length: 30}).map((_, i) => (
-                            <div key={i} 
-                                 className="absolute text-6xl opacity-70 animate-[pulse_1s_ease-in-out_infinite]"
-                                 style={{ 
-                                     left: `${Math.random() * 100}%`, 
-                                     top: `${Math.random() * 100}%`,
-                                     animationDelay: `${Math.random() * 1}s`,
-                                     color: "#fdba74"
-                                 }}
-                            >
-                                🔥
-                            </div>
-                        ))}
-                        <div className="text-6xl font-bold text-orange-500 animate-pulse drop-shadow-[0_0_30px_rgba(249,115,22,1)] z-50">
-                             🔥 YAKIP YOK ETTİN! 🔥
-                        </div>
+                  <div className="absolute inset-0 pointer-events-none overflow-hidden flex flex-col items-center justify-center bg-orange-900/10">
+                    {Array.from({ length: 30 }).map((_, i) => (
+                      <div key={i}
+                        className="absolute text-6xl opacity-70 animate-[pulse_1s_ease-in-out_infinite]"
+                        style={{
+                          left: `${Math.random() * 100}%`,
+                          top: `${Math.random() * 100}%`,
+                          animationDelay: `${Math.random() * 1}s`,
+                          color: "#fdba74"
+                        }}
+                      >
+                        🔥
+                      </div>
+                    ))}
+                    <div className="text-6xl font-bold text-orange-500 animate-pulse drop-shadow-[0_0_30px_rgba(249,115,22,1)] z-50">
+                      🔥 YAKIP YOK ETTİN! 🔥
                     </div>
+                  </div>
                 )}
 
                 {gameState.winner === "p1" && gameState.playerClass === "Slayer" && (
-                    <div className="absolute inset-0 pointer-events-none overflow-hidden flex flex-col items-center justify-center bg-red-950/30">
-                         {Array.from({length: 40}).map((_, i) => (
-                            <div key={i} 
-                                 className="absolute text-5xl opacity-80 animate-[ping_4s_ease-in-out_infinite]"
-                                 style={{ 
-                                     left: `${Math.random() * 100}%`, 
-                                     top: `${Math.random() * 100}%`,
-                                     animationDelay: `${Math.random() * 2}s`,
-                                     color: "#ef4444",
-                                     transform: `scale(${Math.random() + 0.5})`
-                                 }}
-                            >
-                                🩸
-                            </div>
-                        ))}
-                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_#450a0a_100%)] opacity-60 animate-pulse"></div>
-                        <div className="text-7xl font-cinzel font-black text-red-600 animate-bounce mt-10 drop-shadow-[0_0_50px_rgba(220,38,38,1)] z-50 tracking-widest uppercase">
-                             🩸 KATLİAM! 🩸
-                        </div>
-                        <div className="text-2xl text-red-400 font-bold mt-4 animate-pulse">12+ HASAR: TEK OP VURUŞ</div>
+                  <div className="absolute inset-0 pointer-events-none overflow-hidden flex flex-col items-center justify-center bg-red-950/30">
+                    {Array.from({ length: 40 }).map((_, i) => (
+                      <div key={i}
+                        className="absolute text-5xl opacity-80 animate-[ping_4s_ease-in-out_infinite]"
+                        style={{
+                          left: `${Math.random() * 100}%`,
+                          top: `${Math.random() * 100}%`,
+                          animationDelay: `${Math.random() * 2}s`,
+                          color: "#ef4444",
+                          transform: `scale(${Math.random() + 0.5})`
+                        }}
+                      >
+                        🩸
+                      </div>
+                    ))}
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_#450a0a_100%)] opacity-60 animate-pulse"></div>
+                    <div className="text-7xl font-cinzel font-black text-red-600 animate-bounce mt-10 drop-shadow-[0_0_50px_rgba(220,38,38,1)] z-50 tracking-widest uppercase">
+                      🩸 KATLİAM! 🩸
                     </div>
+                    <div className="text-2xl text-red-400 font-bold mt-4 animate-pulse">12+ HASAR: TEK OP VURUŞ</div>
+                  </div>
                 )}
 
                 <Button variant="default" size="lg" onClick={() => navigate("/")} className="gap-2 relative z-50 mt-10">
@@ -485,27 +527,27 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
                 </div>
                 {/* Player Knife Bar - Right side of field */}
                 {isMimicVsMimic && (
-                  <KnifeBar 
-                    count={gameState.mimicCounter.p1} 
+                  <KnifeBar
+                    count={gameState.mimicCounter.p1}
                     className="ml-4"
                   />
                 )}
               </div>
 
               <div className="flex flex-col w-full max-w-[200px] md:max-w-[300px]">
-                  <div className="flex items-center gap-3">
-                    <span 
-                      className="text-3xl font-bold"
-                      style={{ color: playerClassData.color }}
-                    >
-                      {playerClassData.symbol}
-                    </span>
-                    <HPBar 
-                      current={gameState.playerHP} 
-                      max={playerClassData.initialHP} 
-                      label={`Sen (${gameState.playerClass})`} 
-                    />
-                  </div>
+                <div className="flex items-center gap-3">
+                  <span
+                    className="text-3xl font-bold"
+                    style={{ color: playerClassData.color }}
+                  >
+                    {playerClassData.symbol}
+                  </span>
+                  <HPBar
+                    current={gameState.playerHP}
+                    max={playerClassData.initialHP}
+                    label={`Sen (${gameState.playerClass})`}
+                  />
+                </div>
               </div>
 
               {/* Player Hand - Draggable Cards */}
@@ -535,7 +577,7 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
         {gameState.pendingDiceResult && (
           <DiceRollPopup
             open={true}
-            onClose={() => {}}
+            onClose={() => { }}
             onAcknowledge={acknowledgeDiceResult}
             onCancel={cancelDiceResult}
             result={gameState.pendingDiceResult.result}
@@ -556,7 +598,7 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
         {showHourglass && (
           <div className="fixed inset-0 z-50 bg-black/80 flex flex-col items-center justify-center animate-in fade-in duration-500">
             <div className="animate-pulse">
-                <div className="text-6xl md:text-8xl mb-6">⏳</div>
+              <div className="text-6xl md:text-8xl mb-6">⏳</div>
             </div>
             <h2 className="text-4xl md:text-6xl font-bold text-amber-500 font-cinzel glow-text text-center animate-bounce">
               ZAMAN ATLANIYOR...
@@ -570,150 +612,180 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
         {/* Fateweaver Exodia Animation Overlay */}
         {showWinConAnimation && winConAnimationType === "fateweaver" && (
           <div className="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center animate-in fade-in duration-1000">
-              <div className="relative">
-                  <Dices className="w-48 h-48 text-psi animate-spin-slow opacity-50 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 blur-md" />
-                  <Eye className="w-64 h-64 text-yellow-400 glow-gold animate-pulse relative z-10" />
-              </div>
-              <h1 className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-psi to-yellow-500 mt-8 font-cinzel animate-in slide-in-from-bottom duration-1000">
-                  MUTLAK KADER
-              </h1>
-              <p className="text-xl text-psi/80 mt-4 tracking-[0.5em] animate-in fade-in delay-500 duration-1000">
-                  GELECEK YAZILDI
-              </p>
+            <div className="relative">
+              <Dices className="w-48 h-48 text-psi animate-spin-slow opacity-50 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 blur-md" />
+              <Eye className="w-64 h-64 text-yellow-400 glow-gold animate-pulse relative z-10" />
+            </div>
+            <h1 className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-psi to-yellow-500 mt-8 font-cinzel animate-in slide-in-from-bottom duration-1000">
+              MUTLAK KADER
+            </h1>
+            <p className="text-xl text-psi/80 mt-4 tracking-[0.5em] animate-in fade-in delay-500 duration-1000">
+              GELECEK YAZILDI
+            </p>
           </div>
         )}
 
         {/* Cryomancer Win Animation */}
         {showWinConAnimation && winConAnimationType === "cryomancer" && (
           <div className="fixed inset-0 z-50 bg-blue-950/80 flex flex-col items-center justify-center animate-in fade-in duration-1000">
-              <div className="relative animate-pulse">
-                  <Snowflake className="w-64 h-64 text-cyan-200 glow-cyan animate-spin-slow duration-[3s]" />
-              </div>
-              <h1 className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-200 to-white mt-8 font-cinzel animate-in slide-in-from-bottom duration-1000">
-                  EBEDİ KIŞ
-              </h1>
-              <p className="text-xl text-cyan-100/80 mt-4 tracking-[0.5em] animate-in fade-in delay-500 duration-1000">
-                  DÜNYA DONDU
-              </p>
+            <div className="relative animate-pulse">
+              <Snowflake className="w-64 h-64 text-cyan-200 glow-cyan animate-spin-slow duration-[3s]" />
+            </div>
+            <h1 className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-200 to-white mt-8 font-cinzel animate-in slide-in-from-bottom duration-1000">
+              EBEDİ KIŞ
+            </h1>
+            <p className="text-xl text-cyan-100/80 mt-4 tracking-[0.5em] animate-in fade-in delay-500 duration-1000">
+              DÜNYA DONDU
+            </p>
           </div>
         )}
 
         {/* Decay Death Animation (Opponent Deck Not Empty) */}
         {showWinConAnimation && (winConAnimationType === "decay_death" || winConAnimationType === "decay_victory") && (
           <div className="fixed inset-0 z-[60] bg-black/95 flex flex-col items-center justify-center animate-in fade-in duration-1000">
-               <div className="relative animate-pulse">
-                  <Skull className="w-64 h-64 text-zinc-600 animate-bounce duration-[3s]" strokeWidth={1} />
-                  <Flame className="absolute bottom-0 left-1/2 -translate-x-1/2 w-48 h-48 text-orange-600/80 animate-pulse mix-blend-screen" />
-               </div>
-               <h1 className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-b from-stone-500 to-stone-800 mt-8 font-cinzel animate-in slide-in-from-top duration-1000">
-                   {winConAnimationType === "decay_death" ? "KÜL VE ÖLÜM" : "KÜLLERİNDEN DOĞUŞ"}
-               </h1>
-               <p className="text-2xl text-red-500/80 mt-4 font-bold tracking-[0.2em] animate-in fade-in delay-500 duration-1000">
-                   {winConAnimationType === "decay_death" ? "CEZA: DESTE BİTMEDİ" : "ZAFER: DESTE YAKILDI"}
-               </p>
+            <div className="relative animate-pulse">
+              <Skull className="w-64 h-64 text-zinc-600 animate-bounce duration-[3s]" strokeWidth={1} />
+              <Flame className="absolute bottom-0 left-1/2 -translate-x-1/2 w-48 h-48 text-orange-600/80 animate-pulse mix-blend-screen" />
+            </div>
+            <h1 className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-b from-stone-500 to-stone-800 mt-8 font-cinzel animate-in slide-in-from-top duration-1000">
+              {winConAnimationType === "decay_death" ? "KÜL VE ÖLÜM" : "KÜLLERİNDEN DOĞUŞ"}
+            </h1>
+            <p className="text-2xl text-red-500/80 mt-4 font-bold tracking-[0.2em] animate-in fade-in delay-500 duration-1000">
+              {winConAnimationType === "decay_death" ? "CEZA: DESTE BİTMEDİ" : "ZAFER: DESTE YAKILDI"}
+            </p>
           </div>
         )}
 
         {/* Siren Win Animation */}
         {showWinConAnimation && winConAnimationType === "siren" && (
           <div className="fixed inset-0 z-50 bg-rose-950/80 flex flex-col items-center justify-center animate-in fade-in duration-1000">
-              <div className="relative animate-pulse">
-                  <Heart className="w-64 h-64 text-rose-500 glow-rose animate-bounce duration-[2s]" fill="currentColor" />
-              </div>
-              <h1 className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-white mt-8 font-cinzel animate-in slide-in-from-bottom duration-1000">
-                  AŞKIN LANETİ
-              </h1>
-              <p className="text-xl text-rose-200/80 mt-4 tracking-[0.5em] animate-in fade-in delay-500 duration-1000">
-                  KADERİN KALBİNE HÜKMETTİM
-              </p>
+            <div className="relative animate-pulse">
+              <Heart className="w-64 h-64 text-rose-500 glow-rose animate-bounce duration-[2s]" fill="currentColor" />
+            </div>
+            <h1 className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-white mt-8 font-cinzel animate-in slide-in-from-bottom duration-1000">
+              AŞKIN LANETİ
+            </h1>
+            <p className="text-xl text-rose-200/80 mt-4 tracking-[0.5em] animate-in fade-in delay-500 duration-1000">
+              KADERİN KALBİNE HÜKMETTİM
+            </p>
           </div>
         )}
 
         {/* Mimic vs Mimic Win Animation */}
         {showWinConAnimation && winConAnimationType === "mimic" && (
           <div className="fixed inset-0 z-50 bg-slate-950/90 flex flex-col items-center justify-center animate-in fade-in duration-1000">
-              <div className="relative">
-                  <div className="text-[200px] animate-pulse">🗡️</div>
-              </div>
-              <h1 className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-slate-300 via-white to-slate-300 mt-8 font-cinzel animate-in slide-in-from-bottom duration-1000">
-                  BIÇAK USTASI
-              </h1>
-              <p className="text-xl text-slate-300/80 mt-4 tracking-[0.5em] animate-in fade-in delay-500 duration-1000">
-                  12 BIÇAK TAMAMLANDI
-              </p>
+            <div className="relative">
+              <div className="text-[200px] animate-pulse">🗡️</div>
+            </div>
+            <h1 className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-slate-300 via-white to-slate-300 mt-8 font-cinzel animate-in slide-in-from-bottom duration-1000">
+              BIÇAK USTASI
+            </h1>
+            <p className="text-xl text-slate-300/80 mt-4 tracking-[0.5em] animate-in fade-in delay-500 duration-1000">
+              12 BIÇAK TAMAMLANDI
+            </p>
           </div>
         )}
 
         {/* Augmentor Win Animation */}
         {showWinConAnimation && winConAnimationType === "augmentor" && (
           <div className="fixed inset-0 z-50 bg-blue-950/90 flex flex-col items-center justify-center animate-in fade-in duration-1000">
-               <div className="relative flex items-center justify-center">
-                  <Settings className="w-[300px] h-[300px] text-blue-500/30 animate-[spin_10s_linear_infinite]" />
-                  <Settings className="absolute w-[150px] h-[150px] text-cyan-400/50 animate-[spin_5s_linear_infinite_reverse]" />
-               </div>
-               <h1 className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-300 to-blue-400 mt-8 font-cinzel animate-in slide-in-from-bottom duration-1000">
-                   MÜHENDİSLİK HARİKASI
-               </h1>
-               <p className="text-xl text-blue-200/80 mt-4 tracking-[0.5em] animate-in fade-in delay-500 duration-1000">
-                   KUSURSUZ HESAPLAMA
-               </p>
+            <div className="relative flex items-center justify-center">
+              <Settings className="w-[300px] h-[300px] text-blue-500/30 animate-[spin_10s_linear_infinite]" />
+              <Settings className="absolute w-[150px] h-[150px] text-cyan-400/50 animate-[spin_5s_linear_infinite_reverse]" />
+            </div>
+            <h1 className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-300 to-blue-400 mt-8 font-cinzel animate-in slide-in-from-bottom duration-1000">
+              MÜHENDİSLİK HARİKASI
+            </h1>
+            <p className="text-xl text-blue-200/80 mt-4 tracking-[0.5em] animate-in fade-in delay-500 duration-1000">
+              KUSURSUZ HESAPLAMA
+            </p>
           </div>
         )}
 
         {/* Decay Win Animation */}
         {showWinConAnimation && winConAnimationType === "decay" && (
           <div className="fixed inset-0 z-50 bg-orange-950/90 flex flex-col items-center justify-center animate-in fade-in duration-1000">
-               <div className="absolute inset-0 overflow-hidden opacity-50">
-                   {Array.from({length: 40}).map((_, i) => (
-                       <Flame 
-                          key={i} 
-                          className="absolute text-orange-500 animate-[pulse_1s_ease-in-out_infinite]"
-                          style={{
-                              left: `${Math.random() * 100}%`,
-                              top: `${Math.random() * 100}%`,
-                              width: `${Math.random() * 60 + 20}px`,
-                              height: `${Math.random() * 60 + 20}px`,
-                              animationDelay: `${Math.random()}s`,
-                              opacity: Math.random() * 0.5 + 0.2
-                          }}
-                       />
-                   ))}
-               </div>
-               <div className="relative z-10 animate-bounce">
-                  <Flame className="w-64 h-64 text-orange-500 glow-orange drop-shadow-[0_0_50px_rgba(249,115,22,0.8)]" fill="currentColor" />
-               </div>
-               <h1 className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-red-500 to-yellow-500 mt-8 font-cinzel animate-in slide-in-from-bottom duration-1000 relative z-10">
-                   KÜL VE DUMAN
-               </h1>
-               <p className="text-xl text-orange-200/80 mt-4 tracking-[0.5em] animate-in fade-in delay-500 duration-1000 relative z-10">
-                   RAKİP DESTE YAKILDI
-               </p>
+            <div className="absolute inset-0 overflow-hidden opacity-50">
+              {Array.from({ length: 40 }).map((_, i) => (
+                <Flame
+                  key={i}
+                  className="absolute text-orange-500 animate-[pulse_1s_ease-in-out_infinite]"
+                  style={{
+                    left: `${Math.random() * 100}%`,
+                    top: `${Math.random() * 100}%`,
+                    width: `${Math.random() * 60 + 20}px`,
+                    height: `${Math.random() * 60 + 20}px`,
+                    animationDelay: `${Math.random()}s`,
+                    opacity: Math.random() * 0.5 + 0.2
+                  }}
+                />
+              ))}
+            </div>
+            <div className="relative z-10 animate-bounce">
+              <Flame className="w-64 h-64 text-orange-500 glow-orange drop-shadow-[0_0_50px_rgba(249,115,22,0.8)]" fill="currentColor" />
+            </div>
+            <h1 className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-red-500 to-yellow-500 mt-8 font-cinzel animate-in slide-in-from-bottom duration-1000 relative z-10">
+              KÜL VE DUMAN
+            </h1>
+            <p className="text-xl text-orange-200/80 mt-4 tracking-[0.5em] animate-in fade-in delay-500 duration-1000 relative z-10">
+              RAKİP DESTE YAKILDI
+            </p>
           </div>
         )}
 
         {/* Vessel Win Animation */}
         {showWinConAnimation && winConAnimationType === "vessel" && (
           <div className="fixed inset-0 z-[60] bg-orange-950/90 flex flex-col items-center justify-center animate-in fade-in duration-1000">
-               <div className="relative animate-pulse">
-                  <Atom className="w-64 h-64 text-orange-400 animate-spin-slow duration-[10s]" />
-                  <Sparkles className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 text-yellow-200 animate-ping" />
-               </div>
-               <h1 className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-yellow-200 mt-8 font-cinzel animate-in slide-in-from-bottom duration-1000">
-                   KOZMİK GÜÇ
-               </h1>
-               <p className="text-xl text-orange-200/80 mt-4 tracking-[0.5em] animate-in fade-in delay-500 duration-1000">
-                   EVRENİN HAKİMİ
-               </p>
-               <Button 
-                  onClick={() => setShowWinConAnimation(false)}
-                  className="mt-12 bg-orange-600 hover:bg-orange-700 text-white px-8 py-4 text-xl rounded-none border border-orange-400/50 shadow-[0_0_20px_rgba(249,115,22,0.5)] animate-in fade-in delay-1000 duration-1000"
-               >
-                  ZAFERİ KUTLA
-               </Button>
+            {/* Additional Sparkle Effects */}
+            <div className="absolute inset-0 overflow-hidden">
+              {Array.from({ length: 20 }).map((_, i) => (
+                <Sparkles
+                  key={i}
+                  className="absolute text-yellow-200 animate-pulse"
+                  style={{
+                    left: `${Math.random() * 100}%`,
+                    top: `${Math.random() * 100}%`,
+                    animationDelay: `${Math.random()}s`,
+                    opacity: Math.random() * 0.7 + 0.3,
+                    transform: `scale(${Math.random() + 0.5})`
+                  }}
+                />
+              ))}
+            </div>
+
+            <div className="relative animate-pulse z-10">
+              <Atom className="w-64 h-64 text-orange-400 animate-spin-slow duration-[10s]" />
+              <Sparkles className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 text-yellow-100 animate-ping duration-[2s]" />
+            </div>
+            <h1 className="text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-300 via-yellow-200 to-orange-300 mt-8 font-cinzel animate-in slide-in-from-bottom duration-1000 z-10 drop-shadow-[0_0_15px_rgba(253,186,116,0.5)]">
+              KOZMİK GÜÇ
+            </h1>
+            <p className="text-2xl text-orange-100/90 mt-4 tracking-[0.5em] animate-in fade-in delay-500 duration-1000 z-10 font-bold">
+              EVRENİN HAKİMİ
+            </p>
           </div>
         )}
 
-        <VictoryPopup 
+        {/* Chronokeeper Win Animation */}
+        {showWinConAnimation && winConAnimationType === "chronokeeper" && (
+          <div className="fixed inset-0 z-50 bg-amber-950/90 flex flex-col items-center justify-center animate-in fade-in duration-1000">
+            <div className="relative flex items-center justify-center">
+              <div className="absolute inset-0 bg-amber-500/20 blur-3xl rounded-full animate-pulse"></div>
+              <Hourglass className="w-64 h-64 text-amber-500 animate-[spin_4s_linear_infinite]" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Sparkles className="w-32 h-32 text-amber-200/50 animate-ping duration-[3s]" />
+              </div>
+            </div>
+            <h1 className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-yellow-200 to-amber-400 mt-8 font-cinzel animate-in slide-in-from-bottom duration-1000 drop-shadow-md">
+              ZAMANIN EFENDİSİ
+            </h1>
+            <p className="text-xl text-amber-200/80 mt-4 tracking-[0.5em] animate-in fade-in delay-500 duration-1000">
+              KADER YENİDEN YAZILDI
+            </p>
+          </div>
+        )}
+
+        <VictoryPopup
           open={gameState.phase === "end" && !showWinConAnimation}
           isVictory={gameState.winner === "p1"}
           playerHP={gameState.playerHP}
@@ -721,7 +793,7 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
           winReason={gameState.winReason}
           damageDetails={gameState.damageResult?.details}
           onReturnToMenu={() => navigate("/")}
-          delayMs={0} 
+          delayMs={0}
         />
 
       </div>
