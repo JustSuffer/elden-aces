@@ -693,10 +693,12 @@ export function useGameState(initParams?: GameInitParams) {
                   logDetails.push("🔥 DECAY ZAFERİ: Rakip Deste Kül Oldu!");
                   newOpponentHP = 0;
                   winner = "p1";
+                  winReasonText = "DECAY_VICTORY";
               } else if (!result.sideEffects.p1NoDeath) {
                   logDetails.push("💀 DECAY CEZASI: Rakip Deste Bitmedi -> ÖLÜM.");
                   newPlayerHP = 0;
                   winner = "p2";
+                  winReasonText = "DECAY_DEATH";
               } else {
                   logDetails.push("🛡️ Decay Kurtuldu: NoDeath Aktif!");
               }
@@ -706,10 +708,12 @@ export function useGameState(initParams?: GameInitParams) {
                   logDetails.push("🔥 RAKİP DECAY ZAFERİ!");
                   newPlayerHP = 0;
                   winner = "p2";
+                  winReasonText = "DECAY_VICTORY";
               } else if (!result.sideEffects.p2NoDeath) {
                   logDetails.push("💀 Rakip Decay Cezası: Ölüm.");
                   newOpponentHP = 0;
                   winner = "p1";
+                  winReasonText = "DECAY_DEATH";
               } else {
                    logDetails.push("🛡️ Rakip Decay Kurtuldu!");
               }

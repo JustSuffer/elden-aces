@@ -13,7 +13,7 @@ import { useNavigate } from "react-router-dom";
 
 import { toast } from "sonner";
 import { DndContext, DragEndEvent } from "@dnd-kit/core";
-import { ArrowLeft, Dices, Eye, Snowflake, Heart, Settings, Flame, Sparkles } from "lucide-react";
+import { ArrowLeft, Dices, Eye, Snowflake, Heart, Settings, Flame, Sparkles, Skull } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import { GameCard } from "@/components/game/GameCard";
 import { AudioManager } from "@/utils/AudioManager";
@@ -595,6 +595,22 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
               <p className="text-xl text-cyan-100/80 mt-4 tracking-[0.5em] animate-in fade-in delay-500 duration-1000">
                   DÜNYA DONDU
               </p>
+          </div>
+        )}
+
+        {/* Decay Death Animation (Opponent Deck Not Empty) */}
+        {showWinConAnimation && (winConAnimationType === "decay_death" || winConAnimationType === "decay_victory") && (
+          <div className="fixed inset-0 z-[60] bg-black/95 flex flex-col items-center justify-center animate-in fade-in duration-1000">
+               <div className="relative animate-pulse">
+                  <Skull className="w-64 h-64 text-zinc-600 animate-bounce duration-[3s]" strokeWidth={1} />
+                  <Flame className="absolute bottom-0 left-1/2 -translate-x-1/2 w-48 h-48 text-orange-600/80 animate-pulse mix-blend-screen" />
+               </div>
+               <h1 className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-b from-stone-500 to-stone-800 mt-8 font-cinzel animate-in slide-in-from-top duration-1000">
+                   {winConAnimationType === "decay_death" ? "KÜL VE ÖLÜM" : "KÜLLERİNDEN DOĞUŞ"}
+               </h1>
+               <p className="text-2xl text-red-500/80 mt-4 font-bold tracking-[0.2em] animate-in fade-in delay-500 duration-1000">
+                   {winConAnimationType === "decay_death" ? "CEZA: DESTE BİTMEDİ" : "ZAFER: DESTE YAKILDI"}
+               </p>
           </div>
         )}
 

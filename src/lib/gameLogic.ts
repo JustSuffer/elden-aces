@@ -361,19 +361,7 @@ function applyStep5Abilities(
             case 2:
             case 3:
             case 4:
-                 // Grant 1 Sigma AND 1 Delta
-                 if (Math.random() < 0.5) conjurerCards.push(createSpecialCard("sigma"));
-                 if (Math.random() < 0.5) conjurerCards.push(createSpecialCard("delta"));
-                 // Ensure at least one card is given if luck fails? "Random Sigma + Delta"
-                 // Let's just give ONE of EACH guaranteed to satisfy "Sigma + Delta"?
-                 // Or Randomly 1 Sigma OR 1 Delta?
-                 // Prompt: "Random Sigma + Delta" -> 1 Random Sigma + 1 Random Delta? No, "Random (Sigma+Delta)"?
-                 // Let's give ONE RANDOM SPECIAL (Sigma OR Delta).
-                 // Wait, user complained "3 vessel attım 3 random sigma gelmedi".
-                 // This implies for Count 3 he expects 3 cards?? Or implies the mechanic failed.
-                 
-                 // IMPLEMENTATION:
-                 // Count 2,3,4: Add 1 Sigma AND 1 Delta. This is strong and fun.
+                 // Grant 1 Sigma AND 1 Delta GUARANTEED
                  conjurerCards.push(createSpecialCard("sigma"));
                  conjurerCards.push(createSpecialCard("delta"));
                  res.logs.push(`Vessel (${count}): +Sigma & Delta Kartları!`);
