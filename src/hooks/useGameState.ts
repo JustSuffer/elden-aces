@@ -654,6 +654,57 @@ export function useGameState(initParams?: GameInitParams) {
           logDetails.push(`⏳ ZAMAN ATLAMASI: ${totalSkip} Round ileri sarılıyor!`);
       }
 
+
+      // --- DECAY R5 CHECK ---
+      if (prev.round === 5) {
+          if (isDecayP1) {
+              if (p2Deck.length === 0) {
+                  logDetails.push("🔥 DECAY ZAFERİ: Rakip Deste Kül Oldu!");
+                  newOpponentHP = 0;
+                  winner = "p1";
+              } else if (!result.sideEffects.p1NoDeath) {
+                  logDetails.push("💀 DECAY CEZASI: Rakip Deste Bitmedi -> ÖLÜM.");
+                  newPlayerHP = 0;
+                  winner = "p2";
+              } else {
+                  logDetails.push("🛡️ Decay Kurtuldu: NoDeath Aktif!");
+              }
+          }
+          if (isDecayP2) {
+              if (p1Deck.length === 0) {
+                  logDetails.push("🔥 RAKİP DECAY ZAFERİ!");
+                  newPlayerHP = 0;
+                  winner = "p2";
+              } else if (!result.sideEffects.p2NoDeath) {
+                  logDetails.push("💀 Rakip Decay Cezası: Ölüm.");
+                  newOpponentHP = 0;
+                  winner = "p1";
+              } else {
+                   logDetails.push("🛡️ Rakip Decay Kurtuldu!");
+              }
+          }
+      }
+
+      // --- VESSEL WIN CONDITION ---
+      const isVesselP1 = prev.playerClass === "Vessel";
+      if (isVesselP1) {
+          const deltaSigmaCount = p1Cards.filter(c => c.specialType === "delta" || c.specialType === "sigma").length;
+          if (deltaSigmaCount >= 5) {
+               logDetails.push("✨ VESSEL ZAFERİ: 5 Efsanevi Parça Birleşti!");
+               newOpponentHP = 0;
+               winner = "p1";
+          }
+      }
+      const isVesselP2 = prev.opponentClass === "Vessel";
+      if (isVesselP2) {
+          const deltaSigmaCount = p2Cards.filter(c => c.specialType === "delta" || c.specialType === "sigma").length;
+          if (deltaSigmaCount >= 5) {
+               logDetails.push("✨ RAKİP VESSEL ZAFERİ!");
+               newPlayerHP = 0;
+               winner = "p2";
+          }
+      }
+
       // Augmentor Logic (Buffs)
       // Augmentor Logic (Buffs)
       if (result.sideEffects.p1CardValueBuff) {

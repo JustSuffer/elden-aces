@@ -13,7 +13,7 @@ import { useNavigate } from "react-router-dom";
 
 import { toast } from "sonner";
 import { DndContext, DragEndEvent } from "@dnd-kit/core";
-import { ArrowLeft, Dices, Eye, Snowflake, Heart, Settings, Flame } from "lucide-react";
+import { ArrowLeft, Dices, Eye, Snowflake, Heart, Settings, Flame, Sparkles } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import { GameCard } from "@/components/game/GameCard";
 import { AudioManager } from "@/utils/AudioManager";
@@ -237,6 +237,9 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
         setShowWinConAnimation(true);
       } else if (gameState.playerClass === "Decay" && gameState.winner === "p1") {
          setWinConAnimationType("decay");
+         setShowWinConAnimation(true);
+      } else if (gameState.playerClass === "Vessel" && gameState.winner === "p1") {
+         setWinConAnimationType("vessel");
          setShowWinConAnimation(true);
       } else {
         setShowWinConAnimation(false);
@@ -668,6 +671,37 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
                </h1>
                <p className="text-xl text-orange-200/80 mt-4 tracking-[0.5em] animate-in fade-in delay-500 duration-1000 relative z-10">
                    RAKİP DESTE YAKILDI
+               </p>
+          </div>
+        )}
+
+        {/* Vessel Win Animation */}
+        {showWinConAnimation && winConAnimationType === "vessel" && (
+          <div className="fixed inset-0 z-50 bg-purple-950/90 flex flex-col items-center justify-center animate-in fade-in duration-1000">
+               <div className="absolute inset-0 overflow-hidden">
+                   {Array.from({length: 50}).map((_, i) => (
+                       <Sparkles 
+                          key={i} 
+                          className="absolute text-purple-300 animate-[pulse_2s_ease-in-out_infinite]"
+                          style={{
+                              left: `${Math.random() * 100}%`,
+                              top: `${Math.random() * 100}%`,
+                              width: `${Math.random() * 40 + 10}px`,
+                              height: `${Math.random() * 40 + 10}px`,
+                              animationDelay: `${Math.random()}s`,
+                              opacity: Math.random() * 0.7 + 0.3
+                          }}
+                       />
+                   ))}
+               </div>
+               <div className="relative z-10 animate-spin-slow">
+                  <Sparkles className="w-64 h-64 text-purple-400 glow-purple drop-shadow-[0_0_60px_rgba(168,85,247,0.8)]" />
+               </div>
+               <h1 className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-fuchsia-300 to-purple-400 mt-8 font-cinzel animate-in slide-in-from-bottom duration-1000 relative z-10">
+                   KOZMİK UYUM
+               </h1>
+               <p className="text-xl text-purple-200/80 mt-4 tracking-[0.5em] animate-in fade-in delay-500 duration-1000 relative z-10">
+                   5 PARÇA BİRLEŞTİ
                </p>
           </div>
         )}
