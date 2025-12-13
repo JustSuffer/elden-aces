@@ -729,6 +729,7 @@ export function useGameState(initParams?: GameInitParams) {
                logDetails.push("✨ VESSEL ZAFERİ: 5 Efsanevi Parça Birleşti!");
                newOpponentHP = 0;
                winner = "p1";
+               winReasonText = "VESSEL_WIN";
           }
       }
       const isVesselP2 = prev.opponentClass === "Vessel";
@@ -738,6 +739,7 @@ export function useGameState(initParams?: GameInitParams) {
                logDetails.push("✨ RAKİP VESSEL ZAFERİ!");
                newPlayerHP = 0;
                winner = "p2";
+               winReasonText = "VESSEL_WIN";
           }
       }
 

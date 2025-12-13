@@ -350,29 +350,39 @@ function applyStep5Abilities(
         break;
 
       case "Vessel": // (μ)
-        // 1: -
-        // 2, 3, 4: Random Sigma + Delta (User requested Sigma OR Delta or Sigma AND Delta. Text says "Random Sigma + Delta", likely ONE of EACH or A SELECTION. 
-        // User complaint "3 vessel attım 3 random sigma gelmedi" implies quantity scaling or guaranteed cards.
-        // We will give ONE SIGMA and ONE DELTA for counts 2, 3, 4 to be safe and impactful.
-        // 5: 5 Sigma/Delta + Gamma.
+        // 2: +2 Sigma
+        // 3: +3 Delta
+        // 4: +2 Sigma + 2 Delta
+        // 5: +2 Sigma + 3 Delta + Gamma
         const conjurerCards: Card[] = [];
         
         switch (count) {
             case 2:
+                 conjurerCards.push(createSpecialCard("sigma"));
+                 conjurerCards.push(createSpecialCard("sigma"));
+                 res.logs.push(`Vessel ({count}): +2 Sigma (Σ)`);
+                 break;
             case 3:
+                 conjurerCards.push(createSpecialCard("delta"));
+                 conjurerCards.push(createSpecialCard("delta"));
+                 conjurerCards.push(createSpecialCard("delta"));
+                 res.logs.push(`Vessel ({count}): +3 Delta (Δ)`);
+                 break;
             case 4:
-                 // Grant 1 Sigma AND 1 Delta GUARANTEED
+                 conjurerCards.push(createSpecialCard("sigma"));
                  conjurerCards.push(createSpecialCard("sigma"));
                  conjurerCards.push(createSpecialCard("delta"));
-                 res.logs.push(`Vessel (${count}): +Sigma & Delta Kartları!`);
+                 conjurerCards.push(createSpecialCard("delta"));
+                 res.logs.push(`Vessel ({count}): +2 Sigma (Σ), +2 Delta (Δ)`);
                  break;
-
             case 5:
-                  // 5 Sigma + Delta + Gamma
-                  // "5 Sigma + Delta Kart + Gamma" -> 5 Cards (Sigma/Delta mixed) + 1 Gamma
-                 for(let i=0; i<5; i++) conjurerCards.push(createSpecialCard(Math.random() < 0.5 ? "sigma" : "delta"));
+                 conjurerCards.push(createSpecialCard("sigma"));
+                 conjurerCards.push(createSpecialCard("sigma"));
+                 conjurerCards.push(createSpecialCard("delta"));
+                 conjurerCards.push(createSpecialCard("delta"));
+                 conjurerCards.push(createSpecialCard("delta"));
                  conjurerCards.push(createSpecialCard("gamma"));
-                 res.logs.push("Vessel (5): KOZMİK PATLAMA! +6 Kart (Sigma/Delta/Gamma)");
+                 res.logs.push("Vessel (5): KOZMİK GÜÇ! +2Σ, +3Δ, +1γ");
                  break;
         }
         
