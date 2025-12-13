@@ -8,7 +8,6 @@ export interface MenuButtonProps extends React.ButtonHTMLAttributes<HTMLButtonEl
 const MenuButton = forwardRef<HTMLButtonElement, MenuButtonProps>(
   ({ className, variant = "primary", children, ...props }, ref) => {
     return (
-    return (
       <button
         ref={ref}
         className={cn(
@@ -36,7 +35,6 @@ const MenuButton = forwardRef<HTMLButtonElement, MenuButtonProps>(
       >
         <span className="relative z-10 flex items-center justify-center gap-2">{children}</span>
       </button>
-    );
     );
   }
 );
