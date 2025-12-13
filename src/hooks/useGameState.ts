@@ -653,6 +653,7 @@ export function useGameState(initParams?: GameInitParams) {
       // If I set HP=0, it looks like a kill.
       // If I want "Vitalist Survived" message, I should add it to logs, and maybe set winner?
       let winner = undefined;
+      let winReasonText: string | undefined = undefined;
       
       if (prev.round >= 7) {
           if (prev.playerClass === "Vitalist" && newPlayerHP > 0) {
@@ -776,6 +777,7 @@ export function useGameState(initParams?: GameInitParams) {
         phase,
         logs: [...(prev.logs || []), ...logDetails],
         winner: specialWinner || (p1InstantWin ? "p1" : (p2InstantWin ? "p2" : (newPlayerHP <= 0 ? "p2" : (newOpponentHP <= 0 ? "p1" : winner)))),
+        winReason: winReasonText || prev.winReason,
         playerDeck: p1Deck,
         opponentDeck: p2Deck,
         playerHand: p1Hand,

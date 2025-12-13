@@ -91,46 +91,46 @@ const Menu = () => {
             variants={containerVariants}
             initial="hidden"
             animate="show"
-            className="flex flex-col space-y-3 w-full max-w-md"
+            className="flex flex-col space-y-4 w-full max-w-lg"
         >
           <motion.div variants={itemVariants}>
-             <MenuButton onClick={() => navigate("/play")} variant="primary" className="w-full">
+             <MenuButton onClick={() => navigate("/play")} variant="primary" className="w-full h-16 text-xl tracking-widest shadow-lg shadow-primary/20">
                {t("menu.playOnline")}
              </MenuButton>
           </motion.div>
           <motion.div variants={itemVariants}>
-             <MenuButton onClick={() => navigate("/game")} className="w-full">
+             <MenuButton onClick={() => navigate("/game")} className="w-full h-14 text-lg">
                {t("menu.playBot")}
              </MenuButton>
           </motion.div>
           
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-4 pt-2">
               <motion.div variants={itemVariants}>
-                 <MenuButton onClick={() => navigate("/profile")} className="w-full text-base py-3">
+                 <MenuButton onClick={() => navigate("/profile")} className="w-full h-14 text-base px-2">
                    {t("menu.profile")}
                  </MenuButton>
               </motion.div>
               <motion.div variants={itemVariants}>
-                 <MenuButton onClick={() => navigate("/card-library")} className="w-full text-base py-3">
+                 <MenuButton onClick={() => navigate("/card-library")} className="w-full h-14 text-base px-2 whitespace-nowrap">
                    {t("menu.library")}
                  </MenuButton>
               </motion.div>
               <motion.div variants={itemVariants}>
-                 <MenuButton onClick={() => navigate("/deck-builder")} className="w-full text-base py-3">
+                 <MenuButton onClick={() => navigate("/deck-builder")} className="w-full h-14 text-base px-2 whitespace-nowrap">
                    {t("menu.deckBuilder")}
                  </MenuButton>
               </motion.div>
               <motion.div variants={itemVariants}>
-                 <MenuButton onClick={() => navigate("/settings")} className="w-full text-base py-3">
+                 <MenuButton onClick={() => navigate("/settings")} className="w-full h-14 text-base px-2">
                    {t("menu.settings")}
                  </MenuButton>
               </motion.div>
           </div>
 
-          <motion.div variants={itemVariants} className="grid grid-cols-3 gap-2">
-             <MenuButton onClick={() => navigate("/credits")} className="text-xs py-2 px-2">{t("menu.team")}</MenuButton>
-             <MenuButton onClick={() => navigate("/how-to-play")} className="text-xs py-2 px-2">{t("menu.howToPlay")}</MenuButton>
-             <MenuButton onClick={() => navigate("/tutorial")} className="text-xs py-2 px-2">{t("menu.tutorial")}</MenuButton>
+          <motion.div variants={itemVariants} className="grid grid-cols-3 gap-4 pt-2">
+             <MenuButton onClick={() => navigate("/credits")} className="h-10 text-xs px-1 border-white/20 hover:border-white/40">{t("menu.team")}</MenuButton>
+             <MenuButton onClick={() => navigate("/how-to-play")} className="h-10 text-xs px-1 border-white/20 hover:border-white/40">{t("menu.howToPlay")}</MenuButton>
+             <MenuButton onClick={() => navigate("/tutorial")} className="h-10 text-xs px-1 border-white/20 hover:border-white/40">{t("menu.tutorial")}</MenuButton>
           </motion.div>
           
           {/* Logout Button */}
