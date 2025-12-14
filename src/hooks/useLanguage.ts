@@ -26,15 +26,21 @@ export function useLanguage() {
   // Listen for changes from other components (like Settings)
   useEffect(() => {
     const handleStorageChange = () => {
-         const stored = localStorage.getItem("acoria-lang") as Language;
-         if (stored) setLanguage(stored);
+      const stored = localStorage.getItem("acoria-lang") as Language;
+      if (stored) setLanguage(stored);
     };
     window.addEventListener("language-change", handleStorageChange);
     return () => window.removeEventListener("language-change", handleStorageChange);
   }, []);
 
-  const t = useCallback((key: keyof typeof translations.en) => {
-    return translations[language][key] || key;
+  const t = useCallback((key: keyof typeof translations.en, params?: Record<string, string | number>) => {
+    let text = translations[language][key] || key;
+    if (params) {
+      Object.entries(params).forEach(([paramKey, paramValue]) => {
+        text = text.replace(`{${paramKey}}`, String(paramValue));
+      });
+    }
+    return text;
   }, [language]);
 
   return { language, setLanguage: changeLanguage, t };

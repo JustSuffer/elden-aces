@@ -41,21 +41,21 @@ const Settings = () => {
     if (!file) return;
 
     if (file.size > 10 * 1024 * 1024) {
-      toast.error("File too large! Maximum 10MB allowed.");
+      toast.error(t("settings.toast.fileSize"));
       return;
     }
 
     if (!file.type.startsWith("audio/")) {
-      toast.error("Please upload an audio file (mp3, wav, etc.)");
+      toast.error(t("settings.toast.fileType"));
       return;
     }
 
     const success = await AudioManager.uploadBackgroundMusic(file);
     if (success) {
-      toast.success("Background music uploaded and playing!");
+      toast.success(t("settings.toast.uploadSuccess"));
       setMusicEnabled(true);
     } else {
-      toast.error("Failed to upload background music");
+      toast.error(t("settings.toast.uploadError"));
     }
   };
 
@@ -74,7 +74,7 @@ const Settings = () => {
       {/* Settings Content */}
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-2xl space-y-6">
-          
+
           {/* Language Settings */}
           <Card>
             <CardHeader>
@@ -85,20 +85,20 @@ const Settings = () => {
               <CardDescription>{t("settings.languageDesc")}</CardDescription>
             </CardHeader>
             <CardContent className="flex gap-4">
-                <Button 
-                   variant={language === "tr" ? "default" : "outline"} 
-                   onClick={() => setLanguage("tr")}
-                   className="flex-1"
-                >
-                    🇹🇷 Türkçe
-                </Button>
-                <Button 
-                   variant={language === "en" ? "default" : "outline"} 
-                   onClick={() => setLanguage("en")}
-                   className="flex-1"
-                >
-                    🇬🇧 English
-                </Button>
+              <Button
+                variant={language === "tr" ? "default" : "outline"}
+                onClick={() => setLanguage("tr")}
+                className="flex-1"
+              >
+                🇹🇷 Türkçe
+              </Button>
+              <Button
+                variant={language === "en" ? "default" : "outline"}
+                onClick={() => setLanguage("en")}
+                className="flex-1"
+              >
+                🇬🇧 English
+              </Button>
             </CardContent>
           </Card>
 
@@ -120,7 +120,7 @@ const Settings = () => {
                   onCheckedChange={setSoundEnabled}
                 />
               </div>
-              
+
               <div className="flex items-center justify-between">
                 <Label htmlFor="music">{t("settings.music")}</Label>
                 <Switch
@@ -198,9 +198,9 @@ const Settings = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm text-muted-foreground">
-              <p>ACORIA - Strategic Card Game</p>
+              <p>{t("settings.gameTitle")}</p>
               <p>{t("common.version")}</p>
-              <p>© 2025 All rights reserved</p>
+              <p>{t("settings.copyright")}</p>
             </CardContent>
           </Card>
         </div>

@@ -3,10 +3,12 @@ import { useAuth } from "@/hooks/useAuth";
 import { useEffect } from "react";
 import logo from "@/assets/acoria-logo.png";
 import { Sparkles, Sword, Shield } from "lucide-react";
+import { useLanguage } from "@/hooks/useLanguage";
 
 const Landing = () => {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
+  const { t } = useLanguage();
 
   // If already logged in, redirect to main menu
   useEffect(() => {
@@ -18,7 +20,7 @@ const Landing = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-primary text-xl animate-pulse">Loading...</div>
+        <div className="text-primary text-xl animate-pulse">{t("common.loading")}</div>
       </div>
     );
   }
@@ -29,11 +31,11 @@ const Landing = () => {
       <div className="absolute inset-0 bg-gradient-radial from-primary/10 via-transparent to-transparent opacity-60" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/20 via-transparent to-transparent" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,_var(--tw-gradient-stops))] from-secondary/10 via-transparent to-transparent" />
-      
+
       {/* Animated Mist Layers */}
       <div className="absolute inset-0 bg-mist opacity-20 animate-pulse" style={{ animationDuration: '6s' }} />
       <div className="absolute inset-0 bg-mist opacity-15 animate-pulse" style={{ animationDuration: '8s', animationDelay: '2s' }} />
-      
+
       {/* Floating Particles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {[...Array(20)].map((_, i) => (
@@ -49,11 +51,11 @@ const Landing = () => {
           />
         ))}
       </div>
-      
+
       {/* Vignette */}
       <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-transparent to-background/90" />
       <div className="absolute inset-0 bg-gradient-to-r from-background/30 via-transparent to-background/30" />
-      
+
       {/* Decorative Circles */}
       <div className="absolute top-1/4 left-1/4 w-96 h-96 border border-primary/10 rounded-full animate-spin-slow opacity-30" />
       <div className="absolute bottom-1/4 right-1/4 w-64 h-64 border border-primary/5 rounded-full animate-spin-slower opacity-20" />
@@ -63,9 +65,9 @@ const Landing = () => {
       <div className="relative z-10 flex flex-col items-center px-4 max-w-2xl w-full">
         {/* Logo with Glow */}
         <div className="relative mb-8 animate-float" style={{ animationDuration: '4s' }}>
-          <img 
-            src={logo} 
-            alt="ACORIA" 
+          <img
+            src={logo}
+            alt="ACORIA"
             className="w-72 md:w-96 h-auto drop-shadow-2xl"
           />
           <div className="absolute inset-0 bg-primary/20 blur-3xl -z-10 animate-pulse" style={{ animationDuration: '3s' }} />
@@ -78,12 +80,12 @@ const Landing = () => {
           <Sparkles className="w-5 h-5 text-primary/70 animate-pulse" />
           <div className="h-px w-16 bg-gradient-to-l from-transparent to-primary/50" />
         </div>
-        
+
         <h2 className="text-primary/80 text-sm md:text-base tracking-[0.4em] uppercase text-center font-cinzel mb-2">
-          A Divine Card Game
+          {t("landing.title1")}
         </h2>
         <p className="text-muted-foreground text-xs md:text-sm tracking-[0.2em] uppercase text-center mb-16">
-          of Strategy & Fate
+          {t("landing.title2")}
         </p>
 
         {/* Action Buttons */}
@@ -105,7 +107,7 @@ const Landing = () => {
             <div className="relative flex items-center justify-center gap-3">
               <Sword className="w-5 h-5 text-primary" />
               <span className="text-lg font-cinzel tracking-[0.15em] text-primary">
-                MACERAYA BAŞLA
+                {t("landing.cta.start")}
               </span>
               <Shield className="w-5 h-5 text-primary" />
             </div>
@@ -120,14 +122,14 @@ const Landing = () => {
                        transition-all duration-300"
           >
             <span className="text-base font-cinzel tracking-[0.15em] text-muted-foreground group-hover:text-primary transition-colors">
-              GİRİŞ YAP
+              {t("landing.cta.login")}
             </span>
           </button>
         </div>
 
         {/* Version Info */}
         <div className="mt-20 text-muted-foreground/40 text-xs tracking-[0.3em]">
-          ALPHA VERSION 0.1
+          {t("common.version")}
         </div>
       </div>
 

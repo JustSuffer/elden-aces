@@ -8,6 +8,7 @@ import { ArrowLeft, User, Mail, Trophy, LogOut } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface Profile {
   username: string;
@@ -23,6 +24,7 @@ interface GameStats {
 const Profile = () => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const { t } = useLanguage();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [stats, setStats] = useState<GameStats | null>(null);
   const [username, setUsername] = useState("");
@@ -85,29 +87,29 @@ const Profile = () => {
       .eq("user_id", user.id);
 
     if (error) {
-      toast.error("Failed to update profile");
+      toast.error(t("profile.toast.updateError"));
       return;
     }
 
     setProfile(prev => prev ? { ...prev, username } : null);
-    toast.success("Profile updated!");
+    toast.success(t("profile.toast.updateSuccess"));
     setIsEditing(false);
   };
 
   const handleLogout = async () => {
     await signOut();
-    toast.success("Logged out successfully");
+    toast.success(t("profile.toast.logoutSuccess"));
     navigate("/auth");
   };
 
-  const winRate = stats && stats.wins + stats.losses > 0 
-    ? ((stats.wins / (stats.wins + stats.losses)) * 100).toFixed(1) 
+  const winRate = stats && stats.wins + stats.losses > 0
+    ? ((stats.wins / (stats.wins + stats.losses)) * 100).toFixed(1)
     : "0";
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-primary text-xl animate-pulse">Loading...</div>
+        <div className="text-primary text-xl animate-pulse">{t("common.loading")}</div>
       </div>
     );
   }
@@ -118,12 +120,12 @@ const Profile = () => {
       <div className="flex items-center justify-between p-4 border-b border-border">
         <Button variant="ghost" onClick={() => navigate("/")} className="gap-2">
           <ArrowLeft className="w-4 h-4" />
-          Menu
+          {t("menu.back")}
         </Button>
-        <div className="text-xl font-bold text-primary glow-gold">Profile</div>
+        <div className="text-xl font-bold text-primary glow-gold">{t("profile.title")}</div>
         <Button variant="ghost" onClick={handleLogout} className="gap-2 text-destructive hover:text-destructive">
           <LogOut className="w-4 h-4" />
-          Logout
+          {t("menu.logout")}
         </Button>
       </div>
 
@@ -146,7 +148,7 @@ const Profile = () => {
 
           <div className="space-y-4">
             <div>
-              <Label htmlFor="username">Username</Label>
+              <Label htmlFor="username">{t("profile.username")}</Label>
               <Input
                 id="username"
                 value={username}
@@ -159,15 +161,15 @@ const Profile = () => {
             <div className="flex gap-3 pt-2">
               {!isEditing ? (
                 <Button onClick={() => setIsEditing(true)} className="flex-1">
-                  Edit Profile
+                  {t("profile.edit")}
                 </Button>
               ) : (
                 <>
                   <Button onClick={handleSave} className="flex-1 bg-primary hover:bg-primary/90">
-                    Save Changes
+                    {t("profile.save")}
                   </Button>
                   <Button onClick={() => setIsEditing(false)} variant="outline" className="flex-1">
-                    Cancel
+                    {t("profile.cancel")}
                   </Button>
                 </>
               )}
@@ -179,24 +181,24 @@ const Profile = () => {
         <Card className="w-full max-w-2xl p-6 bg-card/50 backdrop-blur-sm border-primary/20">
           <h2 className="text-2xl font-bold text-primary mb-4 flex items-center gap-2">
             <Trophy className="w-6 h-6" />
-            Statistics
+            {t("profile.stats")}
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-background/50 p-4 rounded-lg text-center">
               <div className="text-3xl font-bold text-primary">{stats?.wins || 0}</div>
-              <div className="text-sm text-muted-foreground">Wins</div>
+              <div className="text-sm text-muted-foreground">{t("profile.wins")}</div>
             </div>
             <div className="bg-background/50 p-4 rounded-lg text-center">
               <div className="text-3xl font-bold text-omega">{stats?.losses || 0}</div>
-              <div className="text-sm text-muted-foreground">Losses</div>
+              <div className="text-sm text-muted-foreground">{t("profile.losses")}</div>
             </div>
             <div className="bg-background/50 p-4 rounded-lg text-center">
               <div className="text-3xl font-bold text-theta">{stats?.total_games || 0}</div>
-              <div className="text-sm text-muted-foreground">Total Games</div>
+              <div className="text-sm text-muted-foreground">{t("profile.totalGames")}</div>
             </div>
             <div className="bg-background/50 p-4 rounded-lg text-center">
               <div className="text-3xl font-bold text-psi">{winRate}%</div>
-              <div className="text-sm text-muted-foreground">Win Rate</div>
+              <div className="text-sm text-muted-foreground">{t("profile.winRate")}</div>
             </div>
           </div>
         </Card>

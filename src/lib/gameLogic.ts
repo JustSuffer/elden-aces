@@ -2,16 +2,16 @@ import { Card, ClassName, GameResult, PlayerState, ClassAbilityResult, GameSideE
 import { SPECIAL_CARDS_DATA, MASTER_CLASSES } from "@/data/gameData";
 
 function createSpecialCard(type: keyof typeof SPECIAL_CARDS_DATA): Card {
-    const base = SPECIAL_CARDS_DATA[type];
-    return {
-        id: `conjurer-${type}-${Date.now()}-${Math.random()}`,
-        name: base.name,
-        symbol: base.symbol,
-        type: "special",
-        specialType: type,
-        value: 0,
-        description: base.description
-    };
+  const base = SPECIAL_CARDS_DATA[type];
+  return {
+    id: `conjurer-${type}-${Date.now()}-${Math.random()}`,
+    name: base.name,
+    symbol: base.symbol,
+    type: "special",
+    specialType: type,
+    value: 0,
+    description: base.description
+  };
 }
 
 interface DamageResult {
@@ -45,12 +45,12 @@ function calculateNumericCombinationBonus(cards: Card[]): number {
 
   // Check unique values for Straight (to avoid duplicates like 1-1-2-3 counting as straight)
   const uniqueValues = Array.from(new Set(numericValues)).sort((a, b) => a - b);
-  
+
   // Straight Check (e.g., 1-2-3)
   let straightLength = 1;
   let maxStraight = 1;
   for (let i = 0; i < uniqueValues.length - 1; i++) {
-    if (uniqueValues[i+1] === uniqueValues[i] + 1) {
+    if (uniqueValues[i + 1] === uniqueValues[i] + 1) {
       straightLength++;
     } else {
       maxStraight = Math.max(maxStraight, straightLength);
@@ -91,7 +91,7 @@ function calculateClassSynergyTrueDamage(cards: Card[], playerClass: ClassName):
   // Step 4 Says: "Oyuncunun seçtiği sınıftan bağımsız olarak, yerdeki kartların Sınıf Türleri sayılır."
   // Example "4 tane Vitalist kartı varsa".
   // Let's count the MAX occuring class symbol in the played hand.
-  
+
   const symbolCounts: Record<string, number> = {};
   let maxSynergy = 0;
 
@@ -133,12 +133,12 @@ function getAbilityScale(className: ClassName, playedCards: Card[]) {
  * Step 5: Class Ability Trigger (Switch-Case Implementation)
  */
 function applyStep5Abilities(
-  p1Class: ClassName, p1Cards: Card[], 
+  p1Class: ClassName, p1Cards: Card[],
   p2Class: ClassName, p2Cards: Card[],
   effects: GameSideEffects,
   // We don't need p1Scale/p2Scale passed in anymore, we calculate inside
 ): { p1ExtraDmg: number, p2ExtraDmg: number, p1AbilityRes: ClassAbilityResult, p2AbilityRes: ClassAbilityResult } {
-  
+
   const p1Res: ClassAbilityResult = { hpChange: 0, logs: [] };
   const p2Res: ClassAbilityResult = { hpChange: 0, logs: [] };
   let p1ExtraDmg = 0;
@@ -157,16 +157,16 @@ function applyStep5Abilities(
     // "Oyuna sürülen Classın Kartları" -> "The Class Cards played into the game".
     // It suggests we count the cards that belong to the Class.
     // Let's stick to: Count of proper class cards in the hand.
-    
+
     // BUT WAIT: The system allows 1-5 cards total. If I play 1 Slayer and 2 Fillers, is it "1 Card" effect? 
     // Yes, usually.
     const classSymbol = MASTER_CLASSES[className].symbol;
     const count = cards.filter(c => c.symbol === classSymbol || c.classSymbol === classSymbol).length;
-    
+
     // The table handles 1 to 5.
     if (count === 0) return; // No class cards, no effect.
 
-    const targetEffects = effects; 
+    const targetEffects = effects;
     const isOpponent = !isP1; // Relative to current processor
 
     switch (className) {
@@ -197,8 +197,8 @@ function applyStep5Abilities(
       case "Slayer": // (Ω)
         switch (count) {
           case 1:
-             res.logs.push("Slayer (1): 0 Dmg");
-             break;
+            res.logs.push("Slayer (1): 0 Dmg");
+            break;
           case 2:
             if (isP1) p1ExtraDmg += 3; else p2ExtraDmg += 3;
             res.logs.push("Slayer (2): 3 Dmg");
@@ -218,52 +218,25 @@ function applyStep5Abilities(
         }
         break;
 
-      case "Oracle": // (Ψ)
-        switch (count) {
-          case 1: 
-             res.logs.push("Oracle (1): -");
-             break;
-          case 2:
-             if (isP1) { p1ExtraDmg += 2; targetEffects.p1DrawCount = (targetEffects.p1DrawCount || 0) + 2; } 
-             else { p2ExtraDmg += 2; targetEffects.p2DrawCount = (targetEffects.p2DrawCount || 0) + 2; }
-             res.logs.push("Oracle (2): 2 Hasar");
-             break;
-          case 3:
-             if (isP1) { p1ExtraDmg += 3; targetEffects.p1DrawCount = (targetEffects.p1DrawCount || 0) + 3; }
-             else { p2ExtraDmg += 3; targetEffects.p2DrawCount = (targetEffects.p2DrawCount || 0) + 3; }
-             res.logs.push("Oracle (3): 3 Hasar");
-             break;
-          case 4:
-             if (isP1) { p1ExtraDmg += 4; targetEffects.p1DrawCount = (targetEffects.p1DrawCount || 0) + 4; }
-             else { p2ExtraDmg += 4; targetEffects.p2DrawCount = (targetEffects.p2DrawCount || 0) + 4; }
-             res.logs.push("Oracle (4): 4 Hasar");
-             break;
-          case 5:
-             if (isP1) { p1ExtraDmg += 10; targetEffects.p1DrawCount = (targetEffects.p1DrawCount || 0) + 5; }
-             else { p2ExtraDmg += 10; targetEffects.p2DrawCount = (targetEffects.p2DrawCount || 0) + 5; }
-             res.logs.push("Oracle (5): 10 Hasar");
-             break;
-        }
-        break;
 
       case "Fateweaver": // (Π)
-         let fDice = 0;
-         let fGamma = false;
-         switch (count) {
-             case 2: fDice = 2; break;
-             case 3: fDice = 3; break;
-             case 4: fDice = 5; break;
-             case 5: fDice = 6; fGamma = true; break;
-         }
-         if (fDice > 0) {
-             if (isP1) targetEffects.p1DiceGain = fDice; else targetEffects.p2DiceGain = fDice;
-             res.logs.push(`Fateweaver (${count}): +${fDice} Zar Hakkı`);
-         }
-         if (fGamma) {
-             if (isP1) targetEffects.p1GammaReward = true; else targetEffects.p2GammaReward = true;
-             res.logs.push(`Fateweaver (5): Gamma (γ) Ödülü`);
-         }
-         break;
+        let fDice = 0;
+        let fGamma = false;
+        switch (count) {
+          case 2: fDice = 2; break;
+          case 3: fDice = 3; break;
+          case 4: fDice = 5; break;
+          case 5: fDice = 6; fGamma = true; break;
+        }
+        if (fDice > 0) {
+          if (isP1) targetEffects.p1DiceGain = fDice; else targetEffects.p2DiceGain = fDice;
+          res.logs.push(`Fateweaver (${count}): +${fDice} Zar Hakkı`);
+        }
+        if (fGamma) {
+          if (isP1) targetEffects.p1GammaReward = true; else targetEffects.p2GammaReward = true;
+          res.logs.push(`Fateweaver (5): Gamma (γ) Ödülü`);
+        }
+        break;
 
       // Old Augmentor case removed
 
@@ -275,22 +248,22 @@ function applyStep5Abilities(
 
       case "Siren": // (η)
         // Siren Logic: Steal cards from opponent DECK (not hand)
-      // Steal N cards based on scale.
-      const sirenStealCount = count >= 5 ? 5 : (count >= 4 ? 4 : (count >= 3 ? 3 : (count >= 2 ? 2 : 0)));
-      if (sirenStealCount > 0) {
-        // We need to signal to Main Logic to move cards from Deck to Hand.
-        // SideEffects can handle "draw" but stealing is specific.
-        // Let's pass the count in effects.
-        // But logic for "which cards" is random or top? 
-        // Previously assumed "Steal from Deck".
-        // Let's invoke a side effect "sirenSteal".
-        if (isP1) targetEffects.p1SirenSteal = sirenStealCount; else targetEffects.p2SirenSteal = sirenStealCount;
-        
-        // IMPORTANT: The actual moving of cards happens in useGameState usually if we return effects.
-        // But wait, `resolveGameRound` returns `sideEffects`. 
-        // We need to implement the HANDLER in `useGameState.ts` to actually move the cards AND mark them `isStolen`.
-        res.logs.push(`Siren (${count}): ${sirenStealCount} Çal`);
-      }
+        // Steal N cards based on scale.
+        const sirenStealCount = count >= 5 ? 5 : (count >= 4 ? 4 : (count >= 3 ? 3 : (count >= 2 ? 2 : 0)));
+        if (sirenStealCount > 0) {
+          // We need to signal to Main Logic to move cards from Deck to Hand.
+          // SideEffects can handle "draw" but stealing is specific.
+          // Let's pass the count in effects.
+          // But logic for "which cards" is random or top? 
+          // Previously assumed "Steal from Deck".
+          // Let's invoke a side effect "sirenSteal".
+          if (isP1) targetEffects.p1SirenSteal = sirenStealCount; else targetEffects.p2SirenSteal = sirenStealCount;
+
+          // IMPORTANT: The actual moving of cards happens in useGameState usually if we return effects.
+          // But wait, `resolveGameRound` returns `sideEffects`. 
+          // We need to implement the HANDLER in `useGameState.ts` to actually move the cards AND mark them `isStolen`.
+          res.logs.push(`Siren (${count}): ${sirenStealCount} Çal`);
+        }
         break;
 
       case "Decay": // (ρ)
@@ -300,17 +273,17 @@ function applyStep5Abilities(
           case 2: burn = 3; break;
           case 3: burn = 4; break;
           case 4: burn = 5; break;
-          case 5: 
-             burn = 8;
-             if (isP1) targetEffects.p1NoDeath = true; else targetEffects.p2NoDeath = true;
-             res.logs.push("Decay (5): NoDeath Active!");
-             break;
+          case 5:
+            burn = 8;
+            if (isP1) targetEffects.p1NoDeath = true; else targetEffects.p2NoDeath = true;
+            res.logs.push("Decay (5): NoDeath Active!");
+            break;
         }
         if (burn > 0) {
-           // P1 triggers logic -> Sets p1BurnCount (meaning "P1 causes burn")
-           // useGameState interprets p1BurnCount as "P1 burns P2"
-           if (isP1) targetEffects.p1BurnCount = burn; else targetEffects.p2BurnCount = burn;
-           res.logs.push(`Decay (${count}): ${burn} Yak`);
+          // P1 triggers logic -> Sets p1BurnCount (meaning "P1 causes burn")
+          // useGameState interprets p1BurnCount as "P1 burns P2"
+          if (isP1) targetEffects.p1BurnCount = burn; else targetEffects.p2BurnCount = burn;
+          res.logs.push(`Decay (${count}): ${burn} Yak`);
         }
         break;
 
@@ -339,13 +312,13 @@ function applyStep5Abilities(
         // Let's assume it sets "RoundsSkip" in sideEffects.
         let skip = 0;
         switch (count) {
-            case 2: skip = 0; res.logs.push("Chrono (2): 0 Sil"); break;
-            case 3: skip = 1; res.logs.push("Chrono (3): 1 Rnd Sil"); break;
-            case 4: skip = 2; res.logs.push("Chrono (4): 2 Rnd Sil"); break;
-            case 5: skip = 3; res.logs.push("Chrono (5): 3 Rnd Sil"); break;
+          case 2: skip = 0; res.logs.push("Chrono (2): 0 Sil"); break;
+          case 3: skip = 1; res.logs.push("Chrono (3): 1 Rnd Sil"); break;
+          case 4: skip = 2; res.logs.push("Chrono (4): 2 Rnd Sil"); break;
+          case 5: skip = 3; res.logs.push("Chrono (5): 3 Rnd Sil"); break;
         }
         if (skip > 0) {
-            if (isP1) targetEffects.p2RoundsSkip = skip; else targetEffects.p1RoundsSkip = skip;
+          if (isP1) targetEffects.p2RoundsSkip = skip; else targetEffects.p1RoundsSkip = skip;
         }
         break;
 
@@ -355,40 +328,40 @@ function applyStep5Abilities(
         // 4: +2 Sigma + 2 Delta
         // 5: +2 Sigma + 3 Delta + Gamma
         const conjurerCards: Card[] = [];
-        
+
         switch (count) {
-            case 2:
-                 conjurerCards.push(createSpecialCard("sigma"));
-                 conjurerCards.push(createSpecialCard("sigma"));
-                 res.logs.push(`Vessel ({count}): +2 Sigma (Σ)`);
-                 break;
-            case 3:
-                 conjurerCards.push(createSpecialCard("delta"));
-                 conjurerCards.push(createSpecialCard("delta"));
-                 conjurerCards.push(createSpecialCard("delta"));
-                 res.logs.push(`Vessel ({count}): +3 Delta (Δ)`);
-                 break;
-            case 4:
-                 conjurerCards.push(createSpecialCard("sigma"));
-                 conjurerCards.push(createSpecialCard("sigma"));
-                 conjurerCards.push(createSpecialCard("delta"));
-                 conjurerCards.push(createSpecialCard("delta"));
-                 res.logs.push(`Vessel ({count}): +2 Sigma (Σ), +2 Delta (Δ)`);
-                 break;
-            case 5:
-                 conjurerCards.push(createSpecialCard("sigma"));
-                 conjurerCards.push(createSpecialCard("sigma"));
-                 conjurerCards.push(createSpecialCard("delta"));
-                 conjurerCards.push(createSpecialCard("delta"));
-                 conjurerCards.push(createSpecialCard("delta"));
-                 conjurerCards.push(createSpecialCard("gamma"));
-                 res.logs.push("Vessel (5): KOZMİK GÜÇ! +2Σ, +3Δ, +1γ");
-                 break;
+          case 2:
+            conjurerCards.push(createSpecialCard("sigma"));
+            conjurerCards.push(createSpecialCard("sigma"));
+            res.logs.push(`Vessel ({count}): +2 Sigma (Σ)`);
+            break;
+          case 3:
+            conjurerCards.push(createSpecialCard("delta"));
+            conjurerCards.push(createSpecialCard("delta"));
+            conjurerCards.push(createSpecialCard("delta"));
+            res.logs.push(`Vessel ({count}): +3 Delta (Δ)`);
+            break;
+          case 4:
+            conjurerCards.push(createSpecialCard("sigma"));
+            conjurerCards.push(createSpecialCard("sigma"));
+            conjurerCards.push(createSpecialCard("delta"));
+            conjurerCards.push(createSpecialCard("delta"));
+            res.logs.push(`Vessel ({count}): +2 Sigma (Σ), +2 Delta (Δ)`);
+            break;
+          case 5:
+            conjurerCards.push(createSpecialCard("sigma"));
+            conjurerCards.push(createSpecialCard("sigma"));
+            conjurerCards.push(createSpecialCard("delta"));
+            conjurerCards.push(createSpecialCard("delta"));
+            conjurerCards.push(createSpecialCard("delta"));
+            conjurerCards.push(createSpecialCard("gamma"));
+            res.logs.push("Vessel (5): KOZMİK GÜÇ! +2Σ, +3Δ, +1γ");
+            break;
         }
-        
+
         if (conjurerCards.length > 0) {
-            if (isP1) targetEffects.p1CardsAdded = conjurerCards;
-            else targetEffects.p2CardsAdded = conjurerCards;
+          if (isP1) targetEffects.p1CardsAdded = conjurerCards;
+          else targetEffects.p2CardsAdded = conjurerCards;
         }
         break;
 
@@ -396,11 +369,11 @@ function applyStep5Abilities(
         // Kopyala (Copy)
         switch (count) {
           case 2: case 3: case 4: case 5:
-             res.logs.push(`Mimic (${count}): Kopyala`);
-             break;
+            res.logs.push(`Mimic (${count}): Kopyala`);
+            break;
         }
         break;
-        
+
       case "Augmentor": // (Θ)
         let buff = 0;
         switch (count) {
@@ -410,9 +383,9 @@ function applyStep5Abilities(
           case 5: buff = 6; break;
         }
         if (buff > 0) {
-           if (isP1) targetEffects.p1CardValueBuff = buff; 
-           else targetEffects.p2CardValueBuff = buff;
-           res.logs.push(`Augmentor (${count}): +${buff} Değer (Tüm Deste/El Buff)`);
+          if (isP1) targetEffects.p1CardValueBuff = buff;
+          else targetEffects.p2CardValueBuff = buff;
+          res.logs.push(`Augmentor (${count}): +${buff} Değer (Tüm Deste/El Buff)`);
         }
         break;
 
@@ -433,14 +406,14 @@ function applyStep5Abilities(
  * ---------------------------------------------------------
  */
 export function resolveGameRound(
-  p1Cards: Card[], 
-  p2Cards: Card[], 
-  p1Class: ClassName, 
+  p1Cards: Card[],
+  p2Cards: Card[],
+  p1Class: ClassName,
   p2Class: ClassName
 ): DamageResult {
   const logs: string[] = [];
   const effects: GameSideEffects = {};
-  
+
   // --- SIREN CURSE (Round 4) ---
   // If player is Siren and Round is 4, take 5 Damage (Side Effect)
   // We don't have Round Number passed here directly? 
@@ -458,79 +431,79 @@ export function resolveGameRound(
   // However, I already planned to edit gameLogic.ts. 
   // Let's switch to useGameState.ts for this implementation as it owns "Round".
   // Changing plan to edit useGameState.ts for Step 1 Logic.
-  
+
   // Wait, I can't ask user to approve plan change easily. I will just do it in useGameState which is effectively "Game Logic". 
   // I will skip gameLogic.ts modification for Siren Round 4 and do it in useGameState.ts.
 
 
   // --- STEP 0: CRYOMANCER FREEZE (Pre-Calculation) ---
   // "Rakibin oyuna sürdüğü kartları dondur (Değer 0, Classız)"
-  
+
   // Clone cards to avoid mutating the original persistent objects for now (though usually safe in this scope)
   // We need to modify them for THIS CALCULATION ONLY effectively.
   // Actually, if we modify them here, does it update the UI to show they were frozen?
   // The 'p1Cards' ref usually comes from 'playedCardsInRound'. 
   // Ideally we return the 'frozen' state so UI can show it.
   // But for logic:
-  
+
   const processFreeze = (attackerClass: ClassName, attackerCards: Card[], victimCards: Card[], ownerName: string) => {
-      if (attackerClass !== "Cryomancer") return;
+    if (attackerClass !== "Cryomancer") return;
 
-      const cryoSymbol = MASTER_CLASSES.Cryomancer.symbol;
-      const count = attackerCards.filter(c => c.symbol === cryoSymbol || c.classSymbol === cryoSymbol).length;
-      
-      let freezeCount = 0;
-      switch (count) {
-          case 2: freezeCount = 2; break;
-          case 3: freezeCount = 3; break;
-          case 4: freezeCount = 4; break;
-          case 5: freezeCount = 99; break; // All
+    const cryoSymbol = MASTER_CLASSES.Cryomancer.symbol;
+    const count = attackerCards.filter(c => c.symbol === cryoSymbol || c.classSymbol === cryoSymbol).length;
+
+    let freezeCount = 0;
+    switch (count) {
+      case 2: freezeCount = 2; break;
+      case 3: freezeCount = 3; break;
+      case 4: freezeCount = 4; break;
+      case 5: freezeCount = 99; break; // All
+    }
+
+    if (freezeCount > 0) {
+      logs.push(`❄️ Cryomancer (${count}) dondurma etkisi: ${freezeCount === 99 ? "TÜM" : freezeCount} kart dondu!`);
+
+      // Select random victims
+      // Filter only cards that CAN be frozen? (Usually all played cards)
+      // We can't freeze "Already Frozen" if we track that?
+      // Just pick indices.
+      const indices = Array.from({ length: victimCards.length }, (_, i) => i);
+      // Shuffle indices
+      for (let i = indices.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [indices[i], indices[j]] = [indices[j], indices[i]];
       }
 
-      if (freezeCount > 0) {
-          logs.push(`❄️ Cryomancer (${count}) dondurma etkisi: ${freezeCount === 99 ? "TÜM" : freezeCount} kart dondu!`);
-          
-          // Select random victims
-          // Filter only cards that CAN be frozen? (Usually all played cards)
-          // We can't freeze "Already Frozen" if we track that?
-          // Just pick indices.
-          const indices = Array.from({ length: victimCards.length }, (_, i) => i);
-          // Shuffle indices
-          for (let i = indices.length - 1; i > 0; i--) {
-              const j = Math.floor(Math.random() * (i + 1));
-              [indices[i], indices[j]] = [indices[j], indices[i]];
-          }
-          
-          const targets = indices.slice(0, Math.min(freezeCount, victimCards.length));
-          
-          targets.forEach(idx => {
-              const card = victimCards[idx];
-              // Apply Freeze Effect
-              // "Değerini 0 olarak sayacak... Classız olarak düşünülecek"
-              // We modify the card object in this local scope array.
-              // Note: This mutation affects 'p1Cards' array passed in. 
-              // If 'p1Cards' is a reference to State, this mutation is Permanent for the round view?
-              // Yes, we probably want that so UI shows "0".
-              
-              // Store original if needed? No, purely destructive for the round logic.
-              if (card.value !== undefined) { 
-                 logs.push(`   -> ${card.name} (${card.value}) dondu (0 oldu).`);
-                 card.value = 0; 
-              } else {
-                 logs.push(`   -> ${card.name} dondu.`);
-              }
-              
-              card.symbol = ""; // Remove symbol (Class synergies broken)
-              card.classSymbol = undefined;
-              card.isFrozen = true; // Mark for UI if supported
-          });
-      }
+      const targets = indices.slice(0, Math.min(freezeCount, victimCards.length));
+
+      targets.forEach(idx => {
+        const card = victimCards[idx];
+        // Apply Freeze Effect
+        // "Değerini 0 olarak sayacak... Classız olarak düşünülecek"
+        // We modify the card object in this local scope array.
+        // Note: This mutation affects 'p1Cards' array passed in. 
+        // If 'p1Cards' is a reference to State, this mutation is Permanent for the round view?
+        // Yes, we probably want that so UI shows "0".
+
+        // Store original if needed? No, purely destructive for the round logic.
+        if (card.value !== undefined) {
+          logs.push(`   -> ${card.name} (${card.value}) dondu (0 oldu).`);
+          card.value = 0;
+        } else {
+          logs.push(`   -> ${card.name} dondu.`);
+        }
+
+        card.symbol = ""; // Remove symbol (Class synergies broken)
+        card.classSymbol = undefined;
+        card.isFrozen = true; // Mark for UI if supported
+      });
+    }
   };
 
   // We must process checks BEFORE modifying cards (simultaneous? or Priority?)
   // Usually simultaneous reveal. P1 Freeze P2, P2 Freeze P1.
   // Check counts on ORIGINAL inputs. Apply changes to MUTABLE inputs.
-  
+
   // Clone arrays for processing references?
   // If we mutate p1Cards directly, it might affect P2's analysis of P1 if P2 is also Cryomancer?
   // "Count Opponent Cards" -> If P1 freezes P2's cards (removing symbols), and P2 IS Cryomancer...
@@ -538,61 +511,61 @@ export function resolveGameRound(
   // If P1 moves first and erases P2's symbols, P2 fails to freeze P1?
   // SPEED TIE? "Specify specified order?"
   // Usually simultaneous. We need to count FIRST, then Exec.
-  
-  const p1CryoCount = p1Class === "Cryomancer" 
-    ? p1Cards.filter(c => c.symbol === MASTER_CLASSES.Cryomancer.symbol || c.classSymbol === MASTER_CLASSES.Cryomancer.symbol).length 
+
+  const p1CryoCount = p1Class === "Cryomancer"
+    ? p1Cards.filter(c => c.symbol === MASTER_CLASSES.Cryomancer.symbol || c.classSymbol === MASTER_CLASSES.Cryomancer.symbol).length
     : 0;
-    
-  const p2CryoCount = p2Class === "Cryomancer" 
-    ? p2Cards.filter(c => c.symbol === MASTER_CLASSES.Cryomancer.symbol || c.classSymbol === MASTER_CLASSES.Cryomancer.symbol).length 
+
+  const p2CryoCount = p2Class === "Cryomancer"
+    ? p2Cards.filter(c => c.symbol === MASTER_CLASSES.Cryomancer.symbol || c.classSymbol === MASTER_CLASSES.Cryomancer.symbol).length
     : 0;
 
   // Now Apply
   if (p1CryoCount > 0) {
-     // P1 freezes P2
-      let freezeCount = 0;
-      if (p1CryoCount === 2) freezeCount = 2;
-      else if (p1CryoCount === 3) freezeCount = 3;
-      else if (p1CryoCount === 4) freezeCount = 4;
-      else if (p1CryoCount >= 5) freezeCount = 99;
-      
-      if (freezeCount > 0) {
-          logs.push(`❄️ P1 Cryomancer (${p1CryoCount}) donduruyor!`);
-          const indices = Array.from({ length: p2Cards.length }, (_, i) => i);
-          // Shuffle
-          indices.sort(() => Math.random() - 0.5);
-          const targets = indices.slice(0, Math.min(freezeCount, p2Cards.length));
-          targets.forEach(i => {
-             const c = p2Cards[i];
-             c.value = 0;
-             c.symbol = "";
-             c.classSymbol = undefined;
-             c.isFrozen = true;
-          });
-      }
+    // P1 freezes P2
+    let freezeCount = 0;
+    if (p1CryoCount === 2) freezeCount = 2;
+    else if (p1CryoCount === 3) freezeCount = 3;
+    else if (p1CryoCount === 4) freezeCount = 4;
+    else if (p1CryoCount >= 5) freezeCount = 99;
+
+    if (freezeCount > 0) {
+      logs.push(`❄️ P1 Cryomancer (${p1CryoCount}) donduruyor!`);
+      const indices = Array.from({ length: p2Cards.length }, (_, i) => i);
+      // Shuffle
+      indices.sort(() => Math.random() - 0.5);
+      const targets = indices.slice(0, Math.min(freezeCount, p2Cards.length));
+      targets.forEach(i => {
+        const c = p2Cards[i];
+        c.value = 0;
+        c.symbol = "";
+        c.classSymbol = undefined;
+        c.isFrozen = true;
+      });
+    }
   }
 
   if (p2CryoCount > 0) {
-     // P2 freezes P1
-      let freezeCount = 0;
-      if (p2CryoCount === 2) freezeCount = 2;
-      else if (p2CryoCount === 3) freezeCount = 3;
-      else if (p2CryoCount === 4) freezeCount = 4;
-      else if (p2CryoCount >= 5) freezeCount = 99;
-      
-      if (freezeCount > 0) {
-          logs.push(`❄️ P2 Cryomancer (${p2CryoCount}) donduruyor!`);
-          const indices = Array.from({ length: p1Cards.length }, (_, i) => i);
-          indices.sort(() => Math.random() - 0.5);
-          const targets = indices.slice(0, Math.min(freezeCount, p1Cards.length));
-          targets.forEach(i => {
-             const c = p1Cards[i];
-             c.value = 0;
-             c.symbol = "";
-             c.classSymbol = undefined;
-             c.isFrozen = true;
-          });
-      }
+    // P2 freezes P1
+    let freezeCount = 0;
+    if (p2CryoCount === 2) freezeCount = 2;
+    else if (p2CryoCount === 3) freezeCount = 3;
+    else if (p2CryoCount === 4) freezeCount = 4;
+    else if (p2CryoCount >= 5) freezeCount = 99;
+
+    if (freezeCount > 0) {
+      logs.push(`❄️ P2 Cryomancer (${p2CryoCount}) donduruyor!`);
+      const indices = Array.from({ length: p1Cards.length }, (_, i) => i);
+      indices.sort(() => Math.random() - 0.5);
+      const targets = indices.slice(0, Math.min(freezeCount, p1Cards.length));
+      targets.forEach(i => {
+        const c = p1Cards[i];
+        c.value = 0;
+        c.symbol = "";
+        c.classSymbol = undefined;
+        c.isFrozen = true;
+      });
+    }
   }
 
   // --- STEP 1: Deflate (Pre-Calculation) ---
@@ -604,7 +577,7 @@ export function resolveGameRound(
 
   // Helper to check if a player's specials are active
   const isP1SpecialActive = !p2HasDeflate; // P1 is active if P2 NO deflate
-  const isP2SpecialActive = !p1HasDeflate; 
+  const isP2SpecialActive = !p1HasDeflate;
 
   // --- STEP 2: Base Value Collision (Reflectable) ---
   let p1Total = calculateNumericTotal(p1Cards);
@@ -612,20 +585,20 @@ export function resolveGameRound(
 
   // --- Gamma (γ) Amplification (Subject to Deflate) ---
   if (isP1SpecialActive) {
-      const gCount = p1Cards.filter(c => c.specialType === "gamma").length;
-      if (gCount > 0) {
-          const mult = Math.pow(2, gCount);
-          p1Total *= mult;
-          logs.push(`⚡ Gamma (γ) x${mult}: P1 Total Doubled to ${p1Total}!`);
-      }
+    const gCount = p1Cards.filter(c => c.specialType === "gamma").length;
+    if (gCount > 0) {
+      const mult = Math.pow(2, gCount);
+      p1Total *= mult;
+      logs.push(`⚡ Gamma (γ) x${mult}: P1 Total Doubled to ${p1Total}!`);
+    }
   }
   if (isP2SpecialActive) {
-      const gCount = p2Cards.filter(c => c.specialType === "gamma").length;
-      if (gCount > 0) {
-          const mult = Math.pow(2, gCount);
-          p2Total *= mult;
-          logs.push(`⚡ Gamma (γ) x${mult}: P2 Total Doubled to ${p2Total}!`);
-      }
+    const gCount = p2Cards.filter(c => c.specialType === "gamma").length;
+    if (gCount > 0) {
+      const mult = Math.pow(2, gCount);
+      p2Total *= mult;
+      logs.push(`⚡ Gamma (γ) x${mult}: P2 Total Doubled to ${p2Total}!`);
+    }
   }
 
   // --- STEP 3: Numeric Combinations (Subject to Reflection) ---
@@ -634,7 +607,7 @@ export function resolveGameRound(
   // If we add it to the Total, it effectively increases the Diff.
   const p1ComboBonus = calculateNumericCombinationBonus(p1Cards);
   const p2ComboBonus = calculateNumericCombinationBonus(p2Cards);
-  
+
   if (p1ComboBonus > 0) logs.push(`P1 Combo Bonus: +${p1ComboBonus}`);
   if (p2ComboBonus > 0) logs.push(`P2 Combo Bonus: +${p2ComboBonus}`);
 
@@ -648,16 +621,16 @@ export function resolveGameRound(
 
   // Determine actual victim handling Reflection (Delta/Twisted)
   let finalVictim = victim;
-  
+
   if (victim === "p1") {
     // P1 lost. Check P1 Delta/Twisted
     if (isP1SpecialActive) { // Must not be deflated
-       const hasDelta = p1Cards.some(c => c.specialType === "delta");
-       const hasTwisted = p1Cards.some(c => c.specialType === "twisted");
-       if (hasDelta || hasTwisted) {
-         finalVictim = "p2"; // Reflect!
-         logs.push(`P1 reflected damage using ${hasDelta ? "Delta" : "Twisted"}!`);
-       }
+      const hasDelta = p1Cards.some(c => c.specialType === "delta");
+      const hasTwisted = p1Cards.some(c => c.specialType === "twisted");
+      if (hasDelta || hasTwisted) {
+        finalVictim = "p2"; // Reflect!
+        logs.push(`P1 reflected damage using ${hasDelta ? "Delta" : "Twisted"}!`);
+      }
     }
   } else if (victim === "p2") {
     // P2 lost. Check P2 Delta/Twisted
@@ -678,7 +651,7 @@ export function resolveGameRound(
   // The Rule says "Attacker" is the original winner of the total.
   // "B (Kazanan/Attacker): Elinde Sigma var mı?"
   // Let's assume Sigma CHECK is based on the ORIGINAL winner of the numeric clash.
-  
+
   if (attacker === "p1" && isP1SpecialActive && p1Cards.some(c => c.specialType === "sigma")) {
     damage *= 2;
     logs.push("P1 Sigma (Σ) amplified damage x2!");
@@ -701,9 +674,9 @@ export function resolveGameRound(
   // --- STEP 5: Class Ability Trigger ---
   // --- STEP 5: Class Ability Trigger ---
   // Scale is calculated inside the function now
-  
+
   const abilityRes = applyStep5Abilities(
-    p1Class, p1Cards, p2Class, p2Cards, 
+    p1Class, p1Cards, p2Class, p2Cards,
     effects
   );
 
@@ -711,19 +684,19 @@ export function resolveGameRound(
   // Is it True Damage? Or Reflectable? 
   // Rules don't specify, but Step 5 is AFTER Step 2.
   // Usually Abilities are Direct/Magic. Let's add to final Damage Taken directly.
-  
+
   if (abilityRes.p1ExtraDmg > 0) logs.push(`P1 Class Ability deals ${abilityRes.p1ExtraDmg} dmg.`);
   if (abilityRes.p2ExtraDmg > 0) logs.push(`P2 Class Ability deals ${abilityRes.p2ExtraDmg} dmg.`);
 
   // Final Summation
   // Add Self Damage (Oracle)
   if (effects.p1SelfDamage) {
-      p1DamageTaken += effects.p1SelfDamage;
-      logs.push(`⚠️ Oracle Kehaneti: Kendine ${effects.p1SelfDamage} hasar vurdu!`);
+    p1DamageTaken += effects.p1SelfDamage;
+    logs.push(`⚠️ Oracle Kehaneti: Kendine ${effects.p1SelfDamage} hasar vurdu!`);
   }
   if (effects.p2SelfDamage) {
-      p2DamageTaken += effects.p2SelfDamage;
-      logs.push(`⚠️ Rakip Oracle Kendine ${effects.p2SelfDamage} hasar vurdu!`);
+    p2DamageTaken += effects.p2SelfDamage;
+    logs.push(`⚠️ Rakip Oracle Kendine ${effects.p2SelfDamage} hasar vurdu!`);
   }
 
   p1DamageTaken += p2True + abilityRes.p2ExtraDmg;
@@ -731,16 +704,16 @@ export function resolveGameRound(
 
   // --- Gamma Invulnerability (Last Step) ---
   if (isP1SpecialActive && p1Cards.some(c => c.specialType === "gamma")) {
-      if (p1DamageTaken > 0) {
-          logs.push("🛡️ Gamma (γ) Safe: P1 Hasar Almaz!");
-          p1DamageTaken = 0;
-      }
+    if (p1DamageTaken > 0) {
+      logs.push("🛡️ Gamma (γ) Safe: P1 Hasar Almaz!");
+      p1DamageTaken = 0;
+    }
   }
   if (isP2SpecialActive && p2Cards.some(c => c.specialType === "gamma")) {
-      if (p2DamageTaken > 0) {
-          logs.push("🛡️ Gamma (γ) Safe: P2 Hasar Almaz!");
-          p2DamageTaken = 0;
-      }
+    if (p2DamageTaken > 0) {
+      logs.push("🛡️ Gamma (γ) Safe: P2 Hasar Almaz!");
+      p2DamageTaken = 0;
+    }
   }
 
   return {
@@ -762,95 +735,95 @@ export function resolveGameRound(
  * We should probably sync them or make this a lightweight wrapper for Step 5 healing.
  */
 export function applyClassAbility(
-    className: ClassName, 
-    playedCards: Card[], 
-    currentHP: number
-  ): ClassAbilityResult {
-    // Check Step 5 just for healing/HP change logs
-    const scale = getAbilityScale(className, playedCards);
-    const logs: string[] = [];
-    let hpChange = 0;
-  
-    if (className === "Vitalist" && scale.scale.value && scale.scale.value > 0) {
-       hpChange = scale.scale.value; // Healing
-       logs.push(`Vitalist healed for ${hpChange} HP.`);
-    }
-  
-    return { hpChange, logs };
+  className: ClassName,
+  playedCards: Card[],
+  currentHP: number
+): ClassAbilityResult {
+  // Check Step 5 just for healing/HP change logs
+  const scale = getAbilityScale(className, playedCards);
+  const logs: string[] = [];
+  let hpChange = 0;
+
+  if (className === "Vitalist" && scale.scale.value && scale.scale.value > 0) {
+    hpChange = scale.scale.value; // Healing
+    logs.push(`Vitalist healed for ${hpChange} HP.`);
+  }
+
+  return { hpChange, logs };
 }
 
 /**
  * Resolves the special interaction rules for counters/Instant Wins.
  */
 export function checkCounterWinCondition(
-    player: PlayerState, 
-    opponent: PlayerState, 
-    round: number
+  player: PlayerState,
+  opponent: PlayerState,
+  round: number
 ): boolean | undefined {
-    const pClass = player.className;
-    const oClass = opponent.className;
-    
-    // Mimic Delegation (Copy Opponent's Win Condition)
-    if (pClass === "Mimic" && oClass !== "Mimic") {
-        // Pretend to be the opponent class and check if we win
-        return checkCounterWinCondition({ ...player, className: oClass }, opponent, round);
-    }
-    
-    // Vitalist vs Slayer (Override Logic)
-    if (pClass === "Vitalist" && oClass === "Slayer") {
-       // Only win if HP < Slayer at end of Round 6 (or if checked otherwise)
-       // This function returns "Instant Win". 
-       // The rule "Vitalist kazanmak için Slayer'dan DAHA AZ canda kalmalıdır" is a Condition Check, not Instant Win.
-       // Handled in End Game Check (hook).
-    }
+  const pClass = player.className;
+  const oClass = opponent.className;
 
-    // Chronokeeper vs Vitalist
-    if (pClass === "Chronokeeper" && oClass === "Vitalist") {
-      const chronCards = player.playedCardsInRound.filter(c => c.symbol === MASTER_CLASSES.Chronokeeper.symbol).length;
-      if (chronCards === 5) return true;
-    }
+  // Mimic Delegation (Copy Opponent's Win Condition)
+  if (pClass === "Mimic" && oClass !== "Mimic") {
+    // Pretend to be the opponent class and check if we win
+    return checkCounterWinCondition({ ...player, className: oClass }, opponent, round);
+  }
 
-    // Fateweaver
-    if (pClass === "Fateweaver") {
-      const gammas = player.playedCardsInRound.filter(c => c.specialType === "gamma").length;
-      if (gammas === 5) return true;
-    }
+  // Vitalist vs Slayer (Override Logic)
+  if (pClass === "Vitalist" && oClass === "Slayer") {
+    // Only win if HP < Slayer at end of Round 6 (or if checked otherwise)
+    // This function returns "Instant Win". 
+    // The rule "Vitalist kazanmak için Slayer'dan DAHA AZ canda kalmalıdır" is a Condition Check, not Instant Win.
+    // Handled in End Game Check (hook).
+  }
 
-    // Slayer Instant
-    if (pClass === "Slayer") {
-       // "Tek turda 12+ Hasar" -> Triggered during round? 
-       // If scale value >= 12.
-       const scale = getAbilityScale("Slayer", player.playedCardsInRound);
-       if ((scale.scale.value || 0) >= 12) return true;
-    }
+  // Chronokeeper vs Vitalist
+  if (pClass === "Chronokeeper" && oClass === "Vitalist") {
+    const chronCards = player.playedCardsInRound.filter(c => c.symbol === MASTER_CLASSES.Chronokeeper.symbol).length;
+    if (chronCards === 5) return true;
+  }
 
-    // Siren
-    if (pClass === "Siren") {
-       // Assuming 'originalOwner' check or just count.
-       // "5 Çalıntı Kart Oyna"
-       // We can approximate by checking specific metadata on cards if enabled.
-    }
+  // Fateweaver
+  if (pClass === "Fateweaver") {
+    const gammas = player.playedCardsInRound.filter(c => c.specialType === "gamma").length;
+    if (gammas === 5) return true;
+  }
 
-    // Augmentor
-    if (pClass === "Augmentor") {
-        const hasTwelve = player.playedCardsInRound.some(c => 
-             (c.symbol === MASTER_CLASSES.Augmentor.symbol || c.classSymbol === MASTER_CLASSES.Augmentor.symbol) && (c.value || 0) >= 12
-        );
-        if (hasTwelve) return true;
-    }
-  
-    // Vessel
-    if (pClass === "Vessel") {
-        const hasSigma = player.playedCardsInRound.some(c => c.specialType === "sigma");
-        const hasDelta = player.playedCardsInRound.some(c => c.specialType === "delta");
-        if (hasSigma && hasDelta) return true;
-    }
+  // Slayer Instant
+  if (pClass === "Slayer") {
+    // "Tek turda 12+ Hasar" -> Triggered during round? 
+    // If scale value >= 12.
+    const scale = getAbilityScale("Slayer", player.playedCardsInRound);
+    if ((scale.scale.value || 0) >= 12) return true;
+  }
 
-    // Cryomancer
-    if (pClass === "Cryomancer") {
-        const frozenSpecials = opponent.playedCardsInRound.filter(c => c.isFrozen && c.type === "special").length;
-        if (frozenSpecials >= 2) return true;
-    }
+  // Siren
+  if (pClass === "Siren") {
+    // Assuming 'originalOwner' check or just count.
+    // "5 Çalıntı Kart Oyna"
+    // We can approximate by checking specific metadata on cards if enabled.
+  }
 
-    return undefined;
+  // Augmentor
+  if (pClass === "Augmentor") {
+    const hasTwelve = player.playedCardsInRound.some(c =>
+      (c.symbol === MASTER_CLASSES.Augmentor.symbol || c.classSymbol === MASTER_CLASSES.Augmentor.symbol) && (c.value || 0) >= 12
+    );
+    if (hasTwelve) return true;
+  }
+
+  // Vessel
+  if (pClass === "Vessel") {
+    const hasSigma = player.playedCardsInRound.some(c => c.specialType === "sigma");
+    const hasDelta = player.playedCardsInRound.some(c => c.specialType === "delta");
+    if (hasSigma && hasDelta) return true;
+  }
+
+  // Cryomancer
+  if (pClass === "Cryomancer") {
+    const frozenSpecials = opponent.playedCardsInRound.filter(c => c.isFrozen && c.type === "special").length;
+    if (frozenSpecials >= 2) return true;
+  }
+
+  return undefined;
 }

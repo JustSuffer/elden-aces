@@ -4,6 +4,7 @@ import { Card } from "@/types/game";
 import { GameCard } from "./GameCard";
 import { useState } from "react";
 import { CheckCircle2 } from "lucide-react";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface CardSelectionPopupProps {
   open: boolean;
@@ -13,6 +14,7 @@ interface CardSelectionPopupProps {
 
 export function CardSelectionPopup({ open, cards, onConfirm }: CardSelectionPopupProps) {
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
+  const { t } = useLanguage();
 
   const handleCardClick = (index: number) => {
     if (selectedIndices.includes(index)) {
@@ -34,13 +36,13 @@ export function CardSelectionPopup({ open, cards, onConfirm }: CardSelectionPopu
       <DialogContent className="sm:max-w-4xl">
         <DialogHeader>
           <DialogTitle className="text-center text-2xl text-primary">
-            Select 2 Cards to Return
+            {t("game.popup.selectReturnTitle")}
           </DialogTitle>
           <DialogDescription className="text-center">
-            Choose 2 cards from your hand to return to the deck. You will draw 2 new cards.
+            {t("game.popup.selectReturnDesc")}
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="flex flex-col items-center gap-6 py-4">
           <div className="flex gap-3 flex-wrap justify-center">
             {cards.map((card, index) => (
@@ -63,7 +65,7 @@ export function CardSelectionPopup({ open, cards, onConfirm }: CardSelectionPopu
 
           <div className="text-center space-y-2">
             <p className="text-sm text-muted-foreground">
-              Selected: {selectedIndices.length} / 2 cards
+              {t("game.popup.selectedCount", { count: selectedIndices.length })}
             </p>
             <Button
               variant="default"
@@ -72,7 +74,7 @@ export function CardSelectionPopup({ open, cards, onConfirm }: CardSelectionPopu
               disabled={selectedIndices.length !== 2}
               className="w-48"
             >
-              Confirm Selection
+              {t("game.popup.confirm")}
             </Button>
           </div>
         </div>
