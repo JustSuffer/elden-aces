@@ -1,243 +1,502 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
-import { ArrowLeft, Users, Plus, RefreshCw } from "lucide-react";
+import { ArrowLeft, Swords, Loader2, Users, Wifi, WifiOff } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { SavedDeck } from "@/types/deck";
+import { MASTER_CLASSES } from "@/data/gameData";
+import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
 
-interface Lobby {
+type MatchmakingStatus = "idle" | "searching" | "found" | "connecting";
+
+interface QueueEntry {
   id: string;
-  name: string;
-  host_id: string;
-  max_players: number;
-  current_players: number;
+  user_id: string;
+  deck_data: SavedDeck;
+  deck_name: string;
+  main_class: string;
   status: string;
-  host_username?: string;
+  matched_with: string | null;
+  match_id: string | null;
 }
 
 const Play = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [lobbyName, setLobbyName] = useState("");
-  const [lobbies, setLobbies] = useState<Lobby[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [savedDecks, setSavedDecks] = useState<SavedDeck[]>([]);
+  const [selectedDeck, setSelectedDeck] = useState<SavedDeck | null>(null);
+  const [matchmakingStatus, setMatchmakingStatus] = useState<MatchmakingStatus>("idle");
+  const [searchTime, setSearchTime] = useState(0);
+  const [queueEntryId, setQueueEntryId] = useState<string | null>(null);
+  const [opponentInfo, setOpponentInfo] = useState<{ username: string; mainClass: string } | null>(null);
 
+  // Load saved decks
   useEffect(() => {
-    fetchLobbies();
+    const stored = localStorage.getItem("acoria-saved-decks");
+    if (stored) {
+      try {
+        let decks = JSON.parse(stored);
+        decks = decks.map((d: any) => ({
+          ...d,
+          mainClass: d.mainClass === "Incinerator" ? "Decay" : (d.mainClass === "Conjurer" ? "Vessel" : d.mainClass),
+          secondaryClasses: d.secondaryClasses?.map((c: string) => 
+            c === "Incinerator" ? "Decay" : (c === "Conjurer" ? "Vessel" : c)
+          ) || []
+        })).filter((d: SavedDeck) => MASTER_CLASSES[d.mainClass]);
+        setSavedDecks(decks);
+        if (decks.length > 0) {
+          setSelectedDeck(decks[0]);
+        }
+      } catch (e) {
+        console.error("Failed to load decks", e);
+      }
+    }
   }, []);
 
-  const fetchLobbies = async () => {
-    setIsRefreshing(true);
-    
-    const { data: lobbiesData, error } = await supabase
-      .from("lobbies")
-      .select("*")
-      .eq("status", "waiting")
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      console.error("Error fetching lobbies:", error);
-      setIsRefreshing(false);
-      return;
-    }
-
-    // Fetch host usernames
-    if (lobbiesData && lobbiesData.length > 0) {
-      const hostIds = lobbiesData.map(l => l.host_id);
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("user_id, username")
-        .in("user_id", hostIds);
-
-      const lobbiesWithUsernames = lobbiesData.map(lobby => ({
-        ...lobby,
-        host_username: profiles?.find(p => p.user_id === lobby.host_id)?.username || "Unknown"
-      }));
-
-      setLobbies(lobbiesWithUsernames);
+  // Search timer
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (matchmakingStatus === "searching") {
+      interval = setInterval(() => {
+        setSearchTime((prev) => prev + 1);
+      }, 1000);
     } else {
-      setLobbies([]);
+      setSearchTime(0);
     }
-    
-    setIsRefreshing(false);
+    return () => clearInterval(interval);
+  }, [matchmakingStatus]);
+
+  // Real-time subscription for matchmaking
+  useEffect(() => {
+    if (!queueEntryId || !user) return;
+
+    const channel = supabase
+      .channel(`matchmaking-${queueEntryId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'matchmaking_queue',
+          filter: `id=eq.${queueEntryId}`
+        },
+        async (payload) => {
+          const updated = payload.new as QueueEntry;
+          console.log("Queue update received:", updated);
+          
+          if (updated.status === 'matched' && updated.matched_with && updated.match_id) {
+            setMatchmakingStatus("found");
+            
+            // Get opponent info
+            const { data: opponentQueue } = await supabase
+              .from("matchmaking_queue")
+              .select("main_class, user_id")
+              .eq("id", updated.matched_with)
+              .single();
+            
+            if (opponentQueue) {
+              const { data: profile } = await supabase
+                .from("profiles")
+                .select("username")
+                .eq("user_id", opponentQueue.user_id)
+                .single();
+              
+              setOpponentInfo({
+                username: profile?.username || "Rakip",
+                mainClass: opponentQueue.main_class
+              });
+            }
+            
+            // Brief delay for animation
+            setTimeout(() => {
+              setMatchmakingStatus("connecting");
+              // Navigate to online game with match_id
+              setTimeout(() => {
+                navigate(`/online-game/${updated.match_id}`);
+              }, 1500);
+            }, 2000);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queueEntryId, user, navigate]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (queueEntryId) {
+        cancelSearch();
+      }
+    };
+  }, [queueEntryId]);
+
+  const startSearch = async () => {
+    if (!user || !selectedDeck) {
+      toast.error("Lütfen bir deste seçin");
+      return;
+    }
+
+    setMatchmakingStatus("searching");
+
+    try {
+      // Check for existing queue entry and remove
+      await supabase
+        .from("matchmaking_queue" as any)
+        .delete()
+        .eq("user_id", user.id);
+
+      // Add to queue
+      const { data: queueEntry, error } = await supabase
+        .from("matchmaking_queue" as any)
+        .insert({
+          user_id: user.id,
+          deck_data: selectedDeck as unknown as Record<string, unknown>,
+          deck_name: selectedDeck.name,
+          main_class: selectedDeck.mainClass,
+          status: "searching"
+        })
+        .select()
+        .single() as { data: QueueEntry | null; error: any };
+
+      if (error || !queueEntry) {
+        console.error("Queue error:", error);
+        toast.error("Eşleşme kuyruğuna eklenemedi");
+        setMatchmakingStatus("idle");
+        return;
+      }
+
+      setQueueEntryId(queueEntry.id);
+
+      // Look for another searching player
+      const { data: searchingPlayers, error: searchError } = await supabase
+        .from("matchmaking_queue" as any)
+        .select("*")
+        .eq("status", "searching")
+        .neq("user_id", user.id)
+        .order("created_at", { ascending: true })
+        .limit(1) as { data: QueueEntry[] | null; error: any };
+
+      if (searchError) {
+        console.error("Search error:", searchError);
+        return;
+      }
+
+      if (searchingPlayers && searchingPlayers.length > 0) {
+        const opponent = searchingPlayers[0];
+        
+        // Create a match
+        const { data: match, error: matchError } = await supabase
+          .from("matches" as any)
+          .insert({
+            player1_id: opponent.user_id,
+            player2_id: user.id,
+            player1_deck: opponent.deck_data,
+            player2_deck: selectedDeck as unknown as Record<string, unknown>,
+            status: "active"
+          })
+          .select()
+          .single() as { data: { id: string } | null; error: any };
+
+        if (matchError || !match) {
+          console.error("Match creation error:", matchError);
+          return;
+        }
+
+        // Update both queue entries
+        await supabase
+          .from("matchmaking_queue" as any)
+          .update({ 
+            status: "matched", 
+            matched_with: queueEntry.id,
+            match_id: match.id 
+          })
+          .eq("id", opponent.id);
+
+        await supabase
+          .from("matchmaking_queue" as any)
+          .update({ 
+            status: "matched", 
+            matched_with: opponent.id,
+            match_id: match.id 
+          })
+          .eq("id", queueEntry.id);
+      }
+    } catch (err) {
+      console.error("Matchmaking error:", err);
+      toast.error("Bir hata oluştu");
+      setMatchmakingStatus("idle");
+    }
   };
 
-  const handleCreateLobby = async () => {
-    if (!lobbyName.trim()) {
-      toast.error("Please enter a lobby name");
-      return;
+  const cancelSearch = useCallback(async () => {
+    if (queueEntryId && user) {
+      await supabase
+        .from("matchmaking_queue" as any)
+        .delete()
+        .eq("id", queueEntryId);
     }
+    setQueueEntryId(null);
+    setMatchmakingStatus("idle");
+    setOpponentInfo(null);
+  }, [queueEntryId, user]);
 
-    if (!user) {
-      toast.error("You must be logged in");
-      return;
-    }
-
-    setIsLoading(true);
-
-    const { data, error } = await supabase
-      .from("lobbies")
-      .insert({
-        name: lobbyName.trim(),
-        host_id: user.id,
-        max_players: 2,
-        current_players: 1,
-        status: "waiting"
-      })
-      .select()
-      .single();
-
-    if (error) {
-      toast.error("Failed to create lobby");
-      setIsLoading(false);
-      return;
-    }
-
-    // Add host to lobby_players
-    await supabase
-      .from("lobby_players")
-      .insert({
-        lobby_id: data.id,
-        user_id: user.id
-      });
-
-    toast.success("Lobby created!");
-    setLobbyName("");
-    fetchLobbies();
-    setIsLoading(false);
+  const formatSearchTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const handleJoinLobby = async (lobby: Lobby) => {
-    if (!user) {
-      toast.error("You must be logged in");
-      return;
-    }
-
-    if (lobby.current_players >= lobby.max_players) {
-      toast.error("Lobby is full");
-      return;
-    }
-
-    // Add player to lobby
-    const { error: joinError } = await supabase
-      .from("lobby_players")
-      .insert({
-        lobby_id: lobby.id,
-        user_id: user.id
-      });
-
-    if (joinError) {
-      toast.error("Failed to join lobby");
-      return;
-    }
-
-    // Update lobby player count
-    const { error: updateError } = await supabase
-      .from("lobbies")
-      .update({ 
-        current_players: lobby.current_players + 1,
-        status: lobby.current_players + 1 >= lobby.max_players ? "full" : "waiting"
-      })
-      .eq("id", lobby.id);
-
-    if (updateError) {
-      toast.error("Failed to update lobby");
-      return;
-    }
-
-    toast.success(`Joined ${lobby.name}!`);
-    navigate("/game");
-  };
+  if (savedDecks.length === 0) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-8">
+        <div className="bg-card/50 backdrop-blur-sm border border-primary/30 rounded-lg p-8 max-w-md text-center">
+          <h2 className="text-2xl font-bold text-primary glow-gold mb-4 font-cinzel">
+            Deste Bulunamadı
+          </h2>
+          <p className="text-muted-foreground mb-6">
+            Çevrimiçi oynamadan önce Deste Oluşturucu'da bir deste kaydetmelisiniz.
+          </p>
+          <div className="flex gap-4 justify-center">
+            <Button variant="outline" onClick={() => navigate("/menu")}>
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Menü
+            </Button>
+            <Button onClick={() => navigate("/deck-builder")}>
+              Deste Oluştur
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
+      {/* Atmospheric Background */}
+      <div className="absolute inset-0 bg-gradient-radial from-primary/5 via-transparent to-transparent opacity-50" />
+      <div 
+        className="absolute inset-0 opacity-5 pointer-events-none"
+        style={{
+          backgroundImage: `linear-gradient(hsl(var(--primary)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--primary)) 1px, transparent 1px)`,
+          backgroundSize: '60px 60px',
+        }}
+      />
+      
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-border">
-        <Button variant="ghost" onClick={() => navigate("/")} className="gap-2">
+      <div className="relative z-10 flex items-center justify-between p-4 border-b border-border/50">
+        <Button variant="ghost" onClick={() => navigate("/menu")} className="gap-2">
           <ArrowLeft className="w-4 h-4" />
-          Menu
+          Menü
         </Button>
-        <div className="text-xl font-bold text-primary glow-gold">Online Play</div>
+        <div className="flex items-center gap-2">
+          <Wifi className="w-5 h-5 text-primary animate-pulse" />
+          <span className="text-xl font-bold text-primary glow-gold font-cinzel">Çevrimiçi Oyna</span>
+        </div>
         <div className="w-24" />
       </div>
 
-      {/* Content */}
-      <div className="flex-1 flex flex-col items-center p-8 gap-6">
-        {/* Create Lobby */}
-        <Card className="w-full max-w-2xl p-6 bg-card/50 backdrop-blur-sm border-primary/20">
-          <h2 className="text-xl font-bold text-primary mb-4 flex items-center gap-2">
-            <Plus className="w-5 h-5" />
-            Create Lobby
-          </h2>
-          <div className="flex gap-3">
-            <Input
-              placeholder="Enter lobby name..."
-              value={lobbyName}
-              onChange={(e) => setLobbyName(e.target.value)}
-              className="flex-1"
-            />
-            <Button onClick={handleCreateLobby} disabled={isLoading}>
-              {isLoading ? "Creating..." : "Create"}
-            </Button>
-          </div>
-        </Card>
-
-        {/* Available Lobbies */}
-        <Card className="w-full max-w-2xl p-6 bg-card/50 backdrop-blur-sm border-primary/20">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-primary flex items-center gap-2">
-              <Users className="w-5 h-5" />
-              Available Lobbies
-            </h2>
-            <Button variant="ghost" size="sm" onClick={fetchLobbies} disabled={isRefreshing}>
-              <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`} />
-            </Button>
-          </div>
-
-          {lobbies.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              No lobbies available. Create one to start playing!
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {lobbies.map((lobby) => (
-                <div
-                  key={lobby.id}
-                  className="flex items-center justify-between p-4 bg-background/50 rounded-lg border border-border hover:border-primary/50 transition-colors"
+      <div className="relative z-10 flex-1 container mx-auto px-4 py-8 flex flex-col items-center gap-8">
+        
+        {/* Match Found Overlay */}
+        <AnimatePresence>
+          {(matchmakingStatus === "found" || matchmakingStatus === "connecting") && opponentInfo && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 flex items-center justify-center bg-background/90 backdrop-blur-md"
+            >
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: "spring", damping: 15 }}
+                className="text-center"
+              >
+                <motion.div
+                  animate={{ scale: [1, 1.1, 1] }}
+                  transition={{ repeat: Infinity, duration: 1.5 }}
+                  className="text-6xl mb-6"
                 >
-                  <div>
-                    <h3 className="font-semibold text-foreground">{lobby.name}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Host: {lobby.host_username} • {lobby.current_players}/{lobby.max_players} players
-                    </p>
+                  ⚔️
+                </motion.div>
+                <h2 className="text-4xl font-bold text-primary glow-gold font-cinzel mb-4">
+                  Rakip Bulundu!
+                </h2>
+                <div className="flex items-center justify-center gap-8 my-8">
+                  {/* Player */}
+                  <div className="text-center">
+                    <div 
+                      className="text-5xl font-bold mb-2"
+                      style={{ color: MASTER_CLASSES[selectedDeck?.mainClass || "Vitalist"].color }}
+                    >
+                      {MASTER_CLASSES[selectedDeck?.mainClass || "Vitalist"].symbol}
+                    </div>
+                    <p className="text-lg font-bold text-foreground">Sen</p>
+                    <p className="text-sm text-muted-foreground">{selectedDeck?.mainClass}</p>
                   </div>
-                  <Button
-                    onClick={() => handleJoinLobby(lobby)}
-                    disabled={lobby.current_players >= lobby.max_players || lobby.host_id === user?.id}
-                    variant={lobby.host_id === user?.id ? "outline" : "default"}
+                  
+                  <div className="text-3xl text-primary font-bold">VS</div>
+                  
+                  {/* Opponent */}
+                  <div className="text-center">
+                    <div 
+                      className="text-5xl font-bold mb-2"
+                      style={{ color: MASTER_CLASSES[opponentInfo.mainClass as keyof typeof MASTER_CLASSES]?.color || "#fff" }}
+                    >
+                      {MASTER_CLASSES[opponentInfo.mainClass as keyof typeof MASTER_CLASSES]?.symbol || "?"}
+                    </div>
+                    <p className="text-lg font-bold text-foreground">{opponentInfo.username}</p>
+                    <p className="text-sm text-muted-foreground">{opponentInfo.mainClass}</p>
+                  </div>
+                </div>
+                
+                {matchmakingStatus === "connecting" && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex items-center justify-center gap-2 text-muted-foreground"
                   >
-                    {lobby.host_id === user?.id ? "Your Lobby" : "Join"}
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <span>Oyuna bağlanılıyor...</span>
+                  </motion.div>
+                )}
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Deck Selection */}
+        <div className="w-full max-w-2xl bg-card/50 backdrop-blur-sm border border-primary/30 rounded-lg p-6">
+          <h2 className="text-2xl font-bold text-primary glow-gold mb-6 font-cinzel text-center">
+            Desteni Seç
+          </h2>
+          
+          <div className="space-y-3 max-h-[300px] overflow-y-auto acoria-scrollbar pr-2">
+            {savedDecks.map((deck) => {
+              const classData = MASTER_CLASSES[deck.mainClass];
+              const isSelected = selectedDeck?.id === deck.id;
+              return (
+                <button
+                  key={deck.id}
+                  onClick={() => matchmakingStatus === "idle" && setSelectedDeck(deck)}
+                  disabled={matchmakingStatus !== "idle"}
+                  className={cn(
+                    "w-full p-4 rounded-lg border-2 transition-all duration-200 text-left",
+                    isSelected 
+                      ? "border-primary bg-primary/20 shadow-lg shadow-primary/30" 
+                      : "border-border hover:border-primary/50 bg-card/50",
+                    matchmakingStatus !== "idle" && "opacity-50 cursor-not-allowed"
+                  )}
+                >
+                  <div className="flex items-center gap-4">
+                    <div 
+                      className="text-4xl font-bold"
+                      style={{ color: classData.color }}
+                    >
+                      {classData.symbol}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-foreground text-lg">{deck.name}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {deck.mainClass} ({classData.role})
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-bold" style={{ color: classData.color }}>
+                        HP: {classData.initialHP}
+                      </p>
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Matchmaking Controls */}
+        <div className="w-full max-w-2xl">
+          <AnimatePresence mode="wait">
+            {matchmakingStatus === "idle" ? (
+              <motion.div
+                key="start"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+              >
+                <Button
+                  size="lg"
+                  onClick={startSearch}
+                  disabled={!selectedDeck}
+                  className="w-full text-xl py-8 font-cinzel bg-primary hover:bg-primary/90"
+                >
+                  <Users className="w-6 h-6 mr-3" />
+                  Rakip Ara
+                </Button>
+              </motion.div>
+            ) : matchmakingStatus === "searching" ? (
+              <motion.div
+                key="searching"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="bg-card/50 backdrop-blur-sm border border-primary/30 rounded-lg p-6"
+              >
+                <div className="flex flex-col items-center gap-4">
+                  <div className="relative">
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                      className="w-20 h-20 border-4 border-primary/30 border-t-primary rounded-full"
+                    />
+                    <Swords className="absolute inset-0 m-auto w-8 h-8 text-primary" />
+                  </div>
+                  
+                  <h3 className="text-xl font-bold text-primary font-cinzel">
+                    Rakip Aranıyor...
+                  </h3>
+                  <p className="text-muted-foreground">
+                    Arama süresi: <span className="text-primary font-mono">{formatSearchTime(searchTime)}</span>
+                  </p>
+                  
+                  <Button
+                    variant="outline"
+                    onClick={cancelSearch}
+                    className="mt-4"
+                  >
+                    <WifiOff className="w-4 h-4 mr-2" />
+                    Aramayı İptal Et
                   </Button>
                 </div>
-              ))}
-            </div>
-          )}
-        </Card>
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
+        </div>
 
         {/* Quick Play Option */}
-        <Card className="w-full max-w-2xl p-6 bg-card/50 backdrop-blur-sm border-primary/20">
-          <h2 className="text-xl font-bold text-primary mb-4">Quick Play</h2>
-          <p className="text-muted-foreground mb-4">
-            Play against the AI bot instantly without waiting for other players.
-          </p>
-          <Button onClick={() => navigate("/game")} className="w-full">
-            Play vs Bot
-          </Button>
-        </Card>
+        {matchmakingStatus === "idle" && (
+          <div className="w-full max-w-2xl text-center">
+            <div className="flex items-center gap-4 my-4">
+              <div className="flex-1 h-px bg-border/50" />
+              <span className="text-muted-foreground text-sm">veya</span>
+              <div className="flex-1 h-px bg-border/50" />
+            </div>
+            <Button
+              variant="outline"
+              onClick={() => navigate("/game")}
+              className="gap-2"
+            >
+              <Swords className="w-4 h-4" />
+              Bot ile Oyna
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

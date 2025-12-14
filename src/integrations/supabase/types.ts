@@ -106,6 +106,84 @@ export type Database = {
           },
         ]
       }
+      matches: {
+        Row: {
+          created_at: string
+          game_state: Json | null
+          id: string
+          player1_deck: Json
+          player1_id: string
+          player2_deck: Json
+          player2_id: string
+          status: string
+          updated_at: string
+          winner_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          game_state?: Json | null
+          id?: string
+          player1_deck: Json
+          player1_id: string
+          player2_deck: Json
+          player2_id: string
+          status?: string
+          updated_at?: string
+          winner_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          game_state?: Json | null
+          id?: string
+          player1_deck?: Json
+          player1_id?: string
+          player2_deck?: Json
+          player2_id?: string
+          status?: string
+          updated_at?: string
+          winner_id?: string | null
+        }
+        Relationships: []
+      }
+      matchmaking_queue: {
+        Row: {
+          created_at: string
+          deck_data: Json
+          deck_name: string
+          id: string
+          main_class: string
+          match_id: string | null
+          matched_with: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          deck_data: Json
+          deck_name: string
+          id?: string
+          main_class: string
+          match_id?: string | null
+          matched_with?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          deck_data?: Json
+          deck_name?: string
+          id?: string
+          main_class?: string
+          match_id?: string | null
+          matched_with?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

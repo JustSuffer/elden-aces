@@ -9,6 +9,7 @@ import Landing from "./pages/Landing";
 import Menu from "./pages/Menu";
 import Game from "./pages/Game";
 import Play from "./pages/Play";
+import OnlineGame from "./pages/OnlineGame";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import Credits from "./pages/Credits";
@@ -34,6 +35,7 @@ const App = () => (
             <Route path="/menu" element={<ProtectedRoute><Menu /></ProtectedRoute>} />
             <Route path="/play" element={<ProtectedRoute><Play /></ProtectedRoute>} />
             <Route path="/game" element={<ProtectedRoute><Game /></ProtectedRoute>} />
+            <Route path="/online-game/:matchId" element={<ProtectedRoute><OnlineGame /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             <Route path="/credits" element={<ProtectedRoute><Credits /></ProtectedRoute>} />
