@@ -37,11 +37,13 @@ export interface GameState {
   } | null;
   playerClass: ClassName;
   opponentClass: ClassName;
-  playerDiceRolls: number; // Accumulated dice rolls for Fateweaver
-  carryOverCards: Card[]; // Cards carried over from previous round
-  pendingRoundSkip: number; // Chronokeeper round skip
-  logs: string[]; // Game event logs
-  mimicCounter: { p1: number; p2: number }; // Mimic vs Mimic knife counter
+  playerDiceRolls: number;
+  carryOverCards: Card[];
+  pendingRoundSkip: number;
+  logs: string[];
+  mimicCounter: { p1: number; p2: number };
+  winner?: "p1" | "p2" | "draw" | null;
+  winReason?: string;
 }
 
 // Generate bot deck based on class
