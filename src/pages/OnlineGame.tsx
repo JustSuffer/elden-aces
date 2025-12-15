@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -15,6 +15,50 @@ interface Match {
   player1_deck: SavedDeck;
   player2_deck: SavedDeck;
   status: string;
+}
+
+// Basic Error Boundary for catching render crashes
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean; error: any }> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: any) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: any, errorInfo: any) {
+    console.error("GameMatch Error:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/90 z-50 p-8 text-center text-white">
+           <div className="text-red-500 text-4xl mb-4 font-bold">⚠️ Kritik Hata</div>
+           <p className="text-lg mb-2">Oyun yüklenirken bir sorun oluştu.</p>
+           <pre className="text-red-300 bg-black/50 p-4 rounded text-xs text-left overflow-auto max-w-full">
+               {this.state.error?.toString()}
+           </pre>
+           <Button onClick={() => window.location.reload()} className="mt-8" variant="destructive">
+               Yenile
+           </Button>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+// Safe Wrapper
+const SafeGameMatch = (props: React.ComponentProps<typeof GameMatch>) => {
+    return (
+        <ErrorBoundary>
+            <GameMatch {...props} />
+        </ErrorBoundary>
+    )
 }
 
 const OnlineGame = () => {
@@ -75,7 +119,7 @@ const OnlineGame = () => {
   const playerDeck = isPlayer1 ? match.player1_deck : match.player2_deck;
   const opponentDeck = isPlayer1 ? match.player2_deck : match.player1_deck;
   const opponentClass = opponentDeck.mainClass as ClassName;
-
+  
   const [opponentMoves, setOpponentMoves] = useState<any[] | undefined>(undefined);
   const [currentRound, setCurrentRound] = useState(1);
 
@@ -95,19 +139,11 @@ const OnlineGame = () => {
           },
           (payload) => {
             const newMatch = payload.new as any;
-            // Check for opponent moves
             const isUserP1 = user?.id === newMatch.player1_id;
             const oppMoves = isUserP1 ? newMatch.player2_last_move : newMatch.player1_last_move;
-            const myMoves = isUserP1 ? newMatch.player1_last_move : newMatch.player2_last_move;
             
-            // Only trigger if opponent has moved for THIS round (we compare with our round or just assume?)
-            // We need to know which round these moves are for.
-            // Let's assume the moves object has { round: N, cards: [...] }
             if (oppMoves && oppMoves.round === currentRound) {
                 setOpponentMoves(oppMoves.cards);
-                
-                // If both ready, we might want to clean up DB?
-                // Or just client logic handles it.
             }
           }
         )
@@ -132,24 +168,15 @@ const OnlineGame = () => {
         .eq("id", match.id);
   };
   
-  // Also update round when GameMatch tells us? 
-  // GameMatch doesn't tell us round changed... useGameState handles it.
-  // We can infer round change if we successfully receive opponent moves?
   useEffect(() => {
       if (opponentMoves) {
-          // We received moves, so round will advance.
-          // Wait, syncOnlineRound triggers calculate -> nextRound.
-          // We need to increment local currentRound to listen for NEXT moves.
-          // Delay it slightly to match game logic.
           setTimeout(() => {
               setCurrentRound(prev => prev + 1);
-              setOpponentMoves(undefined); // Reset
-          }, 5000); // 5s for reveal/damage Phase
+              setOpponentMoves(undefined);
+          }, 5000);
       }
   }, [opponentMoves]);
 
-  // ... (Existing render)
-  // Pass props
   return (
     <div className="relative">
       <div className="absolute top-4 right-4 z-50 flex items-center gap-2 bg-card/80 backdrop-blur-sm px-3 py-1.5 rounded-full border border-primary/30">
@@ -158,8 +185,7 @@ const OnlineGame = () => {
       </div>
       
       {opponentDeck && opponentDeck.cards && opponentDeck.cards.length > 0 ? (
-          <GameMatch
-            key={`online-${matchId}`}
+          <SafeGameMatch
             playerDeck={playerDeck}
             opponentClass={opponentClass}
             opponentDeck={opponentDeck}
@@ -183,3 +209,4 @@ const OnlineGame = () => {
 };
 
 export default OnlineGame;
+
