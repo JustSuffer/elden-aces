@@ -118,12 +118,21 @@ export function useGameState(initParams?: GameInitParams) {
     const oClass = initParams?.opponentClass || "Slayer";
 
     // Use injected opponent deck for PvP or create bot deck
-    let opponentDeck = initParams?.opponentDeck && initParams.opponentDeck.length > 0
-        ? shuffleDeck([...initParams.opponentDeck])
-        : createBotDeck(oClass);
+    let opponentDeck: Card[];
+    if (initParams?.opponentDeck && initParams.opponentDeck.length > 0) {
+        // If Online, deck is already randomized/fixed in DB. Do NOT shuffle again locally.
+        if (initParams.isOnline) {
+            opponentDeck = [...initParams.opponentDeck];
+        } else {
+            opponentDeck = shuffleDeck([...initParams.opponentDeck]);
+        }
+    } else {
+        opponentDeck = createBotDeck(oClass);
+    }
     
     if (oClass === "Mimic" && !initParams?.opponentDeck) {
         // Bot Mimic: Add 6 Extra Mimic Cards
+        // ... (existing bot logic is fine as it's active only if !opponentDeck)
         const mimicClassData = MASTER_CLASSES["Mimic"];
         const extraMimicCards: Card[] = [];
         for (let i = 1; i <= 6; i++) {
@@ -144,6 +153,7 @@ export function useGameState(initParams?: GameInitParams) {
 
     if (pClass === "Mimic") {
         // Mimic Logic: Copy Opponent's entire deck
+        // ...
         const mimicClassData = MASTER_CLASSES["Mimic"];
         const mimicCards: Card[] = [];
         for (let i = 1; i <= 6; i++) {
@@ -163,12 +173,25 @@ export function useGameState(initParams?: GameInitParams) {
             id: `mimicked-${c.id}-${Date.now()}`
         }));
         
+        // If online, don't shuffle mimic either to keep consistency? 
+        // Actually Mimic shuffles combined deck.
+        // For online Mimic, this might still be tricky. Assuming current user is P1 Mimic.
+        // P1 shuffles locally. P2 sees P1 as Mimic. P2 creates P1's deck.
+        // If P1 shuffles, P2 doesn't know the order.
+        // TODO: Ideally P1 deck order should also be saved in DB. 
+        // For now, let's just fix the main shuffling.
         playerDeck = shuffleDeck([...opponentClones, ...mimicCards]);
     } else {
         const inputCards = initParams?.playerDeck.cards;
-        playerDeck = inputCards && inputCards.length > 0
-          ? shuffleDeck([...inputCards])
-          : createBotDeck(pClass);
+        if (inputCards && inputCards.length > 0) {
+            if (initParams?.isOnline) {
+                playerDeck = [...inputCards];
+            } else {
+                playerDeck = shuffleDeck([...inputCards]);
+            }
+        } else {
+            playerDeck = createBotDeck(pClass);
+        }
     }
     
     // Deal cards for round 1

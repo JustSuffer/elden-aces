@@ -168,14 +168,13 @@ const OnlineGame = () => {
         .eq("id", match.id);
   };
   
-  useEffect(() => {
-      if (opponentMoves) {
-          setTimeout(() => {
-              setCurrentRound(prev => prev + 1);
-              setOpponentMoves(undefined);
-          }, 5000);
+  const handleRoundChange = (newRound: number) => {
+      // Only update if advancing
+      if (newRound > currentRound) {
+          setCurrentRound(newRound);
+          setOpponentMoves(undefined);
       }
-  }, [opponentMoves]);
+  };
 
   return (
     <div className="relative">
@@ -191,6 +190,7 @@ const OnlineGame = () => {
             opponentDeck={opponentDeck}
             opponentMoves={opponentMoves}
             onMovesReady={handleMovesReady}
+            onRoundChange={handleRoundChange}
           />
       ) : (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm z-40">

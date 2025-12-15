@@ -31,9 +31,10 @@ interface GameMatchProps {
   opponentDeck?: SavedDeck;
   opponentMoves?: (Card | null)[];
   onMovesReady?: (moves: (Card | null)[]) => void;
+  onRoundChange?: (newRound: number) => void;
 }
 
-export const GameMatch = ({ playerDeck, opponentClass, opponentDeck, opponentMoves, onMovesReady }: GameMatchProps) => {
+export const GameMatch = ({ playerDeck, opponentClass, opponentDeck, opponentMoves, onMovesReady, onRoundChange }: GameMatchProps) => {
   const navigate = useNavigate();
   const { t } = useLanguage();
   const [vfxEffects, setVfxEffects] = useState<VfxEffect[]>([]);
@@ -60,6 +61,13 @@ export const GameMatch = ({ playerDeck, opponentClass, opponentDeck, opponentMov
       opponentDeck: opponentDeck?.cards, // Pass to hook
       isOnline: !!opponentDeck
   });
+
+  // Notify parent of round change
+  useEffect(() => {
+    if (onRoundChange) {
+        onRoundChange(gameState.round);
+    }
+  }, [gameState.round, onRoundChange]);
 
   // Online Sync Effect
   useEffect(() => {
