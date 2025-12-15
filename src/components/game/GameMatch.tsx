@@ -212,7 +212,7 @@ export const GameMatch = ({ playerDeck, opponentClass, opponentDeck, opponentMov
 
   // Auto-close Decay animation
   useEffect(() => {
-    if (showWinConAnimation && (winConAnimationType === "decay_death" || winConAnimationType === "decay_victory")) {
+    if (showWinConAnimation && (winConAnimationType === "decay_death" || winConAnimationType === "decay_victory" || winConAnimationType === "decay")) {
         const timer = setTimeout(() => {
             setShowWinConAnimation(false);
         }, 2500); 
