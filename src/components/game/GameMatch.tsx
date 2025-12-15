@@ -827,7 +827,7 @@ export const GameMatch = ({ playerDeck, opponentClass, opponentDeck, opponentMov
         )}
 
         <VictoryPopup
-          open={gameState.phase === "end" && !showWinConAnimation}
+          open={(gameState.phase === "end" || !!gameState.winner) && !showWinConAnimation}
           isVictory={gameState.winner === "p1"}
           playerHP={gameState.playerHP}
           opponentHP={gameState.opponentHP}
