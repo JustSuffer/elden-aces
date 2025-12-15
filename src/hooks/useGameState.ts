@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Card, ClassName, PlayerState } from "../types/game";
 import { SavedDeck } from "../types/deck";
 import { MASTER_CLASSES, SPECIAL_CARDS_DATA, shuffleDeck } from "../data/gameData";
@@ -44,6 +44,7 @@ export interface GameState {
   mimicCounter: { p1: number; p2: number };
   winner?: "p1" | "p2" | "draw" | null;
   winReason?: string;
+  timeLeft: number; // 60s Timer
 }
 
 // Generate bot deck based on class
@@ -105,6 +106,7 @@ function createBotDeck(className: ClassName): Card[] {
 interface GameInitParams {
   playerDeck: SavedDeck;
   opponentClass: ClassName;
+  opponentDeck?: Card[]; // Added for Online Play
 }
 
 export function useGameState(initParams?: GameInitParams) {
@@ -112,11 +114,12 @@ export function useGameState(initParams?: GameInitParams) {
     const pClass = initParams?.playerDeck.mainClass || "Vitalist";
     const oClass = initParams?.opponentClass || "Slayer";
 
-    // Use player's saved deck or create default
+    // Use injected opponent deck for PvP or create bot deck
+    let opponentDeck = initParams?.opponentDeck && initParams.opponentDeck.length > 0
+        ? shuffleDeck([...initParams.opponentDeck])
+        : createBotDeck(oClass);
     
-    let opponentDeck = createBotDeck(oClass);
-    
-    if (oClass === "Mimic") {
+    if (oClass === "Mimic" && !initParams?.opponentDeck) {
         // Bot Mimic: Add 6 Extra Mimic Cards (mimicking the behavior of copying + own class)
         // Total 36 Cards
         const mimicClassData = MASTER_CLASSES["Mimic"];
@@ -199,8 +202,11 @@ export function useGameState(initParams?: GameInitParams) {
       pendingRoundSkip: 0,
       logs: [],
       mimicCounter: { p1: 0, p2: 0 },
+      timeLeft: 60,
     };
   });
+
+
 
   const placeCard = useCallback((cardIndex: number, fieldIndex: number) => {
     setGameState((prev) => {
@@ -315,6 +321,31 @@ export function useGameState(initParams?: GameInitParams) {
       };
     });
   }, []);
+
+  // Timer Logic
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (gameState.phase === "placement" && gameState.timeLeft > 0) {
+      timer = setInterval(() => {
+        setGameState(prev => {
+            if (prev.phase !== "placement" || prev.timeLeft <= 0) return prev;
+            
+            if (prev.timeLeft === 1) {
+                return { ...prev, timeLeft: 0 };
+            }
+            return { ...prev, timeLeft: prev.timeLeft - 1 };
+        });
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [gameState.phase, gameState.timeLeft]);
+
+  // Trigger End Placement on Timeout
+  useEffect(() => {
+     if (gameState.phase === "placement" && gameState.timeLeft === 0) {
+         endPlacement(); 
+     }
+  }, [gameState.timeLeft, gameState.phase, endPlacement]);
 
   const rollDice = useCallback(() => {
     // Check if Fateweaver and dice available
@@ -844,6 +875,7 @@ export function useGameState(initParams?: GameInitParams) {
         playerMust4Cards: false,
         opponentMust4Cards: false,
         playerDiceRolls: prev.playerClass === "Fateweaver" ? prev.playerDiceRolls : 0,
+        timeLeft: 60,
       };
     });
   }, []);

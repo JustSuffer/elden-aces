@@ -88,6 +88,7 @@ const OnlineGame = () => {
         key={`online-${matchId}`}
         playerDeck={playerDeck}
         opponentClass={opponentClass}
+        opponentDeck={opponentDeck} // Pass real opponent deck
       />
     </div>
   );

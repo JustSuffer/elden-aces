@@ -27,9 +27,10 @@ import { useLanguage } from "@/hooks/useLanguage";
 interface GameMatchProps {
   playerDeck: SavedDeck;
   opponentClass: ClassName;
+  opponentDeck?: SavedDeck; // Added
 }
 
-export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
+export const GameMatch = ({ playerDeck, opponentClass, opponentDeck }: GameMatchProps) => {
   const navigate = useNavigate();
   const { t } = useLanguage();
   const [vfxEffects, setVfxEffects] = useState<VfxEffect[]>([]);
@@ -49,7 +50,11 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
     calculateRoundDamage,
     nextRound,
     handleCardSelection
-  } = useGameState({ playerDeck, opponentClass });
+  } = useGameState({
+      playerDeck,
+      opponentClass,
+      opponentDeck: opponentDeck?.cards // Pass to hook
+  });
 
   useEffect(() => {
     AudioManager.init();
@@ -232,7 +237,12 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
       } else if (gameState.playerClass === "Augmentor" && gameState.winner === "p1") {
         type = "augmentor";
       } else if (gameState.playerClass === "Decay" && gameState.winner === "p1") {
-        type = "decay";
+         setWinConAnimationType("decay");
+         setShowWinConAnimation(true);
+      } else if (gameState.playerClass === "Decay" && gameState.winner !== "p1" && gameState.winner !== null) {
+          // Decay Lose (Death)
+          setWinConAnimationType("decay_death");
+          setShowWinConAnimation(true);
       } else if (gameState.winReason === "VESSEL_WIN") {
         type = "vessel";
         duration = 2000;
@@ -329,10 +339,19 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
                 {gameState.phase === "reveal" && t("game.phase.reveal")}
                 {gameState.phase === "damage" && t("game.phase.damage")}
                 {gameState.phase === "end" && (
-                  gameState.playerHP > gameState.opponentHP ? t("game.phase.victory") :
-                    gameState.playerHP < gameState.opponentHP ? t("game.phase.defeat") : t("game.phase.draw")
+                  gameState.playerHP > gameState.opponentHP ? "Zafer!" :
+                    gameState.playerHP < gameState.opponentHP ? "Yenilgi!" : "Berabere!"
                 )}
               </p>
+              
+              {/* Turn Timer Display */}
+              {gameState.phase === "placement" && (
+                  <div className={`mt-2 flex items-center justify-center gap-2 font-mono text-xl ${gameState.timeLeft <= 10 ? 'text-red-500 animate-pulse' : 'text-primary'}`}>
+                      <Hourglass className="w-5 h-5" />
+                      <span>{gameState.timeLeft}s</span>
+                  </div>
+              )}
+
               <p className="text-sm text-muted-foreground mt-1">
                 {t("game.hand", { count: gameState.playerHand.length })}
               </p>
@@ -611,6 +630,13 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
             <p className="text-2xl text-red-500/80 mt-4 font-bold tracking-[0.2em] animate-in fade-in delay-500 duration-1000">
               {winConAnimationType === "decay_death" ? t("game.anim.penalty") : t("game.anim.victoryBurned")}
             </p>
+            <Button 
+                  onClick={() => navigate("/")}
+                  variant="destructive"
+                  className="mt-12 px-8 py-4 text-xl rounded-none border border-current shadow-[0_0_20px_rgba(0,0,0,0.5)] animate-in fade-in delay-1000 duration-1000 z-[70]"
+               >
+                  Menüye Dön
+               </Button>
           </div>
         )}
 

@@ -56,18 +56,78 @@ const Play = () => {
     }
   }, []);
 
-  // Search timer
+  // Search timer and Polling
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (matchmakingStatus === "searching") {
-      interval = setInterval(() => {
+      interval = setInterval(async () => {
         setSearchTime((prev) => prev + 1);
+        
+        // Polling Strategy: Check if we are matched manually every 3 seconds
+        // This solves race conditions where Realtime subscription might miss an event
+        if (queueEntryId) {
+             const { data, error } = await supabase
+                .from("matchmaking_queue" as any)
+                .select("*")
+                .eq("id", queueEntryId)
+                .single() as { data: QueueEntry | null; error: any };
+            
+             if (data && data.status === 'matched' && data.matched_with && data.match_id) {
+                 handleMatchFound(data.matched_with, data.match_id);
+             } else if (data && data.status === 'searching') {
+                 // Retry matching logic? 
+                 // It's safer to just check "Is there anyone else searching?"
+                 tryMatchmaking();
+             }
+        }
       }, 1000);
     } else {
       setSearchTime(0);
     }
     return () => clearInterval(interval);
-  }, [matchmakingStatus]);
+  }, [matchmakingStatus, queueEntryId]);
+
+  // Helper to re-trigger matching attempt
+  const tryMatchmaking = async () => {
+      if (!user || !queueEntryId) return;
+
+      const { data: searchingPlayers } = await supabase
+        .from("matchmaking_queue" as any)
+        .select("*")
+        .eq("status", "searching")
+        .neq("user_id", user.id)
+        .order("created_at", { ascending: true })
+        .limit(1) as { data: QueueEntry[] | null };
+
+      if (searchingPlayers && searchingPlayers.length > 0) {
+          const opponent = searchingPlayers[0];
+          // Attempt to match
+          // Double check if we are still searching (race condition)
+          const { data: myEntry } = await supabase.from("matchmaking_queue" as any).select("status").eq("id", queueEntryId).single() as { data: { status: string } | null };
+          if (myEntry?.status !== 'searching') return;
+
+           // Create a match
+        const { data: match } = await supabase
+          .from("matches" as any)
+          .insert({
+            player1_id: opponent.user_id,
+            player2_id: user.id,
+            player1_deck: opponent.deck_data,
+            player2_deck: selectedDeck as unknown as Record<string, unknown>,
+            status: "active"
+          })
+          .select()
+          .single() as { data: { id: string } | null };
+
+        if (!match) return;
+
+        // Update entries
+        await supabase.from("matchmaking_queue" as any).update({ status: "matched", matched_with: queueEntryId, match_id: match.id }).eq("id", opponent.id);
+        await supabase.from("matchmaking_queue" as any).update({ status: "matched", matched_with: opponent.id, match_id: match.id }).eq("id", queueEntryId);
+        
+        handleMatchFound(opponent.id, match.id);
+      }
+  };
 
   // Real-time subscription for matchmaking
   useEffect(() => {
