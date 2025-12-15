@@ -672,11 +672,11 @@ export const GameMatch = ({ playerDeck, opponentClass, opponentDeck, opponentMov
             </p>
 
             <Button 
-                  onClick={() => navigate("/")}
+                  onClick={() => setShowWinConAnimation(false)}
                   variant="outline"
                   className="mt-16 px-12 py-6 text-xl bg-transparent border-zinc-800 text-zinc-500 hover:bg-zinc-900 hover:text-zinc-300 hover:border-zinc-500 transition-all duration-500 rounded-sm font-cinzel tracking-widest z-[70]"
                >
-                  MENÜYE DÖN
+                  DEVAM ET
                </Button>
           </div>
         )}
