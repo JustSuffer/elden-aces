@@ -511,11 +511,13 @@ export function useGameState(initParams?: GameInitParams) {
                   newOpponentHP = 0;
                   winner = "p1";
                   winReasonText = "DECAY_VICTORY";
+                  phase = "end";
               } else if (!result.sideEffects.p1NoDeath) {
                   logDetails.push("💀 DECAY CEZASI: Rakip Deste Bitmedi -> ÖLÜM.");
                   newPlayerHP = 0;
                   winner = "p2";
                   winReasonText = "DECAY_DEATH";
+                  phase = "end";
               }
           }
           if (isDecayP2) {

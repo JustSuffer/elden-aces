@@ -638,23 +638,45 @@ export const GameMatch = ({ playerDeck, opponentClass, opponentDeck, opponentMov
 
         {/* Decay Death Animation (Opponent Deck Not Empty) */}
         {showWinConAnimation && (winConAnimationType === "decay_death" || winConAnimationType === "decay_victory") && (
-          <div className="fixed inset-0 z-[60] bg-black/95 flex flex-col items-center justify-center animate-in fade-in duration-1000">
-            <div className="relative animate-pulse">
-              <Skull className="w-64 h-64 text-zinc-600 animate-bounce duration-[3s]" strokeWidth={1} />
-              <Flame className="absolute bottom-0 left-1/2 -translate-x-1/2 w-48 h-48 text-orange-600/80 animate-pulse mix-blend-screen" />
+          <div className="fixed inset-0 z-[60] bg-zinc-950 flex flex-col items-center justify-center animate-in fade-in duration-1000">
+            {/* Ash Particles Background */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                {Array.from({ length: 50 }).map((_, i) => (
+                    <div key={i} 
+                         className="absolute bg-zinc-600 rounded-full opacity-40 animate-[spin_10s_linear_infinite]"
+                         style={{
+                             left: `${Math.random() * 100}%`,
+                             top: `${Math.random() * 100}%`,
+                             width: `${Math.random() * 4 + 2}px`,
+                             height: `${Math.random() * 4 + 2}px`,
+                             animationDuration: `${Math.random() * 5 + 5}s`,
+                             animationDelay: `${Math.random() * 2}s`
+                         }} 
+                    />
+                ))}
             </div>
-            <h1 className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-b from-stone-500 to-stone-800 mt-8 font-cinzel animate-in slide-in-from-top duration-1000">
-              {winConAnimationType === "decay_death" ? t("game.anim.ashDeath") : t("game.anim.bornFromAsh")}
+
+            <div className="relative z-10">
+              <div className="relative">
+                  <Skull className="w-72 h-72 text-zinc-800 animate-pulse drop-shadow-[0_0_25px_rgba(0,0,0,1)]" strokeWidth={1} />
+                  <Flame className="absolute bottom-0 left-1/2 -translate-x-1/2 w-56 h-56 text-orange-900/40 mix-blend-overlay blur-sm animate-pulse" />
+              </div>
+            </div>
+            
+            <h1 className="text-7xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-t from-zinc-900 via-zinc-500 to-zinc-200 mt-8 font-cinzel animate-in zoom-in-50 duration-1000 drop-shadow-[0_5px_5px_rgba(0,0,0,0.8)] tracking-widest uppercase">
+              {winConAnimationType === "decay_death" ? "KÜLE DÖNÜŞTÜN" : t("game.anim.bornFromAsh")}
             </h1>
-            <p className="text-2xl text-red-500/80 mt-4 font-bold tracking-[0.2em] animate-in fade-in delay-500 duration-1000">
-              {winConAnimationType === "decay_death" ? t("game.anim.penalty") : t("game.anim.victoryBurned")}
+            
+            <p className="text-2xl md:text-3xl text-red-900/80 mt-6 font-serif italic tracking-[0.2em] animate-in fade-in delay-500 duration-1000 border-t border-b border-red-900/30 py-2">
+              {winConAnimationType === "decay_death" ? "Rakip Deste Bitmedi. Bedel Ödendi." : t("game.anim.victoryBurned")}
             </p>
+
             <Button 
                   onClick={() => navigate("/")}
-                  variant="destructive"
-                  className="mt-12 px-8 py-4 text-xl rounded-none border border-current shadow-[0_0_20px_rgba(0,0,0,0.5)] animate-in fade-in delay-1000 duration-1000 z-[70]"
+                  variant="outline"
+                  className="mt-16 px-12 py-6 text-xl bg-transparent border-zinc-800 text-zinc-500 hover:bg-zinc-900 hover:text-zinc-300 hover:border-zinc-500 transition-all duration-500 rounded-sm font-cinzel tracking-widest z-[70]"
                >
-                  Menüye Dön
+                  MENÜYE DÖN
                </Button>
           </div>
         )}
