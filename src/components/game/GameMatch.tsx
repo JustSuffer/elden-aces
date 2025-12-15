@@ -212,13 +212,38 @@ export const GameMatch = ({ playerDeck, opponentClass, opponentDeck, opponentMov
 
   // Auto-close Decay animation
   useEffect(() => {
-    if (showWinConAnimation && (winConAnimationType === "decay_death" || winConAnimationType === "decay_victory" || winConAnimationType === "decay" || winConAnimationType === "oracle" || winConAnimationType === "mimic" || winConAnimationType === "cryomancer")) {
+    if (showWinConAnimation && (winConAnimationType === "decay_death" || winConAnimationType === "decay_victory" || winConAnimationType === "decay")) {
         const timer = setTimeout(() => {
             setShowWinConAnimation(false);
         }, 2500); 
         return () => clearTimeout(timer);
     }
   }, [showWinConAnimation, winConAnimationType]);
+
+  // Handle Timeout -> Auto-Calculate Damage
+  useEffect(() => {
+    // If timer ran out (0) and we are in Placement, AUTOMATICALLY FINISH THE TURN.
+    // This replaces the manual "Finish Placement" click.
+    if (gameState.timeLeft === 0 && gameState.phase === "placement") {
+         
+         // 1. Change Phase to Reveal (or Waiting)
+         endPlacement();
+
+         // 2. Play Sound & Visuals
+         AudioManager.play("card-flip", 0.7);
+
+         gameState.playerField.forEach((card, index) => {
+            if (card?.specialType === "gamma") addVfx("gamma", index);
+            else if (card?.specialType === "twisted") addVfx("twisted", index);
+         });
+
+         // 3. Trigger Damage Calculation after Animation Delay
+         setTimeout(() => {
+             calculateRoundDamage();
+             AudioManager.play("damage-dealt", 0.9);
+         }, 1500);
+    }
+  }, [gameState.timeLeft, gameState.phase, endPlacement, calculateRoundDamage, gameState.playerField]);
 
   const handleNextRound = () => {
     const maxRounds = gameState.maxRounds || 7;
@@ -263,7 +288,7 @@ export const GameMatch = ({ playerDeck, opponentClass, opponentDeck, opponentMov
 
       if (gameState.playerClass === "Fateweaver" && details.some(l => l.includes("KADERİN GÖZÜ"))) {
         type = "fateweaver";
-      } else if (gameState.playerClass === "Chronokeeper" && (details.some(l => l.includes("Chronokeeper zamanın efendisi")) || gameState.winReason === "CHRONO_WIN")) {
+      } else if (gameState.playerClass === "Chronokeeper" && gameState.winner === "p1") {
         type = "chronokeeper";
       } else if (gameState.playerClass === "Cryomancer" && gameState.winner === "p1") {
         type = "cryomancer";
@@ -273,6 +298,10 @@ export const GameMatch = ({ playerDeck, opponentClass, opponentDeck, opponentMov
         type = "mimic";
       } else if (gameState.playerClass === "Augmentor" && gameState.winner === "p1") {
         type = "augmentor";
+      } else if (gameState.playerClass === "Vitalist" && gameState.winner === "p1") {
+        type = "vitalist";
+      } else if (gameState.playerClass === "Slayer" && gameState.winner === "p1") {
+        type = "slayer";
       } else if (gameState.playerClass === "Decay" && gameState.winner === "p1") {
          setWinConAnimationType("decay");
          setShowWinConAnimation(true);
@@ -456,24 +485,7 @@ export const GameMatch = ({ playerDeck, opponentClass, opponentDeck, opponentMov
             {gameState.phase === "end" && (
               <div className="flex flex-col items-center gap-4 z-50">
                 {/* Visual Victory Effects */}
-                {gameState.winner === "p1" && gameState.playerClass === "Vitalist" && (
-                  <div className="absolute inset-0 pointer-events-none overflow-hidden flex flex-col items-center justify-center">
-                    {Array.from({ length: 30 }).map((_, i) => (
-                      <div key={i}
-                        className="absolute text-5xl opacity-0 animate-[ping_3s_ease-in-out_infinite]"
-                        style={{
-                          left: `${Math.random() * 100}%`,
-                          top: `${Math.random() * 100}%`,
-                          animationDelay: `${Math.random() * 2}s`,
-                          color: "#22c55e"
-                        }}
-                      >
-                        🍃
-                      </div>
-                    ))}
-                    <div className="text-6xl font-bold text-green-500 animate-bounce mt-20 drop-shadow-[0_0_20px_rgba(34,197,94,0.8)]">🌿 {t("game.anim.natureVictory")} 🌿</div>
-                  </div>
-                )}
+
 
                 {gameState.winner === "p1" && gameState.playerClass === "Decay" && (
                   <div className="absolute inset-0 pointer-events-none overflow-hidden flex flex-col items-center justify-center bg-orange-900/10">
@@ -496,29 +508,7 @@ export const GameMatch = ({ playerDeck, opponentClass, opponentDeck, opponentMov
                   </div>
                 )}
 
-                {gameState.winner === "p1" && gameState.playerClass === "Slayer" && (
-                  <div className="absolute inset-0 pointer-events-none overflow-hidden flex flex-col items-center justify-center bg-red-950/30">
-                    {Array.from({ length: 40 }).map((_, i) => (
-                      <div key={i}
-                        className="absolute text-5xl opacity-80 animate-[ping_4s_ease-in-out_infinite]"
-                        style={{
-                          left: `${Math.random() * 100}%`,
-                          top: `${Math.random() * 100}%`,
-                          animationDelay: `${Math.random() * 2}s`,
-                          color: "#ef4444",
-                          transform: `scale(${Math.random() + 0.5})`
-                        }}
-                      >
-                        🩸
-                      </div>
-                    ))}
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_#450a0a_100%)] opacity-60 animate-pulse"></div>
-                    <div className="text-7xl font-cinzel font-black text-red-600 animate-bounce mt-10 drop-shadow-[0_0_50px_rgba(220,38,38,1)] z-50 tracking-widest uppercase">
-                      🩸 {t("game.anim.massacre")} 🩸
-                    </div>
-                    <div className="text-2xl text-red-400 font-bold mt-4 animate-pulse">{t("game.anim.oneHit")}</div>
-                  </div>
-                )}
+
 
                 <Button variant="default" size="lg" onClick={() => navigate("/")} className="gap-2 relative z-50 mt-10">
                   {t("game.action.menu")}
@@ -905,6 +895,67 @@ export const GameMatch = ({ playerDeck, opponentClass, opponentDeck, opponentMov
              </p>
            </div>
         )}
+
+        {/* Vitalist Win Animation */}
+        {showWinConAnimation && winConAnimationType === "vitalist" && (
+            <div className="fixed inset-0 z-50 bg-green-950/90 flex flex-col items-center justify-center animate-in fade-in duration-1000">
+                <div className="absolute inset-0 overflow-hidden opacity-40">
+                {Array.from({ length: 30 }).map((_, i) => (
+                    <div key={i}
+                    className="absolute text-5xl animate-[ping_3s_ease-in-out_infinite]"
+                    style={{
+                        left: `${Math.random() * 100}%`,
+                        top: `${Math.random() * 100}%`,
+                        animationDelay: `${Math.random() * 2}s`,
+                        color: "#4ade80",
+                        opacity: Math.random() * 0.5 + 0.2
+                    }}
+                    >
+                    🍃
+                    </div>
+                ))}
+                </div>
+                <div className="relative z-10 animate-bounce duration-[3s]">
+                    <div className="text-[150px] drop-shadow-[0_0_50px_rgba(34,197,94,0.8)] filter blur-[1px]">🌿</div>
+                </div>
+                <h1 className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 via-emerald-300 to-green-500 mt-8 font-cinzel animate-in slide-in-from-bottom duration-1000 relative z-10 drop-shadow-lg">
+                   {t("game.anim.natureVictory")}
+                </h1>
+            </div>
+        )}
+
+        {/* Slayer Win Animation */}
+         {showWinConAnimation && winConAnimationType === "slayer" && (
+            <div className="fixed inset-0 z-50 bg-red-950/90 flex flex-col items-center justify-center animate-in fade-in duration-1000">
+                <div className="absolute inset-0 overflow-hidden opacity-40">
+                {Array.from({ length: 40 }).map((_, i) => (
+                    <div key={i}
+                    className="absolute text-5xl animate-[ping_4s_ease-in-out_infinite]"
+                    style={{
+                        left: `${Math.random() * 100}%`,
+                        top: `${Math.random() * 100}%`,
+                        animationDelay: `${Math.random() * 2}s`,
+                        color: "#ef4444",
+                        transform: `scale(${Math.random() + 0.5})`,
+                        opacity: Math.random() * 0.5 + 0.2
+                    }}
+                    >
+                    🩸
+                    </div>
+                ))}
+                </div>
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_#450a0a_100%)] opacity-30 animate-pulse"></div>
+                <div className="relative z-10 animate-bounce duration-[2s]">
+                     <div className="text-[150px] drop-shadow-[0_0_50px_rgba(220,38,38,0.8)] filter blur-[1px]">⚔️</div>
+                </div>
+                <h1 className="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-red-400 to-orange-500 mt-8 font-cinzel animate-in slide-in-from-bottom duration-1000 relative z-10 drop-shadow-lg uppercase">
+                    {t("game.anim.massacre")}
+                </h1>
+                <p className="text-2xl text-red-200/90 mt-4 tracking-[0.5em] animate-in fade-in delay-500 duration-1000 relative z-10 font-bold uppercase">
+                     {t("game.anim.oneHit")}
+                </p>
+            </div>
+         )}
 
         <VictoryPopup
           open={(gameState.phase === "end" || !!gameState.winner) && !showWinConAnimation}

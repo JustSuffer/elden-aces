@@ -225,7 +225,7 @@ export function useGameState(initParams?: GameInitParams) {
       pendingRoundSkip: 0,
       logs: [],
       mimicCounter: { p1: 0, p2: 0 },
-      timeLeft: 60,
+      timeLeft: 45,
       isOnline: !!initParams?.isOnline,
     };
   });
@@ -396,6 +396,14 @@ export function useGameState(initParams?: GameInitParams) {
               logDetails.push("🧜‍♀️ LANET: Rakip Siren 6. Turda 5 Hasar yedi!");
           }
       }
+
+      // Determine winner based on HP if not already set
+      if (!winner && (newPlayerHP <= 0 || newOpponentHP <= 0)) {
+          if (newPlayerHP <= 0 && newOpponentHP <= 0) winner = "draw";
+          else if (newPlayerHP <= 0) winner = "p2";
+          else if (newOpponentHP <= 0) winner = "p1";
+      }
+
 
       // Side Effects
       let p1Deck = [...prev.playerDeck];
@@ -662,7 +670,7 @@ export function useGameState(initParams?: GameInitParams) {
         opponentHP: newOpponentHP,
         phase,
         logs: [...(prev.logs || []), ...logDetails],
-        winner: specialWinner || (p1InstantWin ? "p1" : (p2InstantWin ? "p2" : (newPlayerHP <= 0 ? "p2" : (newOpponentHP <= 0 ? "p1" : winner)))),
+        winner: (winReasonText === "ORACLE_WIN" || prev.winReason === "ORACLE_WIN") ? "p1" : (specialWinner || (p1InstantWin ? "p1" : (p2InstantWin ? "p2" : (newPlayerHP <= 0 ? "p2" : (newOpponentHP <= 0 ? "p1" : winner))))),
         winReason: winReasonText || prev.winReason,
         playerDeck: p1Deck,
         opponentDeck: p2Deck,
@@ -711,14 +719,8 @@ export function useGameState(initParams?: GameInitParams) {
       }, 1000);
     }
     return () => clearInterval(timer);
-  }, [gameState.phase, gameState.timeLeft]);
+  }, [gameState.phase, gameState.timeLeft, endPlacement]);
 
-  // Trigger End Placement on Timeout
-  useEffect(() => {
-     if (gameState.phase === "placement" && gameState.timeLeft === 0) {
-         endPlacement(); 
-     }
-  }, [gameState.timeLeft, gameState.phase, endPlacement]);
 
   const nextRound = useCallback(() => {
     setGameState((prev) => {
@@ -727,22 +729,24 @@ export function useGameState(initParams?: GameInitParams) {
       }
 
       const isVesselP1 = prev.playerClass === "Vessel";
+      const p1HandCap = prev.playerClass === "Oracle" ? 8 : 6;
       const currentNormalCards = prev.playerHand.filter(c => {
          if (c.isStolen) return false;
          if (c.isCopied) return false;
          if (isVesselP1 && ["sigma", "delta", "gamma"].includes(c.specialType || "")) return false;
          return true;
       }).length;
-      const cardsNeeded = Math.max(0, 6 - currentNormalCards);
+      const cardsNeeded = Math.max(0, p1HandCap - currentNormalCards);
       
       const isVesselP2 = prev.opponentClass === "Vessel";
+      const p2HandCap = prev.opponentClass === "Oracle" ? 8 : 6;
       const botNormalCards = prev.opponentHand.filter(c => {
          if (c.isStolen) return false;
          if (c.isCopied) return false;
          if (isVesselP2 && ["sigma", "delta", "gamma"].includes(c.specialType || "")) return false;
          return true;
       }).length;
-      const botCardsNeeded = Math.max(0, 6 - botNormalCards);
+      const botCardsNeeded = Math.max(0, p2HandCap - botNormalCards);
       
       const { dealt: playerCards, remaining: playerRemaining } = localDealCards(prev.playerDeck, cardsNeeded);
       const { dealt: opponentCards, remaining: opponentRemaining } = localDealCards(prev.opponentDeck, botCardsNeeded);
@@ -762,7 +766,7 @@ export function useGameState(initParams?: GameInitParams) {
         playerMust4Cards: false,
         opponentMust4Cards: false,
         playerDiceRolls: prev.playerClass === "Fateweaver" ? prev.playerDiceRolls : 0,
-        timeLeft: 60,
+        timeLeft: 45,
       };
     });
   }, []);
