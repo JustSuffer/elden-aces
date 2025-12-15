@@ -71,6 +71,9 @@ export function DiceRollPopup({ open, onClose, onAcknowledge, onCancel, result, 
 
   // Determine localized effect based on result range
   const getLocalizedEffect = (res: number) => {
+    // If an explicit effect description is passed (e.g. from backend/Fateweaver logic), use it.
+    if (effect) return effect;
+
     if (res >= 1 && res <= 5) return t("howToPlay.dice.1_5");
     if (res >= 6 && res <= 10) return t("howToPlay.dice.6_10");
     if (res >= 11 && res <= 15) return t("howToPlay.dice.11_15");

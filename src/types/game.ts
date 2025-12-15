@@ -26,6 +26,7 @@ export interface Card {
   originalOwner?: string; // For Siren/Mimic tracking
   isStolen?: boolean; // For Siren visual effect
   isFrozen?: boolean;
+  isCopied?: boolean;
   isBuffed?: boolean; // For Augmentor buff visual
   color?: string;
 }

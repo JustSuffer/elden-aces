@@ -336,6 +336,9 @@ export function useGameState(initParams?: GameInitParams) {
 
       let newPlayerHP = prev.playerHP;
       let newOpponentHP = prev.opponentHP;
+      
+      let winner: "p1" | "p2" | "draw" | undefined = undefined;
+      let winReasonText: string | undefined = undefined;
 
       newPlayerHP += result.abilityResults.p1.hpChange;
       newOpponentHP += result.abilityResults.p2.hpChange;
@@ -425,6 +428,9 @@ export function useGameState(initParams?: GameInitParams) {
           if (p1Deck.length === 0 && prev.playerClass === "Oracle") {
              logDetails.push("🔮 KEHANET GERÇEKLEŞTİ: Deste bitti! ORACLE KAZANDI!");
              newOpponentHP = 0;
+             winner = "p1";
+             winReasonText = "ORACLE_WIN";
+             phase = "end";
           }
       }
 
@@ -438,6 +444,9 @@ export function useGameState(initParams?: GameInitParams) {
           if (p2Deck.length === 0 && prev.opponentClass === "Oracle") {
               logDetails.push("🔮 RAKİP KEHANETİ TAMAMLADI: Oracle Kazandı!");
               newPlayerHP = 0;
+              winner = "p2";
+              winReasonText = "ORACLE_WIN";
+              phase = "end";
           }
       }
 
@@ -496,8 +505,7 @@ export function useGameState(initParams?: GameInitParams) {
           logDetails.push(`🌌 Rakip Vessel Kozmik Gücü: ${result.sideEffects.p2CardsAdded.length} kart elde etti!`);
       }
 
-      let winner = undefined;
-      let winReasonText: string | undefined = undefined;
+
       
       if (prev.round >= 7) {
           if (prev.playerClass === "Vitalist" && newPlayerHP > 0) {
@@ -598,6 +606,49 @@ export function useGameState(initParams?: GameInitParams) {
       const newMimicP1 = (prev.mimicCounter?.p1 || 0) + p1MimicAdded;
       const newMimicP2 = (prev.mimicCounter?.p2 || 0) + p2MimicAdded;
 
+      // Mimic Copy Logic
+      if (prev.playerClass === "Mimic" && p1MimicAdded >= 2) {
+          const copyCount = p1MimicAdded - 1; // 2->1, 3->2, 4->3, 5->4
+          if (copyCount > 0 && p2Deck.length > 0) {
+              const available = [...p2Deck];
+              const copied: Card[] = [];
+              for (let i = 0; i < copyCount; i++) {
+                  if (available.length === 0) break;
+                  const idx = Math.floor(Math.random() * available.length);
+                  const card = available.splice(idx, 1)[0];
+                  copied.push({
+                      ...card,
+                      id: `copied-${card.id}-${Date.now()}-${i}`,
+                      isCopied: true, // Mark as copied
+                      isStolen: false // Distinct from stolen
+                  });
+              }
+              p1Hand.push(...copied);
+              logDetails.push(`🎭 Mimic (P1): ${copied.length} kart kopyaladı!`);
+          }
+      }
+
+       if (prev.opponentClass === "Mimic" && p2MimicAdded >= 2) {
+          const copyCount = p2MimicAdded - 1;
+          if (copyCount > 0 && p1Deck.length > 0) {
+              const available = [...p1Deck];
+              const copied: Card[] = [];
+              for (let i = 0; i < copyCount; i++) {
+                  if (available.length === 0) break;
+                  const idx = Math.floor(Math.random() * available.length);
+                  const card = available.splice(idx, 1)[0];
+                  copied.push({
+                      ...card,
+                      id: `copied-bot-${card.id}-${Date.now()}-${i}`,
+                      isCopied: true,
+                      isStolen: false
+                  });
+              }
+              p2Hand.push(...copied);
+              logDetails.push(`🎭 Rakip Mimic: ${copied.length} kart kopyaladı!`);
+          }
+      }
+
       let specialWinner = winner;
       if (prev.playerClass === "Mimic" && prev.opponentClass === "Mimic") {
           if (newMimicP1 >= 12 && newMimicP2 < 12) specialWinner = "p1";
@@ -678,6 +729,7 @@ export function useGameState(initParams?: GameInitParams) {
       const isVesselP1 = prev.playerClass === "Vessel";
       const currentNormalCards = prev.playerHand.filter(c => {
          if (c.isStolen) return false;
+         if (c.isCopied) return false;
          if (isVesselP1 && ["sigma", "delta", "gamma"].includes(c.specialType || "")) return false;
          return true;
       }).length;
@@ -686,6 +738,7 @@ export function useGameState(initParams?: GameInitParams) {
       const isVesselP2 = prev.opponentClass === "Vessel";
       const botNormalCards = prev.opponentHand.filter(c => {
          if (c.isStolen) return false;
+         if (c.isCopied) return false;
          if (isVesselP2 && ["sigma", "delta", "gamma"].includes(c.specialType || "")) return false;
          return true;
       }).length;

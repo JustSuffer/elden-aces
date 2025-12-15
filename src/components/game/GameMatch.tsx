@@ -212,7 +212,7 @@ export const GameMatch = ({ playerDeck, opponentClass, opponentDeck, opponentMov
 
   // Auto-close Decay animation
   useEffect(() => {
-    if (showWinConAnimation && (winConAnimationType === "decay_death" || winConAnimationType === "decay_victory" || winConAnimationType === "decay")) {
+    if (showWinConAnimation && (winConAnimationType === "decay_death" || winConAnimationType === "decay_victory" || winConAnimationType === "decay" || winConAnimationType === "oracle" || winConAnimationType === "mimic" || winConAnimationType === "cryomancer")) {
         const timer = setTimeout(() => {
             setShowWinConAnimation(false);
         }, 2500); 
@@ -265,11 +265,11 @@ export const GameMatch = ({ playerDeck, opponentClass, opponentDeck, opponentMov
         type = "fateweaver";
       } else if (gameState.playerClass === "Chronokeeper" && (details.some(l => l.includes("Chronokeeper zamanın efendisi")) || gameState.winReason === "CHRONO_WIN")) {
         type = "chronokeeper";
-      } else if (gameState.playerClass === "Cryomancer" && details.some(l => l.includes("kazanma koşulunu sağladı"))) {
+      } else if (gameState.playerClass === "Cryomancer" && gameState.winner === "p1") {
         type = "cryomancer";
       } else if (gameState.playerClass === "Siren" && details.some(l => l.includes("KADERİN KALBİNE"))) {
         type = "siren";
-      } else if (isMimicVsMimic && (gameState.mimicCounter.p1 >= 12 || gameState.mimicCounter.p2 >= 12)) {
+      } else if (gameState.playerClass === "Mimic" && (gameState.winner === "p1" || (isMimicVsMimic && gameState.mimicCounter.p1 >= 12))) {
         type = "mimic";
       } else if (gameState.playerClass === "Augmentor" && gameState.winner === "p1") {
         type = "augmentor";
@@ -283,6 +283,9 @@ export const GameMatch = ({ playerDeck, opponentClass, opponentDeck, opponentMov
       } else if (gameState.winReason === "VESSEL_WIN") {
         type = "vessel";
         duration = 2000;
+      } else if (gameState.winReason === "ORACLE_WIN") {
+        type = "oracle";
+        duration = 2500;
       }
 
       if (type) {
@@ -641,14 +644,30 @@ export const GameMatch = ({ playerDeck, opponentClass, opponentDeck, opponentMov
 
         {/* Cryomancer Win Animation */}
         {showWinConAnimation && winConAnimationType === "cryomancer" && (
-          <div className="fixed inset-0 z-50 bg-blue-950/80 flex flex-col items-center justify-center animate-in fade-in duration-1000">
-            <div className="relative animate-pulse">
-              <Snowflake className="w-64 h-64 text-cyan-200 glow-cyan animate-spin-slow duration-[3s]" />
-            </div>
-            <h1 className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-200 to-white mt-8 font-cinzel animate-in slide-in-from-bottom duration-1000">
+          <div className="fixed inset-0 z-50 bg-blue-950/90 flex flex-col items-center justify-center animate-in fade-in duration-1000">
+             <div className="absolute inset-0 overflow-hidden opacity-40">
+                {Array.from({ length: 40 }).map((_, i) => (
+                    <div 
+                        key={i}
+                        className="absolute text-cyan-200 animate-[spin_3s_linear_infinite]"
+                        style={{
+                            left: `${Math.random() * 100}%`,
+                            top: `${Math.random() * 100}%`,
+                            fontSize: `${Math.random() * 30 + 10}px`,
+                            animationDuration: `${Math.random() * 5 + 2}s`
+                        }}
+                    >
+                        ❄️
+                    </div>
+                ))}
+             </div>
+             <div className="relative z-10 animate-bounce duration-[3s]">
+                 <div className="text-[200px] drop-shadow-[0_0_50px_rgba(34,211,238,0.8)] filter blur-[1px]">❄️</div>
+             </div>
+            <h1 className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-200 to-white mt-8 font-cinzel animate-in slide-in-from-bottom duration-1000 relative z-10">
               {t("game.anim.infiniteWinter")}
             </h1>
-            <p className="text-xl text-cyan-100/80 mt-4 tracking-[0.5em] animate-in fade-in delay-500 duration-1000">
+            <p className="text-xl text-cyan-100/80 mt-4 tracking-[0.5em] animate-in fade-in delay-500 duration-1000 relative z-10">
               {t("game.anim.worldFrozen")}
             </p>
           </div>
@@ -824,6 +843,67 @@ export const GameMatch = ({ playerDeck, opponentClass, opponentDeck, opponentMov
               {t("game.anim.fateRewritten")}
             </p>
           </div>
+        )}
+
+        {/* Oracle Win Animation */}
+        {showWinConAnimation && winConAnimationType === "oracle" && (
+          <div className="fixed inset-0 z-50 bg-indigo-950/90 flex flex-col items-center justify-center animate-in fade-in duration-1000">
+             <div className="absolute inset-0 overflow-hidden opacity-40">
+                {Array.from({ length: 30 }).map((_, i) => (
+                    <Sparkles 
+                        key={i}
+                        className="absolute text-purple-400 animate-pulse"
+                        style={{
+                            left: `${Math.random() * 100}%`,
+                            top: `${Math.random() * 100}%`,
+                            animationDelay: `${Math.random()}s`,
+                            width: `${Math.random() * 30 + 10}px`,
+                            height: `${Math.random() * 30 + 10}px`,
+                        }}
+                    />
+                ))}
+             </div>
+             <div className="relative z-10 animate-bounce duration-[3s]">
+                 <div className="text-[200px] drop-shadow-[0_0_50px_rgba(168,85,247,0.8)] filter blur-[1px]">🔮</div>
+             </div>
+             <h1 className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-fuchsia-300 to-indigo-400 mt-4 font-cinzel animate-in slide-in-from-bottom duration-1000 relative z-10 filter drop-shadow-lg">
+               {t("game.anim.oracleWin")}
+             </h1>
+             <p className="text-2xl text-purple-200/90 mt-4 tracking-[0.5em] animate-in fade-in delay-500 duration-1000 relative z-10 font-bold">
+               {t("game.anim.oracleDesc")}
+             </p>
+          </div>
+        )}
+
+        {/* Mimic Win Animation */}
+        {showWinConAnimation && winConAnimationType === "mimic" && (
+           <div className="fixed inset-0 z-50 bg-purple-950/90 flex flex-col items-center justify-center animate-in fade-in duration-1000">
+             <div className="absolute inset-0 overflow-hidden opacity-50">
+               {Array.from({ length: 40 }).map((_, i) => (
+                 <div
+                    key={i}
+                    className="absolute text-purple-400 animate-pulse text-4xl"
+                    style={{
+                        left: `${Math.random() * 100}%`,
+                        top: `${Math.random() * 100}%`,
+                        animationDelay: `${Math.random()}s`,
+                        opacity: Math.random() * 0.5 + 0.2
+                    }}
+                 >
+                    🔮
+                 </div>
+               ))}
+             </div>
+             <div className="relative z-10 animate-bounce cursor-pointer hover:scale-110 transition-transform">
+                 <div className="text-[200px] drop-shadow-[0_0_60px_rgba(168,85,247,0.8)] filter blur-[0.5px]">🔪</div>
+             </div>
+             <h1 className="text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-fuchsia-300 to-indigo-400 mt-8 font-cinzel animate-in slide-in-from-bottom duration-1000 relative z-10 drop-shadow-lg">
+                {t("game.anim.mimicWin")}
+             </h1>
+             <p className="text-2xl text-purple-200/90 mt-4 tracking-[0.5em] animate-in fade-in delay-500 duration-1000 relative z-10 font-bold uppercase">
+                {t("game.anim.mimicDesc")}
+             </p>
+           </div>
         )}
 
         <VictoryPopup

@@ -290,6 +290,10 @@ export const translations = {
     "game.anim.natureVictory": "NATURE'S VICTORY",
     "game.anim.massacre": "MASSACRE!",
     "game.anim.oneHit": "12+ DAMAGE: ONE HIT!",
+    "game.anim.oracleWin": "PROPHECY FULFILLED",
+    "game.anim.oracleDesc": "THE FUTURE IS NOW",
+    "game.anim.mimicWin": "REFLECTION COMPLETE",
+    "game.anim.mimicDesc": "YOUR POWER IS MINE",
 
     // Profile
     "profile.title": "Profile",
@@ -581,6 +585,10 @@ export const translations = {
     "game.anim.natureVictory": "DOĞA ZAFERİ",
     "game.anim.massacre": "KATLİAM!",
     "game.anim.oneHit": "12+ HASAR: TEK OP VURUŞ",
+    "game.anim.oracleWin": "KEHANET TAMAMLANDI",
+    "game.anim.oracleDesc": "GELECEK İLE BUGÜN BİRLEŞTİ",
+    "game.anim.mimicWin": "YANSIMA TAMAMLANDI",
+    "game.anim.mimicDesc": "SENİN GÜCÜN ARTIK BENİM",
 
     // Game - Popups
     "game.popup.selectReturnTitle": "İade Edilecek 2 Kart Seç",

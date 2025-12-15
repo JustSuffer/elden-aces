@@ -181,10 +181,10 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
     passiveDescription: "Kopies Opp Deck + 6 Mimic Cards (Total 36).",
     abilityScales: [
         { count: 1, effectDescription: "-" },
-        { count: 2, effectDescription: "Kopyala" },
-        { count: 3, effectDescription: "Kopyala" },
-        { count: 4, effectDescription: "Kopyala" },
-        { count: 5, effectDescription: "Kopyala" },
+        { count: 2, effectDescription: "1 Kart Kopyala", value: 1 },
+        { count: 3, effectDescription: "2 Kart Kopyala", value: 2 },
+        { count: 4, effectDescription: "3 Kart Kopyala", value: 3 },
+        { count: 5, effectDescription: "4 Kart Kopyala", value: 4 },
     ],
     winCondition: "Rakip WinCon",
     counterLogic: {
