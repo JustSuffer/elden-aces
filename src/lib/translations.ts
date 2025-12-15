@@ -610,6 +610,15 @@ export const translations = {
     "profile.toast.updateError": "Profil güncellenemedi",
     "profile.toast.logoutSuccess": "Başarıyla çıkış yapıldı",
 
+    // Zafer
+    "victory.title.win": "ZAFER!",
+    "victory.title.loss": "YENİLGİ",
+    "victory.you": "Sen",
+    "victory.opponent": "Rakip",
+    "victory.hpDiff": "Can Farkı",
+    "victory.summary": "Son Çarpışma Özeti",
+    "victory.back": "Menüye Dön",
+
     // Library
     "library.title": "Kart Kütüphanesi",
     "library.special": "Özel Kartlar",

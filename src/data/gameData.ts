@@ -116,7 +116,7 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
     passiveDescription: "Rakip desteyi yakar.",
     abilityScales: [
         { count: 1, effectDescription: "-" },
-        { count: 2, effectDescription: "3 Yak" },
+        { count: 2, effectDescription: "2 Yak" },
         { count: 3, effectDescription: "4 Yak" },
         { count: 4, effectDescription: "5 Yak" },
         { count: 5, effectDescription: "8 Yak + NoDeath" },
