@@ -157,14 +157,27 @@ const OnlineGame = () => {
         <span className="text-xs text-muted-foreground">Çevrimiçi (Tur {currentRound})</span>
       </div>
       
-      <GameMatch
-        key={`online-${matchId}`}
-        playerDeck={playerDeck}
-        opponentClass={opponentClass}
-        opponentDeck={opponentDeck}
-        opponentMoves={opponentMoves}
-        onMovesReady={handleMovesReady}
-      />
+      {opponentDeck && opponentDeck.cards && opponentDeck.cards.length > 0 ? (
+          <GameMatch
+            key={`online-${matchId}`}
+            playerDeck={playerDeck}
+            opponentClass={opponentClass}
+            opponentDeck={opponentDeck}
+            opponentMoves={opponentMoves}
+            onMovesReady={handleMovesReady}
+          />
+      ) : (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm z-40">
+              <Loader2 className="w-12 h-12 text-destructive animate-spin mb-4" />
+              <p className="text-destructive font-bold text-center">
+                  Rakip verisi bekleniyor...<br/>
+                  (Veri senkronizasyonu hatası)
+              </p>
+              <Button onClick={() => window.location.reload()} className="mt-4" variant="outline">
+                  Yenile
+              </Button>
+          </div>
+      )}
     </div>
   );
 };

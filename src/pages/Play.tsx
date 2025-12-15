@@ -265,18 +265,21 @@ const Play = () => {
     setMatchmakingStatus("searching");
 
     try {
-      // Check for existing queue entry and remove
+      // 1. Cleanup old entries
       await supabase
         .from("matchmaking_queue" as any)
         .delete()
         .eq("user_id", user.id);
 
-      // Add to queue
+      // 2. Add self to queue
+      // Deep clone to ensure clean JSON data
+      const deckData = JSON.parse(JSON.stringify(selectedDeck));
+
       const { data: queueEntry, error } = await supabase
         .from("matchmaking_queue" as any)
         .insert({
           user_id: user.id,
-          deck_data: selectedDeck as unknown as Record<string, unknown>,
+          deck_data: deckData,
           deck_name: selectedDeck.name,
           main_class: selectedDeck.mainClass,
           status: "searching"
@@ -293,7 +296,10 @@ const Play = () => {
 
       setQueueEntryId(queueEntry.id);
 
-      // Look for another searching player
+      // Random delay to desync simultaneous searches (500ms - 2000ms)
+      await new Promise(r => setTimeout(r, 500 + Math.random() * 1000));
+
+      // 3. Look for opponent
       const { data: searchingPlayers, error: searchError } = await supabase
         .from("matchmaking_queue" as any)
         .select("*")
@@ -310,14 +316,26 @@ const Play = () => {
       if (searchingPlayers && searchingPlayers.length > 0) {
         const opponent = searchingPlayers[0];
         
-        // Create a match
+        // Double check opponent is still searching
+        const { data: oppCurrent } = await supabase
+            .from("matchmaking_queue" as any)
+            .select("status")
+            .eq("id", opponent.id)
+            .single() as { data: { status: string } | null };
+
+        if (!oppCurrent || oppCurrent.status !== 'searching') {
+             // Opponent was taken, just wait.
+             return;
+        }
+
+        // Create match
         const { data: match, error: matchError } = await supabase
           .from("matches" as any)
           .insert({
             player1_id: opponent.user_id,
             player2_id: user.id,
             player1_deck: opponent.deck_data,
-            player2_deck: selectedDeck as unknown as Record<string, unknown>,
+            player2_deck: deckData,
             status: "active"
           })
           .select()
@@ -328,7 +346,7 @@ const Play = () => {
           return;
         }
 
-        // Update opponent's queue entry first (this triggers their realtime subscription)
+        // Update entries
         await supabase
           .from("matchmaking_queue" as any)
           .update({ 
@@ -338,7 +356,6 @@ const Play = () => {
           })
           .eq("id", opponent.id);
 
-        // Update our own queue entry
         await supabase
           .from("matchmaking_queue" as any)
           .update({ 
@@ -348,7 +365,6 @@ const Play = () => {
           })
           .eq("id", queueEntry.id);
 
-        // The user who initiated the match should also navigate (won't get realtime event for own update)
         handleMatchFound(opponent.id, match.id);
       }
     } catch (err) {
