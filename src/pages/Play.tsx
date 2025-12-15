@@ -88,36 +88,7 @@ const Play = () => {
           console.log("Queue update received:", updated);
           
           if (updated.status === 'matched' && updated.matched_with && updated.match_id) {
-            setMatchmakingStatus("found");
-            
-            // Get opponent info
-            const { data: opponentQueue } = await supabase
-              .from("matchmaking_queue")
-              .select("main_class, user_id")
-              .eq("id", updated.matched_with)
-              .single();
-            
-            if (opponentQueue) {
-              const { data: profile } = await supabase
-                .from("profiles")
-                .select("username")
-                .eq("user_id", opponentQueue.user_id)
-                .single();
-              
-              setOpponentInfo({
-                username: profile?.username || "Rakip",
-                mainClass: opponentQueue.main_class
-              });
-            }
-            
-            // Brief delay for animation
-            setTimeout(() => {
-              setMatchmakingStatus("connecting");
-              // Navigate to online game with match_id
-              setTimeout(() => {
-                navigate(`/online-game/${updated.match_id}`);
-              }, 1500);
-            }, 2000);
+            handleMatchFound(updated.matched_with, updated.match_id);
           }
         }
       )
@@ -127,6 +98,42 @@ const Play = () => {
       supabase.removeChannel(channel);
     };
   }, [queueEntryId, user, navigate]);
+
+  // Handler for when match is found
+  const handleMatchFound = async (opponentQueueId: string, matchId: string) => {
+    if (matchmakingStatus === "found" || matchmakingStatus === "connecting") return;
+    
+    setMatchmakingStatus("found");
+    
+    // Get opponent info using queue entry id
+    const { data: opponentQueue } = await supabase
+      .from("matchmaking_queue" as any)
+      .select("main_class, user_id")
+      .eq("id", opponentQueueId)
+      .maybeSingle() as { data: { main_class: string; user_id: string } | null };
+    
+    if (opponentQueue) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("username")
+        .eq("user_id", opponentQueue.user_id)
+        .maybeSingle();
+      
+      setOpponentInfo({
+        username: profile?.username || "Rakip",
+        mainClass: opponentQueue.main_class
+      });
+    }
+    
+    // Brief delay for animation
+    setTimeout(() => {
+      setMatchmakingStatus("connecting");
+      // Navigate to online game with match_id
+      setTimeout(() => {
+        navigate(`/online-game/${matchId}`);
+      }, 1500);
+    }, 2000);
+  };
 
   // Cleanup on unmount
   useEffect(() => {
@@ -209,7 +216,7 @@ const Play = () => {
           return;
         }
 
-        // Update both queue entries
+        // Update opponent's queue entry first (this triggers their realtime subscription)
         await supabase
           .from("matchmaking_queue" as any)
           .update({ 
@@ -219,6 +226,7 @@ const Play = () => {
           })
           .eq("id", opponent.id);
 
+        // Update our own queue entry
         await supabase
           .from("matchmaking_queue" as any)
           .update({ 
@@ -227,6 +235,9 @@ const Play = () => {
             match_id: match.id 
           })
           .eq("id", queueEntry.id);
+
+        // The user who initiated the match should also navigate (won't get realtime event for own update)
+        handleMatchFound(opponent.id, match.id);
       }
     } catch (err) {
       console.error("Matchmaking error:", err);
