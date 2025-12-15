@@ -76,19 +76,94 @@ const OnlineGame = () => {
   const opponentDeck = isPlayer1 ? match.player2_deck : match.player1_deck;
   const opponentClass = opponentDeck.mainClass as ClassName;
 
+  const [opponentMoves, setOpponentMoves] = useState<any[] | undefined>(undefined);
+  const [currentRound, setCurrentRound] = useState(1);
+
+  // Subscribe to Match Updates
+  useEffect(() => {
+      if (!matchId) return;
+
+      const channel = supabase
+        .channel(`match-${matchId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'matches',
+            filter: `id=eq.${matchId}`
+          },
+          (payload) => {
+            const newMatch = payload.new as any;
+            // Check for opponent moves
+            const isUserP1 = user?.id === newMatch.player1_id;
+            const oppMoves = isUserP1 ? newMatch.player2_last_move : newMatch.player1_last_move;
+            const myMoves = isUserP1 ? newMatch.player1_last_move : newMatch.player2_last_move;
+            
+            // Only trigger if opponent has moved for THIS round (we compare with our round or just assume?)
+            // We need to know which round these moves are for.
+            // Let's assume the moves object has { round: N, cards: [...] }
+            if (oppMoves && oppMoves.round === currentRound) {
+                setOpponentMoves(oppMoves.cards);
+                
+                // If both ready, we might want to clean up DB?
+                // Or just client logic handles it.
+            }
+          }
+        )
+        .subscribe();
+        
+      return () => { supabase.removeChannel(channel); };
+  }, [matchId, user, currentRound]);
+
+  const handleMovesReady = async (moves: (any | null)[]) => {
+      if (!match || !user) return;
+      const isUserP1 = user.id === match.player1_id;
+      const field = isUserP1 ? "player1_last_move" : "player2_last_move";
+      
+      const moveData = {
+          round: currentRound,
+          cards: moves
+      };
+
+      await supabase
+        .from("matches" as any)
+        .update({ [field]: moveData })
+        .eq("id", match.id);
+  };
+  
+  // Also update round when GameMatch tells us? 
+  // GameMatch doesn't tell us round changed... useGameState handles it.
+  // We can infer round change if we successfully receive opponent moves?
+  useEffect(() => {
+      if (opponentMoves) {
+          // We received moves, so round will advance.
+          // Wait, syncOnlineRound triggers calculate -> nextRound.
+          // We need to increment local currentRound to listen for NEXT moves.
+          // Delay it slightly to match game logic.
+          setTimeout(() => {
+              setCurrentRound(prev => prev + 1);
+              setOpponentMoves(undefined); // Reset
+          }, 5000); // 5s for reveal/damage Phase
+      }
+  }, [opponentMoves]);
+
+  // ... (Existing render)
+  // Pass props
   return (
     <div className="relative">
-      {/* Online indicator */}
       <div className="absolute top-4 right-4 z-50 flex items-center gap-2 bg-card/80 backdrop-blur-sm px-3 py-1.5 rounded-full border border-primary/30">
         <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-        <span className="text-xs text-muted-foreground">Çevrimiçi</span>
+        <span className="text-xs text-muted-foreground">Çevrimiçi (Tur {currentRound})</span>
       </div>
       
       <GameMatch
         key={`online-${matchId}`}
         playerDeck={playerDeck}
         opponentClass={opponentClass}
-        opponentDeck={opponentDeck} // Pass real opponent deck
+        opponentDeck={opponentDeck}
+        opponentMoves={opponentMoves}
+        onMovesReady={handleMovesReady}
       />
     </div>
   );

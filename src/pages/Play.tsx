@@ -63,20 +63,49 @@ const Play = () => {
       interval = setInterval(async () => {
         setSearchTime((prev) => prev + 1);
         
-        // Polling Strategy: Check if we are matched manually every 3 seconds
-        // This solves race conditions where Realtime subscription might miss an event
+        // Polling Strategy: Check MATCHES table directly (Robuster against RLS)
+        if (user) {
+             const { data: activeMatch } = await supabase
+                .from("matches" as any)
+                .select("id, player1_id, player2_id")
+                .or(`player1_id.eq.${user.id},player2_id.eq.${user.id}`)
+                .eq("status", "active")
+                .order("created_at", { ascending: false })
+                .limit(1)
+                .maybeSingle() as { data: { id: string, player1_id: string, player2_id: string } | null };
+
+             if (activeMatch) {
+                 // Determine opponent ID
+                 const opponentId = activeMatch.player1_id === user.id ? activeMatch.player2_id : activeMatch.player1_id;
+                 // Find queue ID for opponent to pass to handleMatchFound? 
+                 // handleMatchFound takes opponentQueueId to fetch info. 
+                 // We can fetch opponent info directly if we have ID.
+                 // Modified handleMatchFound to accept userId? Or just fetch queue logic there.
+                 // Let's just pass a dummy ID and update handleMatchFound to handle "ID is actually UserID" or just fetch profile by UserID.
+                 
+                 // Clean up my queue if exists
+                 if (queueEntryId) {
+                    await supabase.from("matchmaking_queue" as any).delete().eq("id", queueEntryId);
+                 }
+                 
+                 // Fake a queue ID or modify handle logic.
+                 // Let's modify handleMatchFound to fetch by user_id if queue lookup fails.
+                 handleMatchFound(opponentId, activeMatch.id, true); // true = isUserId
+                 return; 
+             }
+        }
+        
+        // Fallback: Check Queue status (if matched by someone else who somehow updated us)
         if (queueEntryId) {
              const { data, error } = await supabase
                 .from("matchmaking_queue" as any)
-                .select("*")
+                .select("status, matched_with, match_id")
                 .eq("id", queueEntryId)
-                .single() as { data: QueueEntry | null; error: any };
+                .single() as { data: { status: string, matched_with: string, match_id: string } | null; error: any };
             
              if (data && data.status === 'matched' && data.matched_with && data.match_id) {
                  handleMatchFound(data.matched_with, data.match_id);
              } else if (data && data.status === 'searching') {
-                 // Retry matching logic? 
-                 // It's safer to just check "Is there anyone else searching?"
                  tryMatchmaking();
              }
         }
@@ -160,30 +189,53 @@ const Play = () => {
   }, [queueEntryId, user, navigate]);
 
   // Handler for when match is found
-  const handleMatchFound = async (opponentQueueId: string, matchId: string) => {
+  const handleMatchFound = async (opponentId: string, matchId: string, isUserId = false) => {
     if (matchmakingStatus === "found" || matchmakingStatus === "connecting") return;
     
     setMatchmakingStatus("found");
     
-    // Get opponent info using queue entry id
-    const { data: opponentQueue } = await supabase
-      .from("matchmaking_queue" as any)
-      .select("main_class, user_id")
-      .eq("id", opponentQueueId)
-      .maybeSingle() as { data: { main_class: string; user_id: string } | null };
+    // Get opponent info
+    // If isUserId is true, opponentId IS the user_id.
+    // If false, it's queue_id.
     
-    if (opponentQueue) {
-      const { data: profile } = await supabase
+    let targetUserId = opponentId;
+    let targetMainClass = "Slayer"; // Default
+
+    if (!isUserId) {
+        const { data: opponentQueue } = await supabase
+          .from("matchmaking_queue" as any)
+          .select("main_class, user_id")
+          .eq("id", opponentId)
+          .maybeSingle() as { data: { main_class: string; user_id: string } | null };
+        
+        if (opponentQueue) {
+            targetUserId = opponentQueue.user_id;
+            targetMainClass = opponentQueue.main_class;
+        }
+    } else {
+        // Fetch class from Match? Or just Profile. Match has deck data.
+        // Let's info from Profile (username) and Match (class).
+        // For visual brevity, just fetch Profile. Class we can get from match if we wanted, but here we just need display.
+        // We'll default class or fetch from match if needed.
+        const { data: matchData } = await supabase.from("matches" as any).select("player1_id, player1_deck, player2_deck").eq("id", matchId).single() as { data: any };
+        if (matchData) {
+            const isP1 = matchData.player1_id === targetUserId;
+            const deck = isP1 ? matchData.player1_deck : matchData.player2_deck;
+            targetMainClass = deck?.mainClass || "Slayer";
+        }
+    }
+
+    const { data: profile } = await supabase
         .from("profiles")
         .select("username")
-        .eq("user_id", opponentQueue.user_id)
+        .eq("user_id", targetUserId)
         .maybeSingle();
       
-      setOpponentInfo({
+    setOpponentInfo({
         username: profile?.username || "Rakip",
-        mainClass: opponentQueue.main_class
-      });
-    }
+        mainClass: targetMainClass
+    });
+    
     
     // Brief delay for animation
     setTimeout(() => {

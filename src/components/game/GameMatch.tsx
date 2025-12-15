@@ -27,10 +27,12 @@ import { useLanguage } from "@/hooks/useLanguage";
 interface GameMatchProps {
   playerDeck: SavedDeck;
   opponentClass: ClassName;
-  opponentDeck?: SavedDeck; // Added
+  opponentDeck?: SavedDeck;
+  opponentMoves?: (GameCard | null)[];
+  onMovesReady?: (moves: (GameCard | null)[]) => void;
 }
 
-export const GameMatch = ({ playerDeck, opponentClass, opponentDeck }: GameMatchProps) => {
+export const GameMatch = ({ playerDeck, opponentClass, opponentDeck, opponentMoves, onMovesReady }: GameMatchProps) => {
   const navigate = useNavigate();
   const { t } = useLanguage();
   const [vfxEffects, setVfxEffects] = useState<VfxEffect[]>([]);
@@ -49,12 +51,28 @@ export const GameMatch = ({ playerDeck, opponentClass, opponentDeck }: GameMatch
     cancelDiceResult,
     calculateRoundDamage,
     nextRound,
-    handleCardSelection
+    handleCardSelection,
+    syncOnlineRound
   } = useGameState({
       playerDeck,
       opponentClass,
-      opponentDeck: opponentDeck?.cards // Pass to hook
+      opponentDeck: opponentDeck?.cards, // Pass to hook
+      isOnline: !!opponentDeck
   });
+
+  // Online Sync Effect
+  useEffect(() => {
+     if (opponentMoves && gameState.phase === "waiting") {
+         syncOnlineRound(opponentMoves);
+     }
+  }, [opponentMoves, gameState.phase, syncOnlineRound]);
+
+  // Output Moves when Waiting
+  useEffect(() => {
+      if (gameState.phase === "waiting" && onMovesReady) {
+          onMovesReady(gameState.playerField as (GameCard | null)[]);
+      }
+  }, [gameState.phase, gameState.playerField, onMovesReady]);
 
   useEffect(() => {
     AudioManager.init();
@@ -779,6 +797,23 @@ export const GameMatch = ({ playerDeck, opponentClass, opponentDeck }: GameMatch
           onReturnToMenu={() => navigate("/")}
           delayMs={0}
         />
+
+        {/* Waiting for Opponent Overlay */}
+        {gameState.phase === "waiting" && (
+            <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center animate-in fade-in">
+                <div className="relative">
+                    <div className="absolute inset-0 animate-ping rounded-full bg-primary/20" />
+                    <Loader2 className="w-16 h-16 text-primary animate-spin relative z-10" />
+                </div>
+                <h2 className="mt-8 text-3xl font-bold text-primary glow-gold font-cinzel animate-pulse">
+                    Rakip Bekleniyor...
+                </h2>
+                <div className="mt-4 flex items-center gap-2 text-muted-foreground">
+                    <Hourglass className="w-5 h-5 animate-bounce" />
+                    <span>Karşı taraf hamlesini yapıyor</span>
+                </div>
+            </div>
+        )}
 
       </div>
     </DndContext>

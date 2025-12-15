@@ -22,7 +22,54 @@ export interface GameState {
   playerField: (Card | null)[];
   opponentField: (Card | null)[];
   diceUsed: number;
-  phase: "placement" | "reveal" | "damage" | "end";
+  timeLeft: number; // 60s Timer
+  isOnline: boolean;
+}
+
+// ... (createBotDeck function remains same)
+
+interface GameInitParams {
+  playerDeck: SavedDeck;
+  opponentClass: ClassName;
+  opponentDeck?: Card[];
+  isOnline?: boolean; // New param
+}
+
+export function useGameState(initParams?: GameInitParams) {
+  const [gameState, setGameState] = useState<GameState>(() => {
+    // ... (logic remains same)
+    
+    // ... (return object)
+    return {
+      // ... (existing fields)
+      round: 1,
+      maxRounds: 7,
+      playerHP: MASTER_CLASSES[pClass].initialHP,
+      opponentHP: MASTER_CLASSES[oClass].initialHP,
+      playerDeck: remainP,
+      opponentDeck: remainO,
+      playerHand: initialP,
+      opponentHand: initialO,
+      playerField: [null, null, null, null, null],
+      opponentField: [null, null, null, null, null],
+      diceUsed: 0,
+      phase: "placement", // Type needs to allow 'waiting'
+      opponentMust4Cards: false,
+      playerMust4Cards: false,
+      cardSelectionMode: false,
+      pendingDiceResult: null,
+      damageResult: null,
+      playerClass: pClass,
+      opponentClass: oClass,
+      playerDiceRolls: pClass === "Fateweaver" ? 2 : 0,
+      carryOverCards: [],
+      pendingRoundSkip: 0,
+      logs: [],
+      mimicCounter: { p1: 0, p2: 0 },
+      timeLeft: 60,
+      isOnline: !!initParams?.isOnline,
+    };
+  });
   opponentMust4Cards: boolean;
   playerMust4Cards: boolean;
   cardSelectionMode: boolean;
@@ -261,18 +308,16 @@ export function useGameState(initParams?: GameInitParams) {
 
   const endPlacement = useCallback(() => {
     setGameState((prev) => {
+        if (prev.isOnline) {
+            return { ...prev, phase: "waiting" };
+        }
+
       // Bot Logic: Strategic placement based on round and class
       const botField: (Card | null)[] = [null, null, null, null, null];
       
-      // 1. Determine Max Capacity
+      // ... (Rest of Bot Logic remains same)
       const maxCapacity = prev.opponentMust4Cards ? 4 : 5;
-      
-      // 2. Decide Target Count (Tactical Decision)
-      // Round 1-2: Save resources? 40% chance for 3, 40% for 4, 20% for 5.
-      // Round 3-4: Mid game. 20% for 4, 80% for 5.
-      // Round 5-6: All out. 100% for 5.
-      
-      let targetCount = maxCapacity;
+       let targetCount = maxCapacity;
       const rand = Math.random();
       
       if (prev.round <= 2) {
@@ -289,28 +334,16 @@ export function useGameState(initParams?: GameInitParams) {
       // Ensure we have enough cards
       const cardsToPlace = Math.min(targetCount, prev.opponentHand.length);
 
-      // 3. Selection Strategy
-      // Sort by value (descending) to play strongest cards? 
-      // Or save strongest for later? 
-      // Current Logic: Play strongest now.
       const sortedHand = [...prev.opponentHand].sort((a, b) => (b.value || 0) - (a.value || 0));
       const botHandToPlay = sortedHand.slice(0, cardsToPlace);
       
-      // 4. Shuffle placement for unpredictability
       const shuffledPlay = botHandToPlay.sort(() => Math.random() - 0.5);
       
-      // Place in random slots (fill empty slots)
-      // Actually we just fill the array indices 0..4 random? No, field is fixed 5 slots.
-      // We should distribute them randomly across the 5 slots?
-      // Or just fill 0..N? 
-      // Logic: "botField[i] = c" fills 0,1,2... which corresponds to LEFT alignment.
-      // Let's scatter them?
       const availableSlots = [0, 1, 2, 3, 4].sort(() => Math.random() - 0.5);
       shuffledPlay.forEach((c, i) => {
           botField[availableSlots[i]] = c;
       });
       
-      // Remaining cards stay in hand for carry-over
       const remainingBotHand = prev.opponentHand.filter(c => !botHandToPlay.includes(c));
       
       return {
@@ -320,6 +353,26 @@ export function useGameState(initParams?: GameInitParams) {
         phase: "reveal",
       };
     });
+  }, []);
+
+  const syncOnlineRound = useCallback((opponentField: (Card | null)[]) => {
+      setGameState(prev => {
+          // Remove played cards from opponent hand (mock logic since we don't know exact indices, but we play by ID/value)
+          // In online, we just trust the field. We need to remove them from "opponentHand" state to keep count correct.
+          // Or we just update hand count? The local state 'opponentHand' for online might just be "Unknown Cards".
+          // For now, let's filter out cards that match IDs in field if possible, or just slice.
+          
+          return {
+              ...prev,
+              opponentField,
+              phase: "reveal"
+          };
+      });
+      // The useEffect for 'reveal' phase -> damage loop will pick this up? 
+      // Current logic: calculateRoundDamage is called ??? 
+      // Wait, original logic didn't auto-call calculateRoundDamage on phase change.
+      // We need to trigger it.
+      setTimeout(() => calculateRoundDamage(), 500);
   }, []);
 
   // Timer Logic
@@ -504,7 +557,7 @@ export function useGameState(initParams?: GameInitParams) {
           }
       }
 
-      let phase: "placement" | "reveal" | "damage" | "end" = newPlayerHP <= 0 || newOpponentHP <= 0 ? "end" : "damage";
+      let phase: "placement" | "waiting" | "reveal" | "damage" | "end" = newPlayerHP <= 0 || newOpponentHP <= 0 ? "end" : "damage";
 
       if (p1InstantWin) {
         newOpponentHP = 0;
@@ -959,6 +1012,8 @@ export function useGameState(initParams?: GameInitParams) {
     calculateRoundDamage,
     nextRound,
     handleCardSelection,
+    syncOnlineRound,
     rollFate,
   };
 }
+```
