@@ -210,6 +210,16 @@ export const GameMatch = ({ playerDeck, opponentClass, opponentDeck, opponentMov
     }, 2000);
   };
 
+  // Auto-close Decay animation
+  useEffect(() => {
+    if (showWinConAnimation && (winConAnimationType === "decay_death" || winConAnimationType === "decay_victory")) {
+        const timer = setTimeout(() => {
+            setShowWinConAnimation(false);
+        }, 2500); 
+        return () => clearTimeout(timer);
+    }
+  }, [showWinConAnimation, winConAnimationType]);
+
   const handleNextRound = () => {
     const maxRounds = gameState.maxRounds || 7;
 
@@ -679,13 +689,11 @@ export const GameMatch = ({ playerDeck, opponentClass, opponentDeck, opponentMov
               {winConAnimationType === "decay_death" ? "Rakip Deste Bitmedi. Bedel Ödendi." : t("game.anim.victoryBurned")}
             </p>
 
-            <Button 
-                  onClick={() => setShowWinConAnimation(false)}
-                  variant="outline"
-                  className="mt-16 px-12 py-6 text-xl bg-transparent border-zinc-800 text-zinc-500 hover:bg-zinc-900 hover:text-zinc-300 hover:border-zinc-500 transition-all duration-500 rounded-sm font-cinzel tracking-widest z-[70]"
-               >
-                  DEVAM ET
-               </Button>
+            <div className="absolute bottom-10 animate-in fade-in delay-1000">
+                <p className="text-zinc-600 text-sm font-cinzel tracking-widest animate-pulse">
+                    DEVAM EDİLİYOR...
+                </p>
+            </div>
           </div>
         )}
 
