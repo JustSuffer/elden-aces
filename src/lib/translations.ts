@@ -582,6 +582,8 @@ export const translations = {
     "game.anim.rulerOfUniverse": "EVRENİN HAKİMİ",
     "game.anim.timeLord": "ZAMANIN EFENDİSİ",
     "game.anim.fateRewritten": "KADER YENİDEN YAZILDI",
+    "game.anim.fateWoven": "KADER ÖRÜLDÜ",
+    "game.anim.fateSealed": "ZAFER KAÇINILMAZDI",
     "game.anim.natureVictory": "DOĞA ZAFERİ",
     "game.anim.massacre": "KATLİAM!",
     "game.anim.oneHit": "12+ HASAR: TEK OP VURUŞ",

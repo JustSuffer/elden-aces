@@ -286,7 +286,7 @@ export const GameMatch = ({ playerDeck, opponentClass, opponentDeck, opponentMov
       let type: string | null = null;
       let duration = 3000;
 
-      if (gameState.playerClass === "Fateweaver" && details.some(l => l.includes("KADERİN GÖZÜ"))) {
+      if (gameState.playerClass === "Fateweaver" && gameState.winner === "p1") {
         type = "fateweaver";
       } else if (gameState.playerClass === "Chronokeeper" && gameState.winner === "p1") {
         type = "chronokeeper";
@@ -813,6 +813,40 @@ export const GameMatch = ({ playerDeck, opponentClass, opponentDeck, opponentMov
             <p className="text-2xl text-orange-100/90 mt-4 tracking-[0.5em] animate-in fade-in delay-500 duration-1000 z-10 font-bold">
               {t("game.anim.rulerOfUniverse")}
             </p>
+          </div>
+        )}
+
+        {/* Fateweaver Win Animation */}
+        {showWinConAnimation && winConAnimationType === "fateweaver" && (
+          <div className="fixed inset-0 z-50 bg-yellow-950/90 flex flex-col items-center justify-center animate-in fade-in duration-1000">
+             <div className="absolute inset-0 overflow-hidden opacity-40">
+                {Array.from({ length: 30 }).map((_, i) => (
+                    <Sparkles 
+                        key={i}
+                        className="absolute text-yellow-400 animate-pulse"
+                        style={{
+                            left: `${Math.random() * 100}%`,
+                            top: `${Math.random() * 100}%`,
+                            animationDelay: `${Math.random()}s`,
+                            width: `${Math.random() * 30 + 10}px`,
+                            height: `${Math.random() * 30 + 10}px`,
+                        }}
+                    />
+                ))}
+             </div>
+             <div className="relative z-10 animate-spin-slow duration-[5s]">
+                 <div className="text-[200px] drop-shadow-[0_0_50px_rgba(234,179,8,0.8)] filter blur-[1px] text-yellow-500 font-cinzel">Π</div>
+             </div>
+             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className="w-[500px] h-[500px] border-4 border-yellow-500/30 rounded-full animate-[spin_10s_linear_infinite]" />
+                  <div className="w-[400px] h-[400px] border-4 border-yellow-400/20 rounded-full animate-[spin_15s_linear_infinite_reverse] absolute" />
+             </div>
+             <h1 className="text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-amber-200 to-yellow-500 mt-4 font-cinzel animate-in slide-in-from-bottom duration-1000 relative z-10 filter drop-shadow-lg">
+               {t("game.anim.fateWoven")}
+             </h1>
+             <p className="text-2xl text-yellow-100/90 mt-4 tracking-[0.5em] animate-in fade-in delay-500 duration-1000 relative z-10 font-bold">
+               {t("game.anim.fateSealed")}
+             </p>
           </div>
         )}
 
