@@ -299,12 +299,15 @@ const Play = () => {
       // Random delay to desync simultaneous searches (500ms - 2000ms)
       await new Promise(r => setTimeout(r, 500 + Math.random() * 1000));
 
-      // 3. Look for opponent
+      // 3. Look for opponent (active within last 2 minutes)
+      const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000).toISOString();
+
       const { data: searchingPlayers, error: searchError } = await supabase
         .from("matchmaking_queue" as any)
         .select("*")
         .eq("status", "searching")
         .neq("user_id", user.id)
+        .gt("created_at", twoMinutesAgo)
         .order("created_at", { ascending: true })
         .limit(1) as { data: QueueEntry[] | null; error: any };
 

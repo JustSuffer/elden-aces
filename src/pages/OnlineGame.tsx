@@ -35,10 +35,10 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
   render() {
     if (this.state.hasError) {
       return (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/90 z-50 p-8 text-center text-white">
-           <div className="text-red-500 text-4xl mb-4 font-bold">⚠️ Kritik Hata</div>
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-white z-50 p-8 text-center text-black">
+           <div className="text-red-600 text-4xl mb-4 font-bold">⚠️ Kritik Hata</div>
            <p className="text-lg mb-2">Oyun yüklenirken bir sorun oluştu.</p>
-           <pre className="text-red-300 bg-black/50 p-4 rounded text-xs text-left overflow-auto max-w-full">
+           <pre className="text-red-700 bg-red-100 p-4 rounded text-xs text-left overflow-auto max-w-full">
                {this.state.error?.toString()}
            </pre>
            <Button onClick={() => window.location.reload()} className="mt-8" variant="destructive">

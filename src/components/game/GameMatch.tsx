@@ -13,9 +13,10 @@ import { useNavigate } from "react-router-dom";
 
 import { toast } from "sonner";
 import { DndContext, DragEndEvent } from "@dnd-kit/core";
-import { ArrowLeft, Dices, Eye, Snowflake, Heart, Settings, Flame, Sparkles, Skull, Atom, Hourglass } from "lucide-react";
+import { ArrowLeft, Dices, Eye, Snowflake, Heart, Settings, Flame, Sparkles, Skull, Atom, Hourglass, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { GameCard } from "@/components/game/GameCard";
+import { Card } from "@/types/game";
 import { AudioManager } from "@/utils/AudioManager";
 import { SavedDeck } from "@/types/deck";
 import { ClassName } from "@/types/game";
@@ -28,8 +29,8 @@ interface GameMatchProps {
   playerDeck: SavedDeck;
   opponentClass: ClassName;
   opponentDeck?: SavedDeck;
-  opponentMoves?: (GameCard | null)[];
-  onMovesReady?: (moves: (GameCard | null)[]) => void;
+  opponentMoves?: (Card | null)[];
+  onMovesReady?: (moves: (Card | null)[]) => void;
 }
 
 export const GameMatch = ({ playerDeck, opponentClass, opponentDeck, opponentMoves, onMovesReady }: GameMatchProps) => {
@@ -70,7 +71,7 @@ export const GameMatch = ({ playerDeck, opponentClass, opponentDeck, opponentMov
   // Output Moves when Waiting
   useEffect(() => {
       if (gameState.phase === "waiting" && onMovesReady) {
-          onMovesReady(gameState.playerField as (GameCard | null)[]);
+          onMovesReady(gameState.playerField as (Card | null)[]);
       }
   }, [gameState.phase, gameState.playerField, onMovesReady]);
 
@@ -228,8 +229,8 @@ export const GameMatch = ({ playerDeck, opponentClass, opponentDeck, opponentMov
   const canPlaceCards = gameState.playerField.filter((c) => c !== null).length < requiredCards;
   const isMimicVsMimic = gameState.playerClass === "Mimic" && gameState.opponentClass === "Mimic";
 
-  const playerClassData = MASTER_CLASSES[gameState.playerClass];
-  const opponentClassData = MASTER_CLASSES[gameState.opponentClass];
+  const playerClassData = MASTER_CLASSES[gameState.playerClass] || MASTER_CLASSES["Tainted"];
+  const opponentClassData = MASTER_CLASSES[gameState.opponentClass] || MASTER_CLASSES["Tainted"];
 
   // Check for win condition animations
   useEffect(() => {
