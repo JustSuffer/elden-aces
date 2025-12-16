@@ -135,7 +135,7 @@ const Play = () => {
           const { data: myEntry } = await supabase.from("matchmaking_queue" as any).select("status").eq("id", queueEntryId).single() as { data: { status: string } | null };
           if (myEntry?.status !== 'searching') return;
 
-           // Create a match
+           // Create a match with sync columns
         const { data: match } = await supabase
           .from("matches" as any)
           .insert({
@@ -143,7 +143,13 @@ const Play = () => {
             player2_id: user.id,
             player1_deck: opponent.deck_data,
             player2_deck: selectedDeck as unknown as Record<string, unknown>,
-            status: "active"
+            status: "active",
+            player1_field: [],
+            player2_field: [],
+            player1_ready: false,
+            player2_ready: false,
+            current_round: 1,
+            phase: "placement"
           })
           .select()
           .single() as { data: { id: string } | null };
