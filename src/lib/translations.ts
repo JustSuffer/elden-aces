@@ -287,6 +287,8 @@ export const translations = {
     "game.anim.rulerOfUniverse": "RULER OF THE UNIVERSE",
     "game.anim.timeLord": "TIME LORD",
     "game.anim.fateRewritten": "FATE REWRITTEN",
+    "game.anim.fateWoven": "FATE WOVEN",
+    "game.anim.fateSealed": "VICTORY WAS INEVITABLE",
     "game.anim.natureVictory": "NATURE'S VICTORY",
     "game.anim.massacre": "MASSACRE!",
     "game.anim.oneHit": "12+ DAMAGE: ONE HIT!",
