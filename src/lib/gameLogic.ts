@@ -537,6 +537,10 @@ export function resolveGameRound(
       const targets = indices.slice(0, Math.min(freezeCount, p2Cards.length));
       targets.forEach(i => {
         const c = p2Cards[i];
+        if (c.specialType) {
+          logs.push(`   -> Özel Kart ${c.name} etkisiz hale getirildi!`);
+          c.specialType = undefined;
+        }
         c.value = 0;
         c.symbol = "";
         c.classSymbol = undefined;
@@ -560,6 +564,10 @@ export function resolveGameRound(
       const targets = indices.slice(0, Math.min(freezeCount, p1Cards.length));
       targets.forEach(i => {
         const c = p1Cards[i];
+        if (c.specialType) {
+          logs.push(`   -> Özel Kart ${c.name} etkisiz hale getirildi!`);
+          c.specialType = undefined;
+        }
         c.value = 0;
         c.symbol = "";
         c.classSymbol = undefined;
