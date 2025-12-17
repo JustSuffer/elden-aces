@@ -168,17 +168,17 @@ export function useGameState(initParams?: GameInitParams) {
         playerDeck = shuffleDeck(playerDeck);
     } else if (pClass === "Mimic") {
         // Mimic vs Mimic Case:
-        // Opponent is Mimic, so they already have 42 cards (36 Deck).
-        // We just specificially Copy Opponent's Deck. 
-        // We do NOT add extra cards because the copied deck already contains the 12 Mimic cards we need.
+        // Both players should have exactly 36 cards total (30 Deck + 6 Hand).
+        // The opponentDeck has already been adjusted to 36 cards above (Bot Logic).
+        // We simply create a deep copy of the opponent's deck.
+        // NO extra cards are added here to prevent reaching 42.
         
-        // Clone opponent deck
-        const opponentClones = opponentDeck.map(c => ({
+        playerDeck = opponentDeck.map(c => ({
             ...c, 
-            id: `mimicked-${c.id}-${Date.now()}`
+            id: `mimicked-${c.id}-${Date.now()}-${Math.random()}`
         }));
         
-        playerDeck = shuffleDeck([...opponentClones]);
+        playerDeck = shuffleDeck(playerDeck);
     } else {
         // Normal Case
         const inputCards = initParams?.playerDeck.cards;

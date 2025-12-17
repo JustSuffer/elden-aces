@@ -914,7 +914,7 @@ export const GameMatch = ({ playerDeck, opponentClass, opponentDeck, opponentMov
                         opacity: Math.random() * 0.5 + 0.2
                     }}
                  >
-                    🔮
+                    🪞
                  </div>
                ))}
              </div>
