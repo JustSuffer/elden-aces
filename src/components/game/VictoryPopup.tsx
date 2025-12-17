@@ -1,13 +1,13 @@
 
 import { Button } from "@/components/ui/button";
-import { Trophy, Skull, Coins, Swords, Shield, Crown, Sparkles } from "lucide-react";
+import { Trophy, Skull, Coins, Swords, Shield, Crown, Sparkles, Scale } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/hooks/useLanguage";
 
 interface VictoryPopupProps {
   open: boolean;
-  isVictory: boolean;
+  outcome: "win" | "loss" | "draw";
   playerHP: number;
   opponentHP: number;
   winReason?: string;
@@ -18,7 +18,7 @@ interface VictoryPopupProps {
 
 export function VictoryPopup({
   open,
-  isVictory,
+  outcome,
   playerHP,
   opponentHP,
   winReason,
@@ -27,14 +27,16 @@ export function VictoryPopup({
   delayMs = 0
 }: VictoryPopupProps) {
   const { t } = useLanguage();
-  const reward = isVictory ? 10 : 2;
+  const reward = outcome === "win" ? 10 : (outcome === "draw" ? 5 : 2);
   const [showPopup, setShowPopup] = useState(false);
   const [showContent, setShowContent] = useState(false);
   const hpDiff = Math.abs(playerHP - opponentHP);
+  const isVictory = outcome === "win";
+  const isLoss = outcome === "loss";
+  const isDraw = outcome === "draw";
 
   useEffect(() => {
     if (open) {
-      // Wait for animations to complete
       const timer = setTimeout(() => {
         setShowPopup(true);
         setTimeout(() => setShowContent(true), 400);
@@ -61,10 +63,11 @@ export function VictoryPopup({
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className={`absolute inset-0 ${isVictory
-            ? "bg-gradient-to-b from-amber-950/90 via-black/95 to-black"
-            : "bg-gradient-to-b from-red-950/90 via-black/95 to-black"
-            }`}
+          className={`absolute inset-0 ${
+            isVictory ? "bg-gradient-to-b from-amber-950/90 via-black/95 to-black" :
+            isLoss ? "bg-gradient-to-b from-red-950/90 via-black/95 to-black" :
+            "bg-gradient-to-b from-slate-900/90 via-black/95 to-black"
+          }`}
         />
 
         {/* Floating particles */}
@@ -86,8 +89,11 @@ export function VictoryPopup({
                   repeat: Infinity
                 }
               }}
-              className={`absolute w-2 h-2 rounded-full ${isVictory ? "bg-amber-400" : "bg-red-500"
-                }`}
+              className={`absolute w-2 h-2 rounded-full ${
+                isVictory ? "bg-amber-400" :
+                isLoss ? "bg-red-500" :
+                "bg-slate-400"
+              }`}
             />
           ))}
         </div>
@@ -100,16 +106,18 @@ export function VictoryPopup({
           className="relative z-10 w-full max-w-lg mx-4"
         >
           {/* Decorative top border */}
-          <div className={`h-1 rounded-t-xl ${isVictory
-            ? "bg-gradient-to-r from-transparent via-amber-400 to-transparent"
-            : "bg-gradient-to-r from-transparent via-red-500 to-transparent"
-            }`} />
+          <div className={`h-1 rounded-t-xl ${
+            isVictory ? "bg-gradient-to-r from-transparent via-amber-400 to-transparent" :
+            isLoss ? "bg-gradient-to-r from-transparent via-red-500 to-transparent" :
+            "bg-gradient-to-r from-transparent via-slate-400 to-transparent"
+          }`} />
 
           <div className={`
             backdrop-blur-xl rounded-b-xl border-x border-b p-8
-            ${isVictory
-              ? "bg-gradient-to-b from-amber-950/40 to-card/80 border-amber-500/30"
-              : "bg-gradient-to-b from-red-950/40 to-card/80 border-red-500/30"
+            ${
+              isVictory ? "bg-gradient-to-b from-amber-950/40 to-card/80 border-amber-500/30" :
+              isLoss ? "bg-gradient-to-b from-red-950/40 to-card/80 border-red-500/30" :
+              "bg-gradient-to-b from-slate-900/40 to-card/80 border-slate-500/30"
             }
           `}>
             {/* Icon */}
@@ -121,16 +129,15 @@ export function VictoryPopup({
             >
               <div className={`
                 relative p-6 rounded-full
-                ${isVictory
-                  ? "bg-gradient-to-br from-amber-500 to-yellow-600 shadow-[0_0_60px_rgba(251,191,36,0.5)]"
-                  : "bg-gradient-to-br from-red-600 to-red-800 shadow-[0_0_60px_rgba(239,68,68,0.5)]"
+                ${
+                  isVictory ? "bg-gradient-to-br from-amber-500 to-yellow-600 shadow-[0_0_60px_rgba(251,191,36,0.5)]" :
+                  isLoss ? "bg-gradient-to-br from-red-600 to-red-800 shadow-[0_0_60px_rgba(239,68,68,0.5)]" :
+                  "bg-gradient-to-br from-slate-500 to-slate-700 shadow-[0_0_60px_rgba(148,163,184,0.5)]"
                 }
               `}>
-                {isVictory ? (
-                  <Crown className="w-16 h-16 text-amber-950" />
-                ) : (
-                  <Skull className="w-16 h-16 text-red-200" />
-                )}
+                {isVictory && <Crown className="w-16 h-16 text-amber-950" />}
+                {isLoss && <Skull className="w-16 h-16 text-red-200" />}
+                {isDraw && <Scale className="w-16 h-16 text-slate-100" />}
 
                 {/* Orbiting sparkles for victory */}
                 {isVictory && (
@@ -161,18 +168,20 @@ export function VictoryPopup({
               transition={{ delay: 0.5 }}
               className={`
                 text-5xl font-bold text-center font-cinzel mb-2
-                ${isVictory
-                  ? "text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-300"
-                  : "text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-red-300 to-red-400"
+                ${
+                  isVictory ? "text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-300" :
+                  isLoss ? "text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-red-300 to-red-400" :
+                  "text-transparent bg-clip-text bg-gradient-to-r from-slate-300 via-white to-slate-300"
                 }
               `}
               style={{
-                textShadow: isVictory
-                  ? "0 0 40px rgba(251,191,36,0.6)"
-                  : "0 0 40px rgba(239,68,68,0.6)"
+                textShadow: 
+                  isVictory ? "0 0 40px rgba(251,191,36,0.6)" :
+                  isLoss ? "0 0 40px rgba(239,68,68,0.6)" :
+                  "0 0 40px rgba(148,163,184,0.6)"
               }}
             >
-              {isVictory ? t("victory.title.win") : t("victory.title.loss")}
+              {isVictory ? t("victory.title.win") : (isDraw ? t("victory.title.draw") : t("victory.title.loss"))}
             </motion.h1>
 
             {/* Win reason if provided */}
@@ -258,16 +267,17 @@ export function VictoryPopup({
               transition={{ type: "spring", delay: 0.8 }}
               className={`
                 p-4 rounded-lg mb-6 flex items-center justify-center gap-3
-                ${isVictory
-                  ? "bg-gradient-to-r from-amber-950/50 via-amber-900/30 to-amber-950/50 border border-amber-500/30"
-                  : "bg-card/30 border border-border/50"
+                ${
+                  isVictory ? "bg-gradient-to-r from-amber-950/50 via-amber-900/30 to-amber-950/50 border border-amber-500/30" :
+                  isDraw ? "bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border border-slate-500/30" :
+                  "bg-card/30 border border-border/50"
                 }
               `}
             >
-              <Coins className={`w-8 h-8 ${isVictory ? "text-amber-400" : "text-muted-foreground"}`} />
+              <Coins className={`w-8 h-8 ${isVictory ? "text-amber-400" : isDraw ? "text-slate-300" : "text-muted-foreground"}`} />
               <span className={`
                 text-2xl font-bold font-cinzel
-                ${isVictory ? "text-amber-300 glow-gold" : "text-muted-foreground"}
+                ${isVictory ? "text-amber-300 glow-gold" : isDraw ? "text-slate-200" : "text-muted-foreground"}
               `}>
                 +{reward} DivineCoin
               </span>
@@ -285,9 +295,10 @@ export function VictoryPopup({
                 onClick={onReturnToMenu}
                 className={`
                   w-full text-lg font-cinzel py-6
-                  ${isVictory
-                    ? "bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-amber-950"
-                    : ""
+                  ${
+                    isVictory ? "bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-amber-950" :
+                    isDraw ? "bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white" :
+                    ""
                   }
                 `}
               >

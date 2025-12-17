@@ -114,8 +114,15 @@ function createBotDeck(className: ClassName): Card[] {
 
 export function useGameState(initParams?: GameInitParams) {
   const [gameState, setGameState] = useState<GameState>(() => {
-    const pClass = initParams?.playerDeck.mainClass || "Vitalist";
+    let pClass = initParams?.playerDeck.mainClass || "Vitalist";
     const oClass = initParams?.opponentClass || "Slayer";
+
+    // Mimic Identity Swap Logic:
+    // If Player is Mimic AND Opponent is NOT Mimic, Player BECOMES the Opponent Class.
+    // Mimic vs Mimic remains "Mimic" (Knife Master).
+    if (pClass === "Mimic" && oClass !== "Mimic") {
+        pClass = oClass;
+    }
 
     // Use injected opponent deck for PvP or create bot deck
     let opponentDeck: Card[];
@@ -130,9 +137,8 @@ export function useGameState(initParams?: GameInitParams) {
         opponentDeck = createBotDeck(oClass);
     }
     
+    // Bot logic for Mimic Opponent (if bot is Mimic)
     if (oClass === "Mimic" && !initParams?.opponentDeck) {
-        // Bot Mimic: Add 6 Extra Mimic Cards
-        // ... (existing bot logic is fine as it's active only if !opponentDeck)
         const mimicClassData = MASTER_CLASSES["Mimic"];
         const extraMimicCards: Card[] = [];
         for (let i = 1; i <= 6; i++) {
@@ -148,12 +154,20 @@ export function useGameState(initParams?: GameInitParams) {
         }
         opponentDeck = shuffleDeck([...opponentDeck, ...extraMimicCards]);
     }
-    
     let playerDeck: Card[];
+    const originalPClass = initParams?.playerDeck.mainClass || "Vitalist";
 
-    if (pClass === "Mimic") {
-        // Mimic Logic: Copy Opponent's entire deck
-        // ...
+    if (originalPClass === "Mimic" && oClass !== "Mimic") {
+        // Mimic Identity Swap: Fully become the opponent (including Deck)
+        // We act exactly like them, so we use their deck.
+        playerDeck = opponentDeck.map(c => ({
+            ...c,
+            id: `mimic-copy-${c.id}-${Date.now()}-${Math.random()}`
+        }));
+        playerDeck = shuffleDeck(playerDeck);
+    } else if (pClass === "Mimic") {
+        // Mimic vs Mimic Case:
+        // Copy Opponent's Deck + Add 6 Extra Mimic Cards (Knife Master Logic)
         const mimicClassData = MASTER_CLASSES["Mimic"];
         const mimicCards: Card[] = [];
         for (let i = 1; i <= 6; i++) {
@@ -167,21 +181,16 @@ export function useGameState(initParams?: GameInitParams) {
                 color: mimicClassData.color
              });
         }
-        // Deep clone opponent deck
+        
+        // Clone opponent deck
         const opponentClones = opponentDeck.map(c => ({
             ...c, 
             id: `mimicked-${c.id}-${Date.now()}`
         }));
         
-        // If online, don't shuffle mimic either to keep consistency? 
-        // Actually Mimic shuffles combined deck.
-        // For online Mimic, this might still be tricky. Assuming current user is P1 Mimic.
-        // P1 shuffles locally. P2 sees P1 as Mimic. P2 creates P1's deck.
-        // If P1 shuffles, P2 doesn't know the order.
-        // TODO: Ideally P1 deck order should also be saved in DB. 
-        // For now, let's just fix the main shuffling.
         playerDeck = shuffleDeck([...opponentClones, ...mimicCards]);
     } else {
+        // Normal Case
         const inputCards = initParams?.playerDeck.cards;
         if (inputCards && inputCards.length > 0) {
             if (initParams?.isOnline) {

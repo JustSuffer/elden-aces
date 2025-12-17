@@ -225,6 +225,7 @@ export const translations = {
     // Victory
     "victory.title.win": "VICTORY!",
     "victory.title.loss": "DEFEAT",
+    "victory.title.draw": "DRAW",
     "victory.you": "You",
     "victory.opponent": "Opponent",
     "victory.hpDiff": "HP Difference",
@@ -625,6 +626,7 @@ export const translations = {
     // Zafer
     "victory.title.win": "ZAFER!",
     "victory.title.loss": "YENİLGİ",
+    "victory.title.draw": "BERABERE",
     "victory.you": "Sen",
     "victory.opponent": "Rakip",
     "victory.hpDiff": "Can Farkı",

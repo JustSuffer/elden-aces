@@ -991,15 +991,24 @@ export const GameMatch = ({ playerDeck, opponentClass, opponentDeck, opponentMov
             </div>
          )}
 
+        {/* Victory/Defeat/Draw Popup */}
         <VictoryPopup
-          open={(gameState.phase === "end" || !!gameState.winner) && !showWinConAnimation}
-          isVictory={gameState.winner === "p1"}
+          open={gameState.phase === "end"}
+          outcome={
+            gameState.winner === "p1" ? "win" :
+            gameState.winner === "draw" ? "draw" :
+            "loss"
+          }
           playerHP={gameState.playerHP}
           opponentHP={gameState.opponentHP}
-          winReason={gameState.winReason}
+          winReason={gameState.winReason || undefined}
+          // Only show damage details if not a special instant win/loss
           damageDetails={gameState.damageResult?.details}
           onReturnToMenu={() => navigate("/")}
-          delayMs={0}
+          delayMs={
+              (showWinConAnimation && winConAnimationType) ? 2500 : 
+              (gameState.winner === "p1") ? 1500 : 500
+          }
         />
 
         {/* Waiting for Opponent Overlay */}
