@@ -154,6 +154,7 @@ export function useGameState(initParams?: GameInitParams) {
         }
         opponentDeck = shuffleDeck([...opponentDeck, ...extraMimicCards]);
     }
+    
     let playerDeck: Card[];
     const originalPClass = initParams?.playerDeck.mainClass || "Vitalist";
 
@@ -167,20 +168,9 @@ export function useGameState(initParams?: GameInitParams) {
         playerDeck = shuffleDeck(playerDeck);
     } else if (pClass === "Mimic") {
         // Mimic vs Mimic Case:
-        // Copy Opponent's Deck + Add 6 Extra Mimic Cards (Knife Master Logic)
-        const mimicClassData = MASTER_CLASSES["Mimic"];
-        const mimicCards: Card[] = [];
-        for (let i = 1; i <= 6; i++) {
-             mimicCards.push({
-                id: `mimic-own-${i}-${Date.now()}`,
-                name: `${mimicClassData.name} Card`,
-                symbol: mimicClassData.symbol,
-                value: i,
-                type: "numeric",
-                classSymbol: mimicClassData.symbol,
-                color: mimicClassData.color
-             });
-        }
+        // Opponent is Mimic, so they already have 42 cards (36 Deck).
+        // We just specificially Copy Opponent's Deck. 
+        // We do NOT add extra cards because the copied deck already contains the 12 Mimic cards we need.
         
         // Clone opponent deck
         const opponentClones = opponentDeck.map(c => ({
@@ -188,7 +178,7 @@ export function useGameState(initParams?: GameInitParams) {
             id: `mimicked-${c.id}-${Date.now()}`
         }));
         
-        playerDeck = shuffleDeck([...opponentClones, ...mimicCards]);
+        playerDeck = shuffleDeck([...opponentClones]);
     } else {
         // Normal Case
         const inputCards = initParams?.playerDeck.cards;
@@ -733,7 +723,44 @@ export function useGameState(initParams?: GameInitParams) {
 
   const nextRound = useCallback(() => {
     setGameState((prev) => {
-      if (prev.round >= 7 || prev.playerHP <= 0 || prev.opponentHP <= 0) {
+      const pendingSkip = prev.pendingRoundSkip || 0;
+      const nextRoundNum = prev.round + 1 + pendingSkip;
+      const maxRounds = prev.maxRounds || 7;
+
+      // Check if game should end (Round Limit Exceeded)
+      if (nextRoundNum > maxRounds || prev.playerHP <= 0 || prev.opponentHP <= 0) {
+        
+        // SPECIAL CHRONOKEEPER ENDING LOGIC
+        // If Chronokeeper skipped PAST the final round (e.g. Round 6 -> Skip -> 8)
+        if (prev.playerClass === "Chronokeeper" && pendingSkip > 0 && nextRoundNum > maxRounds) {
+            let specialWinner: "p1" | "p2" | "draw" = "p1"; // Default: Chronokeeper wins
+            let reason = "CHRONO_TIME_VICTORY";
+
+            // Exception: Vs Vitalist or Mirror Chronokeeper -> HP Rule applies
+            if (prev.opponentClass === "Vitalist" || prev.opponentClass === "Chronokeeper") {
+                if (prev.playerHP > prev.opponentHP) {
+                    specialWinner = "p1";
+                    reason = "HP_VICTORY";
+                } else if (prev.opponentHP > prev.playerHP) {
+                    specialWinner = "p2";
+                    reason = "HP_VICTORY"; 
+                } else {
+                    specialWinner = "draw";
+                    reason = "DRAW_HP";
+                }
+            }
+            
+            return { 
+                ...prev, 
+                phase: "end", 
+                winner: specialWinner,
+                winReason: reason
+            };
+        }
+
+        // Standard End Game (Max Rounds Reached)
+        // Ensure Vitalist/Chronokeeper HP rule is respected here too (it is by default, but let's be explicit if needed)
+        // The default logic later handles HP comparison if no instant winner.
         return { ...prev, phase: "end" };
       }
 
