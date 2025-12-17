@@ -728,25 +728,43 @@ export function useGameState(initParams?: GameInitParams) {
         return { ...prev, phase: "end" };
       }
 
+      // P1 Draw Logic
       const isVesselP1 = prev.playerClass === "Vessel";
-      const p1HandCap = prev.playerClass === "Oracle" ? 8 : 6;
+      const isOracleP1 = prev.playerClass === "Oracle";
+      const p1BaseCap = 6; // Standard cap for everyone
+      
       const currentNormalCards = prev.playerHand.filter(c => {
          if (c.isStolen) return false;
          if (c.isCopied) return false;
          if (isVesselP1 && ["sigma", "delta", "gamma"].includes(c.specialType || "")) return false;
          return true;
       }).length;
-      const cardsNeeded = Math.max(0, p1HandCap - currentNormalCards);
       
+      let cardsNeeded = Math.max(0, p1BaseCap - currentNormalCards);
+      
+      // Oracle Passive: Always draw +2 cards ON TOP of the standard refill
+      // If hand is full (e.g. 6 cards), refill is 0, but Oracle still draws 2.
+      if (isOracleP1) {
+          cardsNeeded += 2;
+      }
+      
+      // P2 Draw Logic
       const isVesselP2 = prev.opponentClass === "Vessel";
-      const p2HandCap = prev.opponentClass === "Oracle" ? 8 : 6;
+      const isOracleP2 = prev.opponentClass === "Oracle";
+      const p2BaseCap = 6;
+
       const botNormalCards = prev.opponentHand.filter(c => {
          if (c.isStolen) return false;
          if (c.isCopied) return false;
          if (isVesselP2 && ["sigma", "delta", "gamma"].includes(c.specialType || "")) return false;
          return true;
       }).length;
-      const botCardsNeeded = Math.max(0, p2HandCap - botNormalCards);
+      
+      let botCardsNeeded = Math.max(0, p2BaseCap - botNormalCards);
+      
+      if (isOracleP2) {
+          botCardsNeeded += 2;
+      }
       
       const { dealt: playerCards, remaining: playerRemaining } = localDealCards(prev.playerDeck, cardsNeeded);
       const { dealt: opponentCards, remaining: opponentRemaining } = localDealCards(prev.opponentDeck, botCardsNeeded);
