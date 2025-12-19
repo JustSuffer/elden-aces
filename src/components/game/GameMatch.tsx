@@ -24,6 +24,7 @@ import { MASTER_CLASSES } from "@/data/gameData";
 import { ClassInfoPanel } from "@/components/game/ClassInfoPanel";
 import { SpecialCardInfoPanel } from "@/components/game/SpecialCardInfoPanel";
 import { useLanguage } from "@/hooks/useLanguage";
+import { ChatInterface } from "@/components/game/ChatInterface";
 
 interface GameMatchProps {
   playerDeck: SavedDeck;
@@ -556,6 +557,7 @@ export const GameMatch = ({ playerDeck, opponentClass, opponentDeck, opponentMov
                     max={playerClassData.initialHP}
                     label={`${t("game.damage.you")} (${gameState.playerClass})`}
                   />
+                  <ChatInterface playerClass={gameState.playerClass} className="ml-2" />
                 </div>
               </div>
 

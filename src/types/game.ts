@@ -50,6 +50,7 @@ export interface ClassData {
   counterLogic?: {
     [key in ClassName]?: string;
   };
+  threatenQuote?: string;
 }
 
 export interface GameSideEffects {
