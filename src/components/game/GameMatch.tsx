@@ -42,6 +42,7 @@ export const GameMatch = ({ playerDeck, opponentClass, opponentDeck, opponentMov
   const [showHourglass, setShowHourglass] = useState(false);
   const [showWinConAnimation, setShowWinConAnimation] = useState(false);
   const [winConAnimationType, setWinConAnimationType] = useState<string | null>(null);
+  const [nextRoundTimer, setNextRoundTimer] = useState(10);
 
   const {
     gameState,
@@ -269,6 +270,37 @@ export const GameMatch = ({ playerDeck, opponentClass, opponentDeck, opponentMov
     nextRound();
   };
 
+  // Auto-Next Round Timer
+  useEffect(() => {
+    // Only active when the Next Round / Round Result panel is visible
+    const isRoundResultVisible = (gameState.phase === "damage" || gameState.phase === "reveal") && gameState.damageResult;
+    
+    // Determine if this is the end of the game (navigating to menu instead of next round)
+    const maxRounds = gameState.maxRounds || 7;
+    const isGameEnd = gameState.round >= maxRounds || gameState.playerHP <= 0 || gameState.opponentHP <= 0;
+
+    if (isRoundResultVisible && !isGameEnd) {
+      if (nextRoundTimer > 0) {
+        const timer = setTimeout(() => setNextRoundTimer((prev) => prev - 1), 1000);
+        return () => clearTimeout(timer);
+      } else {
+        handleNextRound();
+      }
+    } else {
+      // Reset timer if we leave the result screen
+      if (nextRoundTimer !== 10) setNextRoundTimer(10);
+    }
+  }, [
+    gameState.phase, 
+    gameState.damageResult, 
+    gameState.round, 
+    gameState.maxRounds, 
+    gameState.playerHP, 
+    gameState.opponentHP, 
+    nextRoundTimer, 
+    handleNextRound // Included to be safe, though it might cause re-triggers, logic handles it.
+  ]);
+
   const requiredCards = gameState.playerMust4Cards ? 4 : 5;
   const canPlaceCards = gameState.playerField.filter((c) => c !== null).length < requiredCards;
   const isMimicVsMimic = gameState.playerClass === "Mimic" && gameState.opponentClass === "Mimic";
@@ -478,7 +510,7 @@ export const GameMatch = ({ playerDeck, opponentClass, opponentDeck, opponentMov
                 >
                   {gameState.round >= 6 || gameState.playerHP <= 0 || gameState.opponentHP <= 0
                     ? t("game.action.menu")
-                    : t("game.action.next")}
+                    : `${t("game.action.next")} (${nextRoundTimer})`}
                 </Button>
               </div>
             )}
