@@ -48,7 +48,15 @@ All colors MUST be HSL.
     --input: 0 0% 15%;
     --ring: 45 90% 50%;
     
-    --radius: 0.75rem;
+    --radius: 0.5rem;
+  
+    /* Mystical Arena Theme */
+    --arena-stone: 228 10% 9%; /* Converted #1a1b1e to HSL */
+    --arena-stone-light: 220 10% 19%; /* Converted #2c2e33 to HSL */
+    --arena-gold: 45 100% 65%; /* Converted #ffd700 to HSL */
+    --arena-gold-dim: 45 80% 39%; /* Converted #b8860b to HSL */
+    --arena-glow: 45 100% 65% / 0.5; /* Converted rgba(255, 215, 0, 0.5) to HSL */
+    --arena-shadow: 0 0% 0% / 0.7; /* Converted rgba(0, 0, 0, 0.7) to HSL */
     
     /* Additional Theme Colors */
     --phi-harmony: 120 60% 55%; /* Light Green - Φ */
@@ -236,4 +244,82 @@ All colors MUST be HSL.
       transform: translateY(4px);
       box-shadow: 0 0 0 hsl(var(--primary) / 0.5);
   }
+}
+
+/* Mystical Arena Styles */
+.arena-container {
+  background: radial-gradient(circle at center, #1a1b1e 0%, #000000 100%);
+  min-height: 100vh;
+  perspective: 1200px;
+  overflow: hidden;
+  position: relative;
+}
+
+.arena-board {
+  transform: rotateX(20deg) scale(0.95);
+  transform-style: preserve-3d;
+  transition: transform 0.5s ease;
+  box-shadow: 0 40px 80px rgba(0,0,0,0.8);
+  border: 4px solid #444;
+  border-image: linear-gradient(to bottom, #b8860b, #333) 1;
+  background: 
+    linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+    url('/arena_stone_texture_1766164178159.png');
+  background-size: cover;
+  border-radius: 12px;
+  padding: 3rem;
+  margin: 1rem auto;
+  max-width: 1300px;
+  position: relative;
+}
+
+.runic-slot {
+  position: relative;
+  background: rgba(0, 0, 0, 0.7);
+  border: 2px solid #333;
+  border-radius: 8px;
+  aspect-ratio: 0.7; /* Card aspect ratio */
+  transition: all 0.3s ease;
+  box-shadow: inset 0 0 30px rgba(0,0,0,0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.runic-slot:hover {
+  border-color: hsl(var(--arena-gold-dim));
+  box-shadow: 0 0 15px hsl(var(--arena-glow)), inset 0 0 20px rgba(0,0,0,0.8);
+}
+
+.runic-slot::before {
+  content: '';
+  position: absolute;
+  inset: 8px;
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  pointer-events: none;
+}
+
+.runic-slot-active {
+  border-color: hsl(var(--arena-gold));
+  box-shadow: 0 0 25px hsl(var(--arena-glow));
+}
+
+.stone-panel {
+  background: linear-gradient(135deg, #1a1b1e 0%, #2c2e33 100%);
+  border: 2px solid #555;
+  box-shadow: 
+    0 0 0 1px #000, 
+    0 8px 16px rgba(0,0,0,0.7), 
+    inset 0 1px 0 rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.gold-text-gradient {
+  background: linear-gradient(to bottom, #fff 0%, #ffd700 50%, #b8860b 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
 }
