@@ -23,7 +23,6 @@ import { MASTER_CLASSES } from "@/data/gameData";
 import { ClassInfoPanel } from "@/components/game/ClassInfoPanel";
 import { SpecialCardInfoPanel } from "@/components/game/SpecialCardInfoPanel";
 import { useLanguage } from "@/hooks/useLanguage";
-import { cn } from "@/lib/utils";
 
 interface GameMatchProps {
   playerDeck: SavedDeck;
@@ -253,32 +252,79 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
 
   return (
     <DndContext onDragEnd={handleDragEnd}>
-      <div className="min-h-screen bg-background flex flex-col relative w-full overflow-hidden">
+      <div className="min-h-screen bg-background flex flex-col relative">
         <ClassInfoPanel className={gameState.playerClass} />
         <SpecialCardInfoPanel />
-
-        {/* --- Header --- */}
-        <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-card/10 backdrop-blur-sm z-30 h-16">
-          {/* Left: Back Button */}
-          <Button variant="ghost" onClick={() => navigate("/")} className="gap-2 text-muted-foreground hover:text-primary">
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b border-border">
+          <Button variant="ghost" onClick={() => navigate("/")} className="gap-2">
             <ArrowLeft className="w-4 h-4" />
-            <span className="hidden md:inline">{t("victory.back")}</span>
+            {t("victory.back")}
           </Button>
-
-          {/* Center: Matchup & Round */}
-          <div className="flex flex-col items-center">
-            <div className="text-lg md:text-xl font-bold font-cinzel tracking-wider flex items-center gap-3">
-              <span style={{ color: playerClassData.color }} className="drop-shadow-sm">{gameState.playerClass}</span>
-              <span className="text-muted-foreground text-sm font-sans px-2">VS</span>
-              <span style={{ color: opponentClassData.color }} className="drop-shadow-sm">{gameState.opponentClass}</span>
+          <div className="text-center">
+            <div className="text-xl font-bold text-primary glow-gold font-cinzel">
+              <span style={{ color: playerClassData.color }}>{gameState.playerClass}</span>
+              {" vs "}
+              <span style={{ color: opponentClassData.color }}>{gameState.opponentClass}</span>
             </div>
+          </div>
+          <div className="w-24" />
+        </div>
 
-            {/* Round & Phase Pill */}
-            <div className="flex items-center gap-3 text-xs md:text-sm mt-0.5">
-              <span className="text-primary font-bold bg-primary/10 px-2 py-0.5 rounded border border-primary/20">
+        {/* Game Area */}
+        <div className="flex-1 flex flex-col items-center justify-between p-4 md:p-8 gap-4 md:gap-8">
+          {/* Opponent Area */}
+          <div className="w-full max-w-6xl flex items-start gap-4">
+            <DeckCounter count={gameState.opponentDeck.length} isOpponent />
+            <div className="flex-1 flex flex-col items-center gap-4">
+              <div className="flex flex-col w-full max-w-[200px] md:max-w-[300px]">
+                <div className="flex items-center gap-3">
+                  <span
+                    className="text-3xl font-bold"
+                    style={{ color: opponentClassData.color }}
+                  >
+                    {opponentClassData.symbol}
+                  </span>
+                  <HPBar
+                    current={gameState.opponentHP}
+                    max={opponentClassData.initialHP}
+                    label={`${t("game.damage.opponent")} (${gameState.opponentClass})`}
+                    isOpponent
+                  />
+                </div>
+              </div>
+              {/* Opponent Field with Knife Bar */}
+              <div className="flex items-center gap-4">
+                <div className="grid grid-cols-5 gap-2 md:gap-4 justify-items-center">
+                  {gameState.opponentField.map((card, i) => (
+                    <GameCard
+                      key={i}
+                      card={card}
+                      isPlaceholder={!card}
+                      faceDown={gameState.phase === "placement"}
+                      showEyeIcon={!!(card && gameState.phase !== "placement")}
+                    />
+                  ))}
+                </div>
+                {/* Opponent Knife Bar - Right side of field */}
+                {isMimicVsMimic && (
+                  <KnifeBar
+                    count={gameState.mimicCounter.p2}
+                    isOpponent
+                    className="ml-4"
+                  />
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Center Area - Round & Actions */}
+          <div className="flex flex-col items-center gap-4 md:gap-6">
+            <div className="text-center">
+              <h1 className="text-4xl md:text-5xl font-bold text-primary glow-gold mb-2 font-cinzel">
                 {t("game.round")} {gameState.round}/{gameState.maxRounds || 7}
-              </span>
-              <span className="text-muted-foreground">
+              </h1>
+              <p className="text-base md:text-lg text-muted-foreground tracking-wider">
                 {gameState.phase === "placement" && t("game.phase.placement")}
                 {gameState.phase === "reveal" && t("game.phase.reveal")}
                 {gameState.phase === "damage" && t("game.phase.damage")}
@@ -286,208 +332,203 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
                   gameState.playerHP > gameState.opponentHP ? t("game.phase.victory") :
                     gameState.playerHP < gameState.opponentHP ? t("game.phase.defeat") : t("game.phase.draw")
                 )}
-              </span>
+              </p>
+              <p className="text-sm text-muted-foreground mt-1">
+                {t("game.hand", { count: gameState.playerHand.length })}
+              </p>
             </div>
-          </div>
 
-          {/* Right: Spacer */}
-          <div className="w-24 flex justify-end">
-            {/* Placeholder */}
-          </div>
-        </div>
+            {gameState.phase === "placement" && (
+              <div className="flex gap-2 md:gap-4 flex-wrap justify-center">
+                <Button
+                  variant="default"
+                  size="lg"
+                  onClick={handleRollDice}
+                  disabled={
+                    gameState.playerClass === "Fateweaver"
+                      ? (gameState.playerDiceRolls || 0) <= 0
+                      : (gameState.diceUsed || 0) >= 2
+                  }
+                  className="gap-2 bg-psi hover:bg-psi/80"
+                >
+                  <Dices className="w-5 h-5" />
+                  {gameState.playerClass === "Fateweaver"
+                    ? `${t("game.dice.fateweaver")} (${gameState.playerDiceRolls || 0})`
+                    : `${t("game.dice.standard")} (${gameState.diceUsed || 0}/2)`
+                  }
+                </Button>
 
-        {/* --- Game Area (Flex Column) --- */}
-        <div className="flex-1 flex flex-col items-center justify-center p-2 md:p-4 gap-2 md:gap-4 relative w-full max-w-7xl mx-auto">
-
-          {/* 1. Opponent Area (Top) */}
-          <div className="w-full flex justify-center items-start relative min-h-[160px]">
-            {/* Opponent Info (Left) */}
-            <div className="absolute left-4 top-0 hidden md:flex flex-col items-start gap-2">
-              <DeckCounter count={gameState.opponentDeck.length} isOpponent />
-              <div className="flex items-center gap-2">
-                <span className="text-2xl font-bold" style={{ color: opponentClassData.color }}>{opponentClassData.symbol}</span>
-                <HPBar
-                  current={gameState.opponentHP}
-                  max={opponentClassData.initialHP}
-                  label={gameState.opponentClass}
-                  isOpponent
-                  className="w-32 md:w-48"
-                />
+                <Button
+                  variant="default"
+                  size="lg"
+                  onClick={handleEndPlacement}
+                  disabled={gameState.playerField.filter((c) => c !== null).length < 1}
+                  className="gap-2"
+                >
+                  {t("game.action.finish")}
+                </Button>
               </div>
-            </div>
+            )}
 
-            {/* Mobile Opponent Info (Compact) */}
-            <div className="md:hidden absolute left-0 top-0 flex flex-col gap-1 z-10 p-2 bg-black/40 rounded">
-              <div className="flex items-center gap-2">
-                <span className="text-xl font-bold" style={{ color: opponentClassData.color }}>{opponentClassData.symbol}</span>
-                <HPBar current={gameState.opponentHP} max={opponentClassData.initialHP} label="" isOpponent className="w-24" />
-              </div>
-            </div>
-
-
-            {/* Opponent Field */}
-            <div className="flex items-center gap-4 mt-2 md:mt-0">
-              <div className="grid grid-cols-5 gap-2 md:gap-4">
-                {gameState.opponentField.map((card, i) => (
-                  <GameCard
-                    key={i}
-                    card={card}
-                    isPlaceholder={!card}
-                    faceDown={gameState.phase === "placement"}
-                    showEyeIcon={!!(card && gameState.phase !== "placement")}
-                    className="w-16 h-24 md:w-24 md:h-36"
-                  />
-                ))}
-              </div>
-              {/* Opponent Knife Bar */}
-              {isMimicVsMimic && <KnifeBar count={gameState.mimicCounter.p2} isOpponent className="absolute right-0 top-0 scale-75 origin-top-right md:static md:scale-100" />}
-            </div>
-          </div>
-
-
-          {/* 2. Center Status / Damage Result (Absolute Center Overlay or Spacer) */}
-          <div className="w-full flex items-center justify-center min-h-[60px] relative z-20">
             {(gameState.phase === "damage" || gameState.phase === "reveal") && gameState.damageResult && (
-              <div className="absolute top-1/2 -translate-y-1/2 bg-card/80 backdrop-blur-xl border border-primary/30 rounded-lg p-4 shadow-2xl animate-in zoom-in-95 duration-300">
-                <div className="flex justify-between gap-8 text-lg font-bold mb-2">
-                  <span className="text-theta drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]">-{gameState.damageResult.playerDamage} SİZ</span>
-                  <span className="text-omega drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]">-{gameState.damageResult.opponentDamage} RAKİP</span>
-                </div>
-                <div className="space-y-1 text-center">
+              <div className="bg-card/50 backdrop-blur-sm border border-primary/30 rounded-lg p-4 md:p-6 max-w-2xl">
+                <div className="space-y-3">
+                  <div className="flex justify-between text-lg font-bold">
+                    <span className="text-theta">{t("game.damage.you")}: -{gameState.damageResult.playerDamage} HP</span>
+                    <span className="text-omega">{t("game.damage.opponent")}: -{gameState.damageResult.opponentDamage} HP</span>
+                  </div>
                   {gameState.damageResult.details.map((detail, i) => (
-                    <p key={i} className="text-xs text-muted-foreground">{detail}</p>
+                    <p key={i} className="text-sm text-muted-foreground">{detail}</p>
                   ))}
                 </div>
-                <Button variant="default" size="sm" onClick={handleNextRound} className="w-full mt-3 bg-primary/20 hover:bg-primary/30 text-primary border border-primary/50">
-                  {gameState.round >= 6 || gameState.playerHP <= 0 || gameState.opponentHP <= 0 ? t("game.action.menu") : t("game.action.next")}
+                <Button
+                  variant="default"
+                  size="lg"
+                  onClick={handleNextRound}
+                  className="w-full mt-4"
+                >
+                  {gameState.round >= 6 || gameState.playerHP <= 0 || gameState.opponentHP <= 0
+                    ? t("game.action.menu")
+                    : t("game.action.next")}
                 </Button>
               </div>
             )}
 
-            {/* End Phase / Victory Menu */}
             {gameState.phase === "end" && (
-              <div className="z-50 flex flex-col items-center">
-                {/* Visual Effects handled below in the separate block, just Menu Button here */}
-                <Button variant="outline" size="lg" onClick={() => navigate("/")} className="gap-2 relative z-50 bg-background/50 backdrop-blur border-primary text-primary hover:bg-primary hover:text-black transition-all">
-                  <ArrowLeft className="w-4 h-4" /> {t("game.action.menu")}
+              <div className="flex flex-col items-center gap-4 z-50">
+                {/* Visual Victory Effects */}
+                {gameState.winner === "p1" && gameState.playerClass === "Vitalist" && (
+                  <div className="absolute inset-0 pointer-events-none overflow-hidden flex flex-col items-center justify-center">
+                    {Array.from({ length: 30 }).map((_, i) => (
+                      <div key={i}
+                        className="absolute text-5xl opacity-0 animate-[ping_3s_ease-in-out_infinite]"
+                        style={{
+                          left: `${Math.random() * 100}%`,
+                          top: `${Math.random() * 100}%`,
+                          animationDelay: `${Math.random() * 2}s`,
+                          color: "#22c55e"
+                        }}
+                      >
+                        🍃
+                      </div>
+                    ))}
+                    <div className="text-6xl font-bold text-green-500 animate-bounce mt-20 drop-shadow-[0_0_20px_rgba(34,197,94,0.8)]">🌿 {t("game.anim.natureVictory")} 🌿</div>
+                  </div>
+                )}
+
+                {gameState.winner === "p1" && gameState.playerClass === "Decay" && (
+                  <div className="absolute inset-0 pointer-events-none overflow-hidden flex flex-col items-center justify-center bg-orange-900/10">
+                    {Array.from({ length: 30 }).map((_, i) => (
+                      <div key={i}
+                        className="absolute text-6xl opacity-70 animate-[pulse_1s_ease-in-out_infinite]"
+                        style={{
+                          left: `${Math.random() * 100}%`,
+                          top: `${Math.random() * 100}%`,
+                          animationDelay: `${Math.random() * 1}s`,
+                          color: "#fdba74"
+                        }}
+                      >
+                        🔥
+                      </div>
+                    ))}
+                    <div className="text-6xl font-bold text-orange-500 animate-pulse drop-shadow-[0_0_30px_rgba(249,115,22,1)] z-50">
+                      🔥 {t("game.anim.victoryBurned")} 🔥
+                    </div>
+                  </div>
+                )}
+
+                {gameState.winner === "p1" && gameState.playerClass === "Slayer" && (
+                  <div className="absolute inset-0 pointer-events-none overflow-hidden flex flex-col items-center justify-center bg-red-950/30">
+                    {Array.from({ length: 40 }).map((_, i) => (
+                      <div key={i}
+                        className="absolute text-5xl opacity-80 animate-[ping_4s_ease-in-out_infinite]"
+                        style={{
+                          left: `${Math.random() * 100}%`,
+                          top: `${Math.random() * 100}%`,
+                          animationDelay: `${Math.random() * 2}s`,
+                          color: "#ef4444",
+                          transform: `scale(${Math.random() + 0.5})`
+                        }}
+                      >
+                        🩸
+                      </div>
+                    ))}
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_#450a0a_100%)] opacity-60 animate-pulse"></div>
+                    <div className="text-7xl font-cinzel font-black text-red-600 animate-bounce mt-10 drop-shadow-[0_0_50px_rgba(220,38,38,1)] z-50 tracking-widest uppercase">
+                      🩸 {t("game.anim.massacre")} 🩸
+                    </div>
+                    <div className="text-2xl text-red-400 font-bold mt-4 animate-pulse">{t("game.anim.oneHit")}</div>
+                  </div>
+                )}
+
+                <Button variant="default" size="lg" onClick={() => navigate("/")} className="gap-2 relative z-50 mt-10">
+                  {t("game.action.menu")}
                 </Button>
               </div>
             )}
           </div>
 
-
-          {/* 3. Player Area (Bottom) */}
-          <div className="w-full flex justify-center items-end relative min-h-[280px]">
-
-            {/* Player Info (Left Side Panel) */}
-            <div className="absolute left-4 bottom-0 hidden md:flex flex-col items-start gap-3">
-              <DeckCounter count={gameState.playerDeck.length} />
-              <div className="flex items-center gap-2">
-                <span className="text-3xl font-bold" style={{ color: playerClassData.color }}>{playerClassData.symbol}</span>
-                <HPBar
-                  current={gameState.playerHP}
-                  max={playerClassData.initialHP}
-                  label={gameState.playerClass}
-                  className="w-32 md:w-56"
-                />
-              </div>
-            </div>
-
-            {/* Mobile Player Info */}
-            <div className="md:hidden absolute left-0 bottom-[180px] z-10 p-2 bg-black/40 rounded">
-              <div className="flex items-center gap-2">
-                <span className="text-xl font-bold" style={{ color: playerClassData.color }}>{playerClassData.symbol}</span>
-                <HPBar current={gameState.playerHP} max={playerClassData.initialHP} label="" className="w-24" />
-              </div>
-            </div>
-
-            {/* Main Play Area (Field + Hand) */}
-            <div className="flex flex-col items-center gap-4 md:gap-8">
-              {/* Player Field */}
-              <div className="flex items-center gap-4 relative">
-                <div className="grid grid-cols-5 gap-2 md:gap-4">
+          {/* Player Area */}
+          <div className="w-full max-w-6xl flex items-end gap-4">
+            <DeckCounter count={gameState.playerDeck.length} />
+            <div className="flex-1 flex flex-col items-center gap-4">
+              {/* Player Field - Droppable Slots with Knife Bar */}
+              <div className="flex items-center gap-4">
+                <div className="grid grid-cols-5 gap-2 md:gap-4 mb-4 justify-items-center">
                   {gameState.playerField.map((card, i) => (
                     <div key={i} data-slot={i}>
                       <DroppableSlot
                         id={`field-${i}`}
                         card={card}
                         onRemove={card ? () => handleFieldCardClick(i) : undefined}
-                        className="w-16 h-24 md:w-24 md:h-36"
                       />
                     </div>
                   ))}
                 </div>
-
-                {/* Mimic Knife Bar */}
-                {isMimicVsMimic && <KnifeBar count={gameState.mimicCounter.p1} className="absolute right-0 bottom-40 scale-75 origin-bottom-right md:static md:scale-100" />}
-
-                {/* --- RIGHT ACTION PANEL (New!) --- */}
-                {gameState.phase === "placement" && (
-                  <div className="absolute right-[-140px] top-0 bottom-0 flex flex-col justify-center gap-3">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={handleRollDice}
-                      disabled={gameState.playerClass === "Fateweaver" ? (gameState.playerDiceRolls || 0) <= 0 : (gameState.diceUsed || 0) >= 2}
-                      className="w-16 h-16 rounded-full border-2 border-psi/50 bg-psi/10 hover:bg-psi/20 hover:border-psi text-psi shadow-[0_0_15px_rgba(168,85,247,0.3)] transition-all active:scale-95 flex flex-col gap-1"
-                      title={t("game.dice.standard")}
-                    >
-                      <Dices className="w-6 h-6" />
-                      <span className="text-[10px] font-bold">
-                        {gameState.playerClass === "Fateweaver" ? (gameState.playerDiceRolls || 0) : `${gameState.diceUsed || 0}/2`}
-                      </span>
-                    </Button>
-
-                    <div className="h-4" /> {/* Spacer */}
-
-                    <Button
-                      variant="ghost"
-                      onClick={handleEndPlacement}
-                      disabled={gameState.playerField.filter((c) => c !== null).length < 1}
-                      className={cn(
-                        "w-16 h-16 rounded-full border-2 transition-all flex flex-col gap-1 active:scale-95",
-                        gameState.playerField.filter((c) => c !== null).length >= 1
-                          ? "border-primary bg-primary/10 text-primary hover:bg-primary hover:text-black shadow-[0_0_20px_rgba(234,179,8,0.4)] animate-pulse"
-                          : "border-muted bg-muted/10 text-muted-foreground opacity-50"
-                      )}
-                      title={t("game.action.finish")}
-                    >
-                      <Hourglass className="w-6 h-6" />
-                      <span className="text-[10px] font-bold">GO</span>
-                    </Button>
-                  </div>
+                {/* Player Knife Bar - Right side of field */}
+                {isMimicVsMimic && (
+                  <KnifeBar
+                    count={gameState.mimicCounter.p1}
+                    className="ml-4"
+                  />
                 )}
               </div>
 
-              {/* Player Hand */}
-              <div className="min-h-[110px] w-full flex justify-center pb-2">
-                {gameState.phase === "placement" ? (
-                  <DroppableSlot id="hand-dropzone" isPlaceholder className="w-full border-none bg-transparent shadow-none" card={null}>
-                    <div className="flex gap-2 md:gap-4 justify-center items-end px-4">
-                      {gameState.playerHand.map((card, i) => (
-                        <div key={card.id} className="transition-transform hover:-translate-y-4 duration-200">
-                          <DraggableCard
-                            card={card}
-                            id={`card-${i}`}
-                            disabled={!canPlaceCards}
-                            onTap={() => handleTapToPlace(i)}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  </DroppableSlot>
-                ) : (
-                  /* If not placement, just show empty space or remaining cards nicely */
-                  <div className="h-[100px] w-full flex justify-center items-center text-muted-foreground/30 text-sm italic font-cinzel">
-                    {t("game.phase.combat")}
-                  </div>
-                )}
+              <div className="flex flex-col w-full max-w-[200px] md:max-w-[300px]">
+                <div className="flex items-center gap-3">
+                  <span
+                    className="text-3xl font-bold"
+                    style={{ color: playerClassData.color }}
+                  >
+                    {playerClassData.symbol}
+                  </span>
+                  <HPBar
+                    current={gameState.playerHP}
+                    max={playerClassData.initialHP}
+                    label={`${t("game.damage.you")} (${gameState.playerClass})`}
+                  />
+                </div>
               </div>
+
+              {/* Player Hand - Draggable Cards */}
+              {gameState.phase === "placement" && (
+                <DroppableSlot id="hand-dropzone" isPlaceholder className="w-full" card={null}>
+                  <div className="flex gap-2 md:gap-3 mt-8 md:mt-16 flex-wrap justify-center">
+                    {gameState.playerHand.map((card, i) => (
+                      <DraggableCard
+                        key={card.id}
+                        card={card}
+                        id={`card-${i}`}
+                        disabled={!canPlaceCards}
+                        onTap={() => handleTapToPlace(i)}
+                      />
+                    ))}
+                  </div>
+                </DroppableSlot>
+              )}
             </div>
           </div>
         </div>
-
-        {/* --- End of Game Area --- */}
 
         {/* VFX Layer */}
         <VfxLayer effects={vfxEffects} />
@@ -699,27 +740,6 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
             <p className="text-xl text-amber-200/80 mt-4 tracking-[0.5em] animate-in fade-in delay-500 duration-1000">
               {t("game.anim.fateRewritten")}
             </p>
-          </div>
-        )}
-
-        {/* Visual Victory Effects */}
-        {gameState.phase === "end" && (
-          <div className="absolute inset-0 pointer-events-none z-0">
-            {gameState.winner === "p1" && gameState.playerClass === "Vitalist" && (
-              <div className="w-full h-full flex flex-col items-center justify-center">
-                <div className="text-6xl font-bold text-green-500 animate-bounce drop-shadow-[0_0_20px_rgba(34,197,94,0.8)]">🌿 {t("game.anim.natureVictory")} 🌿</div>
-              </div>
-            )}
-            {gameState.winner === "p1" && gameState.playerClass === "Decay" && (
-              <div className="w-full h-full flex flex-col items-center justify-center bg-orange-900/10">
-                <div className="text-6xl font-bold text-orange-500 animate-pulse drop-shadow-[0_0_30px_rgba(249,115,22,1)]">🔥 {t("game.anim.victoryBurned")} 🔥</div>
-              </div>
-            )}
-            {gameState.winner === "p1" && gameState.playerClass === "Slayer" && (
-              <div className="w-full h-full flex flex-col items-center justify-center bg-red-950/30">
-                <div className="text-7xl font-cinzel font-black text-red-600 animate-bounce drop-shadow-[0_0_50px_rgba(220,38,38,1)] tracking-widest uppercase">🩸 {t("game.anim.massacre")} 🩸</div>
-              </div>
-            )}
           </div>
         )}
 
