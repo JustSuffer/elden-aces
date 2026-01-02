@@ -109,36 +109,54 @@ export type Database = {
       matches: {
         Row: {
           created_at: string
+          current_round: number | null
           game_state: Json | null
           id: string
+          phase: string | null
           player1_deck: Json
+          player1_field: Json | null
           player1_id: string
+          player1_ready: boolean | null
           player2_deck: Json
+          player2_field: Json | null
           player2_id: string
+          player2_ready: boolean | null
           status: string
           updated_at: string
           winner_id: string | null
         }
         Insert: {
           created_at?: string
+          current_round?: number | null
           game_state?: Json | null
           id?: string
+          phase?: string | null
           player1_deck: Json
+          player1_field?: Json | null
           player1_id: string
+          player1_ready?: boolean | null
           player2_deck: Json
+          player2_field?: Json | null
           player2_id: string
+          player2_ready?: boolean | null
           status?: string
           updated_at?: string
           winner_id?: string | null
         }
         Update: {
           created_at?: string
+          current_round?: number | null
           game_state?: Json | null
           id?: string
+          phase?: string | null
           player1_deck?: Json
+          player1_field?: Json | null
           player1_id?: string
+          player1_ready?: boolean | null
           player2_deck?: Json
+          player2_field?: Json | null
           player2_id?: string
+          player2_ready?: boolean | null
           status?: string
           updated_at?: string
           winner_id?: string | null
