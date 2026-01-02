@@ -18,7 +18,7 @@ import { useState, useEffect } from "react";
 import { GameCard } from "@/components/game/GameCard";
 import { AudioManager } from "@/utils/AudioManager";
 import { SavedDeck } from "@/types/deck";
-import { ClassName } from "@/types/game";
+import { ClassName, Card } from "@/types/game";
 import { MASTER_CLASSES } from "@/data/gameData";
 import { ClassInfoPanel } from "@/components/game/ClassInfoPanel";
 import { SpecialCardInfoPanel } from "@/components/game/SpecialCardInfoPanel";
@@ -27,9 +27,23 @@ import { useLanguage } from "@/hooks/useLanguage";
 interface GameMatchProps {
   playerDeck: SavedDeck;
   opponentClass: ClassName;
+  // Online game props
+  isOnline?: boolean;
+  opponentDeck?: SavedDeck;
+  opponentMoves?: (Card | null)[];
+  onMovesReady?: (moves: (Card | null)[]) => Promise<void>;
+  onRoundChange?: (newRound: number) => Promise<void>;
 }
 
-export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
+export const GameMatch = ({ 
+  playerDeck, 
+  opponentClass,
+  isOnline = false,
+  opponentDeck,
+  opponentMoves,
+  onMovesReady,
+  onRoundChange
+}: GameMatchProps) => {
   const navigate = useNavigate();
   const { t } = useLanguage();
   const [vfxEffects, setVfxEffects] = useState<VfxEffect[]>([]);
@@ -745,7 +759,7 @@ export const GameMatch = ({ playerDeck, opponentClass }: GameMatchProps) => {
 
         <VictoryPopup
           open={gameState.phase === "end" && !showWinConAnimation}
-          isVictory={gameState.winner === "p1"}
+          outcome={gameState.winner === "p1" ? "win" : gameState.winner === "p2" ? "loss" : "draw"}
           playerHP={gameState.playerHP}
           opponentHP={gameState.opponentHP}
           winReason={gameState.winReason}
