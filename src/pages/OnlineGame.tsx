@@ -309,6 +309,7 @@ const OnlineGame = () => {
         <SafeGameMatch
           playerDeck={playerDeck}
           opponentClass={opponentClass}
+          isOnline={true}
           opponentDeck={opponentDeck}
           opponentMoves={opponentMoves}
           onMovesReady={handleMovesReady}
