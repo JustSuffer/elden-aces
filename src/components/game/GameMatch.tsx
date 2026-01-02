@@ -72,7 +72,7 @@ export const GameMatch = ({
 
   // Sync opponent moves when received in online mode
   useEffect(() => {
-    if (isOnline && opponentMoves && opponentMoves.length > 0 && gameState.phase === "waiting") {
+    if (isOnline && opponentMoves && gameState.phase === "waiting") {
       console.log("[GameMatch] Opponent moves received, syncing:", opponentMoves);
       syncOnlineRound(opponentMoves);
     }

@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { SavedDeck } from "@/types/deck";
-import { MASTER_CLASSES } from "@/data/gameData";
+import { MASTER_CLASSES, shuffleDeck } from "@/data/gameData";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -280,6 +280,10 @@ const Play = () => {
       // 2. Add self to queue
       // Deep clone to ensure clean JSON data
       const deckData = JSON.parse(JSON.stringify(selectedDeck));
+      // IMPORTANT: Shuffle once at match-creation time (so both clients see same order)
+      if (Array.isArray(deckData.cards)) {
+        deckData.cards = shuffleDeck(deckData.cards);
+      }
 
       const { data: queueEntry, error } = await supabase
         .from("matchmaking_queue" as any)
