@@ -62,12 +62,21 @@ export const GameMatch = ({
     cancelDiceResult,
     calculateRoundDamage,
     nextRound,
-    handleCardSelection
-  } = useGameState({ playerDeck, opponentClass });
+    handleCardSelection,
+    syncOnlineRound
+  } = useGameState({ playerDeck, opponentClass, opponentDeck: opponentDeck?.cards, isOnline });
 
   useEffect(() => {
     AudioManager.init();
   }, []);
+
+  // Sync opponent moves when received in online mode
+  useEffect(() => {
+    if (isOnline && opponentMoves && opponentMoves.length > 0 && gameState.phase === "waiting") {
+      console.log("[GameMatch] Opponent moves received, syncing:", opponentMoves);
+      syncOnlineRound(opponentMoves);
+    }
+  }, [isOnline, opponentMoves, gameState.phase, syncOnlineRound]);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -146,7 +155,7 @@ export const GameMatch = ({
     rollDice();
   };
 
-  const handleEndPlacement = () => {
+  const handleEndPlacement = async () => {
     const placedCards = gameState.playerField.filter((c) => c !== null).length;
 
     if (placedCards < 1) {
@@ -155,9 +164,15 @@ export const GameMatch = ({
     }
 
     endPlacement();
-
     AudioManager.play("card-flip", 0.7);
 
+    // Online mode: Send moves to server and wait for opponent
+    if (isOnline && onMovesReady) {
+      await onMovesReady(gameState.playerField);
+      return; // Wait for opponent moves via props
+    }
+
+    // Offline mode: Calculate damage after animation
     setTimeout(() => {
       gameState.playerField.forEach((card, index) => {
         if (card?.specialType === "gamma") {
@@ -192,18 +207,23 @@ export const GameMatch = ({
     }, 2000);
   };
 
-  const handleNextRound = () => {
+  const handleNextRound = async () => {
     const maxRounds = gameState.maxRounds || 7;
+    const newRound = gameState.round + 1 + (gameState.pendingRoundSkip || 0);
 
     if (gameState.pendingRoundSkip && gameState.pendingRoundSkip > 0) {
       setShowHourglass(true);
-      setTimeout(() => {
+      setTimeout(async () => {
         setShowHourglass(false);
         if (gameState.round >= maxRounds || gameState.playerHP <= 0 || gameState.opponentHP <= 0) {
           navigate("/");
           return;
         }
         nextRound();
+        // Notify server about round change in online mode
+        if (isOnline && onRoundChange) {
+          await onRoundChange(newRound);
+        }
       }, 2500);
       return;
     }
@@ -213,6 +233,11 @@ export const GameMatch = ({
       return;
     }
     nextRound();
+    
+    // Notify server about round change in online mode
+    if (isOnline && onRoundChange) {
+      await onRoundChange(newRound);
+    }
   };
 
   const requiredCards = gameState.playerMust4Cards ? 4 : 5;
