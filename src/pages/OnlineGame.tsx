@@ -81,6 +81,18 @@ const OnlineGame = () => {
   const [opponentReady, setOpponentReady] = useState(false);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
+  // Keep latest values for realtime callbacks (avoid stale closures + partial payload overwrites)
+  const matchRef = useRef<Match | null>(null);
+  const currentRoundRef = useRef<number>(1);
+
+  useEffect(() => {
+    matchRef.current = match;
+  }, [match]);
+
+  useEffect(() => {
+    currentRoundRef.current = currentRound;
+  }, [currentRound]);
+
   // Determine if current user is player 1
   const isPlayer1 = match ? user?.id === match.player1_id : false;
 
@@ -104,6 +116,7 @@ const OnlineGame = () => {
       }
 
       console.log("[OnlineGame] Match loaded:", data);
+      matchRef.current = data;
       setMatch(data);
       setCurrentRound(data.current_round || 1);
       setIsLoading(false);
@@ -130,37 +143,73 @@ const OnlineGame = () => {
         },
         (payload) => {
           console.log("[OnlineGame] Realtime update received:", payload);
-          const newMatch = payload.new as Match;
-          
-          // Update match state
-          setMatch(newMatch);
-          
-          // Sync current round from database
-          if (newMatch.current_round && newMatch.current_round !== currentRound) {
-            console.log("[OnlineGame] Syncing round from DB:", newMatch.current_round);
-            setCurrentRound(newMatch.current_round);
+
+          const patch = payload.new as Partial<Match>;
+          // IMPORTANT: UPDATE payload may not contain the full row unless replica identity is FULL.
+          // So we merge the patch into the last known match to avoid losing deck data (black screen).
+          const merged: Match = {
+            ...(matchRef.current ?? ({} as Match)),
+            ...(patch as any),
+          };
+
+          matchRef.current = merged;
+          setMatch(merged);
+
+          // Sync current round from database (use ref to avoid stale closure)
+          const roundFromDb = merged.current_round || 1;
+          if (roundFromDb !== currentRoundRef.current) {
+            console.log("[OnlineGame] Syncing round from DB:", roundFromDb);
+            setCurrentRound(roundFromDb);
+
             // If round changed and both ready states are false, it's a new round
-            if (!newMatch.player1_ready && !newMatch.player2_ready) {
+            if (!merged.player1_ready && !merged.player2_ready) {
               setOpponentMoves(undefined);
               setOpponentReady(false);
               setWaitingForOpponent(false);
             }
           }
-          
+
           // Check if opponent is ready
-          const isP1 = user.id === newMatch.player1_id;
-          const opponentIsReady = isP1 ? newMatch.player2_ready : newMatch.player1_ready;
-          const myReady = isP1 ? newMatch.player1_ready : newMatch.player2_ready;
-          
-          console.log("[OnlineGame] Ready states - Me:", myReady, "Opponent:", opponentIsReady, "Round:", newMatch.current_round);
-          
-          setOpponentReady(opponentIsReady);
-          
+          const isP1 = user.id === merged.player1_id;
+          const opponentIsReady = isP1 ? merged.player2_ready : merged.player1_ready;
+          const myReady = isP1 ? merged.player1_ready : merged.player2_ready;
+
+          console.log(
+            "[OnlineGame] Ready states - Me:",
+            myReady,
+            "Opponent:",
+            opponentIsReady,
+            "Round:",
+            merged.current_round
+          );
+
+          setOpponentReady(!!opponentIsReady);
+
           // If both players are ready, sync the opponent's field
           if (myReady && opponentIsReady) {
-            const opponentField = isP1 ? newMatch.player2_field : newMatch.player1_field;
+            const opponentField = isP1 ? merged.player2_field : merged.player1_field;
             console.log("[OnlineGame] Both ready! Opponent field:", opponentField);
-            setOpponentMoves(opponentField || []);
+
+            // If realtime payload didn't include the field, fetch it once from DB to avoid deadlock.
+            if (opponentField === undefined || opponentField === null) {
+              void (async () => {
+                console.log("[OnlineGame] Opponent field missing in realtime payload; fetching from DB...");
+                const { data } = (await supabase
+                  .from("matches" as any)
+                  .select("player1_field, player2_field")
+                  .eq("id", matchId)
+                  .single()) as { data: Match | null };
+
+                const fetchedField = isP1 ? data?.player2_field : data?.player1_field;
+                console.log("[OnlineGame] Fetched opponent field:", fetchedField);
+                setOpponentMoves((fetchedField as any) || []);
+                setWaitingForOpponent(false);
+                toast.success("Rakip hazır! Kartlar açılıyor...");
+              })();
+              return;
+            }
+
+            setOpponentMoves(opponentField as any);
             setWaitingForOpponent(false);
             toast.success("Rakip hazır! Kartlar açılıyor...");
           }
