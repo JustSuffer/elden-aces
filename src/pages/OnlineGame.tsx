@@ -93,9 +93,12 @@ const OnlineGame = () => {
     currentRoundRef.current = currentRound;
   }, [currentRound]);
 
+  // Validate DB field arrays (avoid resolving with empty/partial data)
+  const isValidField = (field: unknown): field is (Card | null)[] =>
+    Array.isArray(field) && field.length === 5;
+
   // Determine if current user is player 1
   const isPlayer1 = match ? user?.id === match.player1_id : false;
-
   // Fetch match data
   useEffect(() => {
     if (!matchId || !user) return;
@@ -190,10 +193,10 @@ const OnlineGame = () => {
             const opponentField = isP1 ? merged.player2_field : merged.player1_field;
             console.log("[OnlineGame] Both ready! Opponent field:", opponentField);
 
-            // If realtime payload didn't include the field, fetch it once from DB to avoid deadlock.
-            if (opponentField === undefined || opponentField === null) {
+            // Never resolve a round with an empty/partial opponent field (prevents 'bot gibi' oynama).
+            if (!isValidField(opponentField)) {
               void (async () => {
-                console.log("[OnlineGame] Opponent field missing in realtime payload; fetching from DB...");
+                console.log("[OnlineGame] Opponent field invalid/missing; fetching from DB...");
                 const { data } = (await supabase
                   .from("matches" as any)
                   .select("player1_field, player2_field")
@@ -202,14 +205,19 @@ const OnlineGame = () => {
 
                 const fetchedField = isP1 ? data?.player2_field : data?.player1_field;
                 console.log("[OnlineGame] Fetched opponent field:", fetchedField);
-                setOpponentMoves((fetchedField as any) || []);
-                setWaitingForOpponent(false);
-                toast.success("Rakip hazır! Kartlar açılıyor...");
+
+                if (isValidField(fetchedField)) {
+                  setOpponentMoves(fetchedField);
+                  setWaitingForOpponent(false);
+                  toast.success("Rakip hazır! Kartlar açılıyor...");
+                } else {
+                  console.warn("[OnlineGame] Opponent field still invalid; keeping waiting state.");
+                }
               })();
               return;
             }
 
-            setOpponentMoves(opponentField as any);
+            setOpponentMoves(opponentField);
             setWaitingForOpponent(false);
             toast.success("Rakip hazır! Kartlar açılıyor...");
           }
@@ -268,9 +276,15 @@ const OnlineGame = () => {
       if (opponentIsReady) {
         const opponentField = isPlayer1 ? currentMatch.player2_field : currentMatch.player1_field;
         console.log("[OnlineGame] Opponent was already ready! Field:", opponentField);
-        setOpponentMoves(opponentField || []);
-        setWaitingForOpponent(false);
-        toast.success("Rakip zaten hazırdı! Kartlar açılıyor...");
+
+        if (isValidField(opponentField)) {
+          setOpponentMoves(opponentField);
+          setWaitingForOpponent(false);
+          toast.success("Rakip zaten hazırdı! Kartlar açılıyor...");
+        } else {
+          console.warn("[OnlineGame] Opponent ready but field invalid; keeping waiting state.");
+          // Keep waitingForOpponent=true until a valid field arrives.
+        }
       }
     }
   }, [match, user, isPlayer1, currentRound]);
