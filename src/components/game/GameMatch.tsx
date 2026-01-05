@@ -72,7 +72,8 @@ export const GameMatch = ({
 
   // Sync opponent moves when received in online mode
   useEffect(() => {
-    if (isOnline && opponentMoves && gameState.phase === "waiting") {
+    // Only sync if we have valid opponent moves (array with actual cards or nulls, not undefined)
+    if (isOnline && opponentMoves !== undefined && Array.isArray(opponentMoves) && gameState.phase === "waiting") {
       console.log("[GameMatch] Opponent moves received, syncing:", opponentMoves);
       syncOnlineRound(opponentMoves);
     }

@@ -135,12 +135,24 @@ const OnlineGame = () => {
           // Update match state
           setMatch(newMatch);
           
+          // Sync current round from database
+          if (newMatch.current_round && newMatch.current_round !== currentRound) {
+            console.log("[OnlineGame] Syncing round from DB:", newMatch.current_round);
+            setCurrentRound(newMatch.current_round);
+            // If round changed and both ready states are false, it's a new round
+            if (!newMatch.player1_ready && !newMatch.player2_ready) {
+              setOpponentMoves(undefined);
+              setOpponentReady(false);
+              setWaitingForOpponent(false);
+            }
+          }
+          
           // Check if opponent is ready
           const isP1 = user.id === newMatch.player1_id;
           const opponentIsReady = isP1 ? newMatch.player2_ready : newMatch.player1_ready;
           const myReady = isP1 ? newMatch.player1_ready : newMatch.player2_ready;
           
-          console.log("[OnlineGame] Ready states - Me:", myReady, "Opponent:", opponentIsReady);
+          console.log("[OnlineGame] Ready states - Me:", myReady, "Opponent:", opponentIsReady, "Round:", newMatch.current_round);
           
           setOpponentReady(opponentIsReady);
           
@@ -214,32 +226,37 @@ const OnlineGame = () => {
     }
   }, [match, user, isPlayer1, currentRound]);
 
-  // Handle round change - reset ready states
+  // Handle round change - reset ready states (ONLY Player 1 does this to prevent race condition)
   const handleRoundChange = useCallback(async (newRound: number) => {
     if (newRound <= currentRound || !match) return;
 
-    console.log("[OnlineGame] Round changing from", currentRound, "to", newRound);
+    console.log("[OnlineGame] Round changing from", currentRound, "to", newRound, "isPlayer1:", isPlayer1);
+    
+    // Reset local state immediately for both players
     setCurrentRound(newRound);
     setOpponentMoves(undefined);
     setOpponentReady(false);
     setWaitingForOpponent(false);
 
-    // Reset ready states in database for new round
-    const { error } = await supabase
-      .from("matches" as any)
-      .update({
-        player1_ready: false,
-        player2_ready: false,
-        player1_field: [],
-        player2_field: [],
-        current_round: newRound
-      })
-      .eq("id", match.id);
+    // ONLY Player 1 resets the database to prevent race condition
+    if (isPlayer1) {
+      console.log("[OnlineGame] Player 1 resetting round in database");
+      const { error } = await supabase
+        .from("matches" as any)
+        .update({
+          player1_ready: false,
+          player2_ready: false,
+          player1_field: [],
+          player2_field: [],
+          current_round: newRound
+        })
+        .eq("id", match.id);
 
-    if (error) {
-      console.error("[OnlineGame] Error resetting round:", error);
+      if (error) {
+        console.error("[OnlineGame] Error resetting round:", error);
+      }
     }
-  }, [currentRound, match]);
+  }, [currentRound, match, isPlayer1]);
 
   // Loading state
   if (isLoading) {
