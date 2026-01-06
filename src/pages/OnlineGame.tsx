@@ -1,13 +1,15 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useRematch } from "@/hooks/useRematch";
 import { Button } from "@/components/ui/button";
-import { Loader2, Wifi, ArrowLeft, Clock, Users } from "lucide-react";
+import { Loader2, Wifi, ArrowLeft, Clock, Users, RotateCcw, Check, X } from "lucide-react";
 import { SavedDeck } from "@/types/deck";
 import { GameMatch } from "@/components/game/GameMatch";
 import { ClassName, Card } from "@/types/game";
 import { toast } from "sonner";
+import { calculateNewRatings, calculateDrawRatings } from "@/utils/eloCalculator";
 
 interface Match {
   id: string;
@@ -22,6 +24,9 @@ interface Match {
   player2_ready: boolean;
   current_round: number;
   phase: string;
+  winner_id?: string | null;
+  player1_final_hp?: number;
+  player2_final_hp?: number;
 }
 
 // Basic Error Boundary for catching render crashes
@@ -70,6 +75,8 @@ const SafeGameMatch = (props: React.ComponentProps<typeof GameMatch>) => {
 
 const OnlineGame = () => {
   const { matchId } = useParams<{ matchId: string }>();
+  const [searchParams] = useSearchParams();
+  const isReconnect = searchParams.get("reconnect") === "true";
   const navigate = useNavigate();
   const { user } = useAuth();
   const [match, setMatch] = useState<Match | null>(null);
@@ -79,8 +86,18 @@ const OnlineGame = () => {
   const [currentRound, setCurrentRound] = useState(1);
   const [waitingForOpponent, setWaitingForOpponent] = useState(false);
   const [opponentReady, setOpponentReady] = useState(false);
+  const [gameEnded, setGameEnded] = useState(false);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
-
+  
+  // Rematch hook
+  const {
+    rematchState,
+    isLoading: rematchLoading,
+    sendRematchRequest,
+    acceptRematch,
+    declineRematch,
+    cancelRematchRequest
+  } = useRematch(matchId);
   // Keep latest values for realtime callbacks (avoid stale closures + partial payload overwrites)
   const matchRef = useRef<Match | null>(null);
   const currentRoundRef = useRef<number>(1);
@@ -332,6 +349,87 @@ const OnlineGame = () => {
       console.log("[OnlineGame] Round advanced in DB.");
     }
   }, [match]);
+
+  // Handle game end - update stats and ELO
+  const handleGameEnd = useCallback(async (winnerId: string | null, playerHP: number, opponentHP: number) => {
+    if (!match || !user || gameEnded) return;
+    setGameEnded(true);
+
+    const opponentId = isPlayer1 ? match.player2_id : match.player1_id;
+
+    // Update match as completed
+    await supabase
+      .from("matches" as any)
+      .update({
+        status: "completed",
+        winner_id: winnerId,
+        player1_final_hp: isPlayer1 ? playerHP : opponentHP,
+        player2_final_hp: isPlayer1 ? opponentHP : playerHP,
+        finished_at: new Date().toISOString()
+      })
+      .eq("id", match.id);
+
+    // Get current ELO ratings
+    const { data: myStats } = await supabase
+      .from("game_stats")
+      .select("elo_rating, wins, losses, total_games")
+      .eq("user_id", user.id)
+      .single();
+
+    const { data: oppStats } = await supabase
+      .from("game_stats")
+      .select("elo_rating")
+      .eq("user_id", opponentId)
+      .single();
+
+    if (myStats && oppStats) {
+      const myElo = myStats.elo_rating || 1000;
+      const oppElo = oppStats.elo_rating || 1000;
+
+      let newMyElo: number, newOppElo: number;
+      let wins = myStats.wins, losses = myStats.losses;
+
+      if (winnerId === user.id) {
+        const result = calculateNewRatings(myElo, oppElo);
+        newMyElo = result.winnerNewRating;
+        newOppElo = result.loserNewRating;
+        wins++;
+      } else if (winnerId === opponentId) {
+        const result = calculateNewRatings(oppElo, myElo);
+        newMyElo = result.loserNewRating;
+        newOppElo = result.winnerNewRating;
+        losses++;
+      } else {
+        const result = calculateDrawRatings(myElo, oppElo);
+        newMyElo = result.player1NewRating;
+        newOppElo = result.player2NewRating;
+      }
+
+      // Update my stats
+      await supabase
+        .from("game_stats")
+        .update({
+          elo_rating: newMyElo,
+          wins,
+          losses,
+          total_games: myStats.total_games + 1
+        })
+        .eq("user_id", user.id);
+
+      // Update opponent stats (only total_games, their win/loss handled on their end)
+      await supabase
+        .from("game_stats")
+        .update({ elo_rating: newOppElo })
+        .eq("user_id", opponentId);
+    }
+  }, [match, user, isPlayer1, gameEnded]);
+
+  // Navigate to new rematch
+  useEffect(() => {
+    if (rematchState.newMatchId) {
+      navigate(`/online-game/${rematchState.newMatchId}`);
+    }
+  }, [rematchState.newMatchId, navigate]);
 
   // Loading state
   if (isLoading) {

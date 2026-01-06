@@ -4,11 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, User, Mail, Trophy, LogOut } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ArrowLeft, User, Mail, Trophy, LogOut, History, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/hooks/useLanguage";
+import { MatchHistory } from "@/components/profile/MatchHistory";
 
 interface Profile {
   username: string;
@@ -19,6 +21,7 @@ interface GameStats {
   wins: number;
   losses: number;
   total_games: number;
+  elo_rating: number;
 }
 
 const Profile = () => {
@@ -64,7 +67,7 @@ const Profile = () => {
 
     const { data, error } = await supabase
       .from("game_stats")
-      .select("wins, losses, total_games")
+      .select("wins, losses, total_games, elo_rating")
       .eq("user_id", user.id)
       .maybeSingle();
 
@@ -177,30 +180,48 @@ const Profile = () => {
           </div>
         </Card>
 
-        {/* Stats Card */}
+        {/* Stats & History Tabs */}
         <Card className="w-full max-w-2xl p-6 bg-card/50 backdrop-blur-sm border-primary/20">
-          <h2 className="text-2xl font-bold text-primary mb-4 flex items-center gap-2">
-            <Trophy className="w-6 h-6" />
-            {t("profile.stats")}
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-background/50 p-4 rounded-lg text-center">
-              <div className="text-3xl font-bold text-primary">{stats?.wins || 0}</div>
-              <div className="text-sm text-muted-foreground">{t("profile.wins")}</div>
-            </div>
-            <div className="bg-background/50 p-4 rounded-lg text-center">
-              <div className="text-3xl font-bold text-omega">{stats?.losses || 0}</div>
-              <div className="text-sm text-muted-foreground">{t("profile.losses")}</div>
-            </div>
-            <div className="bg-background/50 p-4 rounded-lg text-center">
-              <div className="text-3xl font-bold text-theta">{stats?.total_games || 0}</div>
-              <div className="text-sm text-muted-foreground">{t("profile.totalGames")}</div>
-            </div>
-            <div className="bg-background/50 p-4 rounded-lg text-center">
-              <div className="text-3xl font-bold text-psi">{winRate}%</div>
-              <div className="text-sm text-muted-foreground">{t("profile.winRate")}</div>
-            </div>
-          </div>
+          <Tabs defaultValue="stats" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-4">
+              <TabsTrigger value="stats" className="gap-2">
+                <Trophy className="w-4 h-4" />
+                {t("profile.stats")}
+              </TabsTrigger>
+              <TabsTrigger value="history" className="gap-2">
+                <History className="w-4 h-4" />
+                Maç Geçmişi
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="stats">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-background/50 p-4 rounded-lg text-center">
+                  <div className="text-3xl font-bold text-primary">{stats?.elo_rating || 1000}</div>
+                  <div className="text-sm text-muted-foreground flex items-center justify-center gap-1">
+                    <TrendingUp className="w-3 h-3" />
+                    ELO
+                  </div>
+                </div>
+                <div className="bg-background/50 p-4 rounded-lg text-center">
+                  <div className="text-3xl font-bold text-green-500">{stats?.wins || 0}</div>
+                  <div className="text-sm text-muted-foreground">{t("profile.wins")}</div>
+                </div>
+                <div className="bg-background/50 p-4 rounded-lg text-center">
+                  <div className="text-3xl font-bold text-red-500">{stats?.losses || 0}</div>
+                  <div className="text-sm text-muted-foreground">{t("profile.losses")}</div>
+                </div>
+                <div className="bg-background/50 p-4 rounded-lg text-center">
+                  <div className="text-3xl font-bold text-muted-foreground">{winRate}%</div>
+                  <div className="text-sm text-muted-foreground">{t("profile.winRate")}</div>
+                </div>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="history">
+              <MatchHistory />
+            </TabsContent>
+          </Tabs>
         </Card>
       </div>
     </div>
