@@ -17,6 +17,7 @@ export type Database = {
       game_stats: {
         Row: {
           created_at: string
+          elo_rating: number
           id: string
           losses: number
           total_games: number
@@ -26,6 +27,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          elo_rating?: number
           id?: string
           losses?: number
           total_games?: number
@@ -35,6 +37,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          elo_rating?: number
           id?: string
           losses?: number
           total_games?: number
@@ -110,15 +113,18 @@ export type Database = {
         Row: {
           created_at: string
           current_round: number | null
+          finished_at: string | null
           game_state: Json | null
           id: string
           phase: string | null
           player1_deck: Json
           player1_field: Json | null
+          player1_final_hp: number | null
           player1_id: string
           player1_ready: boolean | null
           player2_deck: Json
           player2_field: Json | null
+          player2_final_hp: number | null
           player2_id: string
           player2_ready: boolean | null
           status: string
@@ -128,15 +134,18 @@ export type Database = {
         Insert: {
           created_at?: string
           current_round?: number | null
+          finished_at?: string | null
           game_state?: Json | null
           id?: string
           phase?: string | null
           player1_deck: Json
           player1_field?: Json | null
+          player1_final_hp?: number | null
           player1_id: string
           player1_ready?: boolean | null
           player2_deck: Json
           player2_field?: Json | null
+          player2_final_hp?: number | null
           player2_id: string
           player2_ready?: boolean | null
           status?: string
@@ -146,15 +155,18 @@ export type Database = {
         Update: {
           created_at?: string
           current_round?: number | null
+          finished_at?: string | null
           game_state?: Json | null
           id?: string
           phase?: string | null
           player1_deck?: Json
           player1_field?: Json | null
+          player1_final_hp?: number | null
           player1_id?: string
           player1_ready?: boolean | null
           player2_deck?: Json
           player2_field?: Json | null
+          player2_final_hp?: number | null
           player2_id?: string
           player2_ready?: boolean | null
           status?: string
@@ -226,6 +238,36 @@ export type Database = {
           updated_at?: string
           user_id?: string
           username?: string
+        }
+        Relationships: []
+      }
+      rematch_requests: {
+        Row: {
+          created_at: string
+          id: string
+          match_id: string
+          new_match_id: string | null
+          opponent_id: string
+          requester_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          match_id: string
+          new_match_id?: string | null
+          opponent_id: string
+          requester_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          match_id?: string
+          new_match_id?: string | null
+          opponent_id?: string
+          requester_id?: string
+          status?: string
         }
         Relationships: []
       }
