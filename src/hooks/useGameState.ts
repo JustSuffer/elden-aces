@@ -224,7 +224,7 @@ export function useGameState(initParams?: GameInitParams) {
       pendingRoundSkip: 0,
       logs: [],
       mimicCounter: { p1: 0, p2: 0 },
-      timeLeft: 45,
+      timeLeft: initParams?.isOnline ? 60 : 45,
       isOnline: !!initParams?.isOnline,
     };
   });
@@ -656,6 +656,20 @@ export function useGameState(initParams?: GameInitParams) {
           }
       }
 
+      // End-of-game (Round 7): if this was the last round and nobody is dead yet,
+      // decide by HP and show the victory/defeat screen (prevents navigating away).
+      const maxRounds = prev.maxRounds || 7;
+      if (prev.round >= maxRounds && phase !== "end") {
+        if (!winner) {
+          if (newPlayerHP > newOpponentHP) winner = "p1";
+          else if (newOpponentHP > newPlayerHP) winner = "p2";
+          else winner = "draw";
+        }
+        winReasonText = winReasonText || "HP_VICTORY";
+        phase = "end";
+        logDetails.push("⏳ Tur sınırı: Oyun bitti (HP karşılaştırması)." );
+      }
+
       let specialWinner = winner;
       if (prev.playerClass === "Mimic" && prev.opponentClass === "Mimic") {
           if (newMimicP1 >= 12 && newMimicP2 < 12) specialWinner = "p1";
@@ -820,7 +834,7 @@ export function useGameState(initParams?: GameInitParams) {
         playerMust4Cards: false,
         opponentMust4Cards: false,
         playerDiceRolls: prev.playerClass === "Fateweaver" ? prev.playerDiceRolls : 0,
-        timeLeft: 45,
+        timeLeft: prev.isOnline ? 60 : 45,
       };
     });
   }, []);
