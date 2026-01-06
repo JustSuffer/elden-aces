@@ -289,37 +289,49 @@ const OnlineGame = () => {
     }
   }, [match, user, isPlayer1, currentRound]);
 
-  // Handle round change - reset ready states (ONLY Player 1 does this to prevent race condition)
+  // Handle round change - advance round in DB exactly once (race-safe)
   const handleRoundChange = useCallback(async (newRound: number) => {
-    if (newRound <= currentRound || !match) return;
+    if (!match) return;
 
-    console.log("[OnlineGame] Round changing from", currentRound, "to", newRound, "isPlayer1:", isPlayer1);
-    
-    // Reset local state immediately for both players
-    setCurrentRound(newRound);
+    const fromRound = Number(matchRef.current?.current_round ?? currentRoundRef.current ?? 1);
+    if (!Number.isFinite(fromRound) || newRound <= fromRound) return;
+
+    console.log("[OnlineGame] Requesting round advance in DB:", { fromRound, newRound });
+
+    // Prepare local UI; authoritative sync comes from realtime update
     setOpponentMoves(undefined);
     setOpponentReady(false);
     setWaitingForOpponent(false);
 
-    // ONLY Player 1 resets the database to prevent race condition
-    if (isPlayer1) {
-      console.log("[OnlineGame] Player 1 resetting round in database");
-      const { error } = await supabase
-        .from("matches" as any)
-        .update({
-          player1_ready: false,
-          player2_ready: false,
-          player1_field: [],
-          player2_field: [],
-          current_round: newRound
-        })
-        .eq("id", match.id);
+    // Either player may request the advance; only the first request that matches
+    // (current_round = fromRound AND both ready = true) will succeed.
+    const { data, error } = await supabase
+      .from("matches" as any)
+      .update({
+        player1_ready: false,
+        player2_ready: false,
+        player1_field: [],
+        player2_field: [],
+        current_round: newRound,
+      })
+      .eq("id", match.id)
+      .eq("current_round", fromRound)
+      .eq("player1_ready", true)
+      .eq("player2_ready", true)
+      .select("id");
 
-      if (error) {
-        console.error("[OnlineGame] Error resetting round:", error);
-      }
+    if (error) {
+      console.error("[OnlineGame] Error advancing round:", error);
+      return;
     }
-  }, [currentRound, match, isPlayer1]);
+
+    const changed = Array.isArray(data) ? data.length > 0 : !!data;
+    if (!changed) {
+      console.log("[OnlineGame] Round advance skipped (already advanced or not ready yet)." );
+    } else {
+      console.log("[OnlineGame] Round advanced in DB.");
+    }
+  }, [match]);
 
   // Loading state
   if (isLoading) {
@@ -392,6 +404,7 @@ const OnlineGame = () => {
           isOnline={true}
           opponentDeck={opponentDeck}
           opponentMoves={opponentMoves}
+          serverRound={currentRound}
           onMovesReady={handleMovesReady}
           onRoundChange={handleRoundChange}
         />

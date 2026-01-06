@@ -14,7 +14,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { DndContext, DragEndEvent } from "@dnd-kit/core";
 import { ArrowLeft, Dices, Eye, Snowflake, Heart, Settings, Flame, Sparkles, Skull, Atom, Hourglass } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { GameCard } from "@/components/game/GameCard";
 import { AudioManager } from "@/utils/AudioManager";
 import { SavedDeck } from "@/types/deck";
@@ -31,18 +31,20 @@ interface GameMatchProps {
   isOnline?: boolean;
   opponentDeck?: SavedDeck;
   opponentMoves?: (Card | null)[];
+  serverRound?: number;
   onMovesReady?: (moves: (Card | null)[]) => Promise<void>;
   onRoundChange?: (newRound: number) => Promise<void>;
 }
 
-export const GameMatch = ({ 
-  playerDeck, 
+export const GameMatch = ({
+  playerDeck,
   opponentClass,
   isOnline = false,
   opponentDeck,
   opponentMoves,
+  serverRound,
   onMovesReady,
-  onRoundChange
+  onRoundChange,
 }: GameMatchProps) => {
   const navigate = useNavigate();
   const { t } = useLanguage();
@@ -50,6 +52,8 @@ export const GameMatch = ({
   const [showHourglass, setShowHourglass] = useState(false);
   const [showWinConAnimation, setShowWinConAnimation] = useState(false);
   const [winConAnimationType, setWinConAnimationType] = useState<string | null>(null);
+
+  const timeoutHandledRoundRef = useRef<number | null>(null);
 
   const {
     gameState,
@@ -78,6 +82,18 @@ export const GameMatch = ({
       syncOnlineRound(opponentMoves);
     }
   }, [isOnline, opponentMoves, gameState.phase, syncOnlineRound]);
+
+  // If the server advanced the round (e.g., other player clicked Next), catch up locally.
+  useEffect(() => {
+    if (!isOnline || !serverRound) return;
+    if (serverRound > gameState.round && gameState.phase !== "end") {
+      console.log("[GameMatch] Server round advanced, syncing local round:", {
+        local: gameState.round,
+        server: serverRound,
+      });
+      nextRound();
+    }
+  }, [isOnline, serverRound, gameState.round, gameState.phase, nextRound]);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -190,6 +206,42 @@ export const GameMatch = ({
     }, 1500);
   };
 
+  // Online mode: 60s placement timer + AFK/timeout rule
+  useEffect(() => {
+    if (!isOnline) return;
+    if (gameState.phase !== "placement") return;
+    if (gameState.timeLeft > 0) return;
+
+    // Only handle once per round
+    if (timeoutHandledRoundRef.current === gameState.round) return;
+    timeoutHandledRoundRef.current = gameState.round;
+
+    console.log("[GameMatch] Placement timeout -> auto submit", { round: gameState.round });
+    toast.warning("Süre doldu! Hamlen otomatik gönderiliyor.");
+
+    const placed = gameState.playerField.filter((c) => c !== null).length;
+    if (placed < 1 && gameState.playerHand.length > 0) {
+      const empty = gameState.playerField.findIndex((c) => c === null);
+      if (empty !== -1) {
+        placeCard(0, empty);
+        setTimeout(() => {
+          void handleEndPlacement();
+        }, 150);
+        return;
+      }
+    }
+
+    void handleEndPlacement();
+  }, [
+    isOnline,
+    gameState.phase,
+    gameState.timeLeft,
+    gameState.round,
+    gameState.playerField,
+    gameState.playerHand.length,
+    placeCard,
+  ]);
+
   const addVfx = (type: "gamma" | "twisted" | "delta-sigma-transform", slotIndex: number) => {
     const slotElement = document.querySelector(`[data-slot="${slotIndex}"]`);
     if (!slotElement) return;
@@ -216,10 +268,6 @@ export const GameMatch = ({
       setShowHourglass(true);
       setTimeout(async () => {
         setShowHourglass(false);
-        if (gameState.round >= maxRounds || gameState.playerHP <= 0 || gameState.opponentHP <= 0) {
-          navigate("/");
-          return;
-        }
         nextRound();
         // Notify server about round change in online mode
         if (isOnline && onRoundChange) {
@@ -229,12 +277,14 @@ export const GameMatch = ({
       return;
     }
 
+    // If game ended (HP depleted or round limit), nextRound() will transition to "end".
     if (gameState.round >= maxRounds || gameState.playerHP <= 0 || gameState.opponentHP <= 0) {
-      navigate("/");
+      nextRound();
       return;
     }
+
     nextRound();
-    
+
     // Notify server about round change in online mode
     if (isOnline && onRoundChange) {
       await onRoundChange(newRound);
@@ -376,6 +426,11 @@ export const GameMatch = ({
               <p className="text-sm text-muted-foreground mt-1">
                 {t("game.hand", { count: gameState.playerHand.length })}
               </p>
+              {isOnline && gameState.phase === "placement" && (
+                <p className="text-sm text-muted-foreground mt-1">
+                  Süre: <span className="font-semibold text-foreground tabular-nums">{gameState.timeLeft}s</span>
+                </p>
+              )}
             </div>
 
             {gameState.phase === "placement" && (
