@@ -73,11 +73,11 @@ const Play = () => {
       setMatchmakingStatus("found");
 
       // Resolve opponent class from the match row (authoritative)
-      const { data: matchData, error: matchErr } = await supabase
+      const { data: matchData, error: matchErr } = (await supabase
         .from("matches" as any)
         .select("player1_id, player2_id, player1_deck, player2_deck")
         .eq("id", matchId)
-        .single();
+        .maybeSingle()) as { data: { player1_id: string; player2_id: string; player1_deck: any; player2_deck: any } | null; error: any };
 
       if (matchErr || !matchData) {
         console.error("[Play] Failed to load match for opponent info", matchErr);
@@ -245,7 +245,7 @@ const Play = () => {
       }
 
       // 3) Insert my queue row
-      const { data: queueEntry, error } = await supabase
+      const { data: queueEntry, error } = (await supabase
         .from("matchmaking_queue" as any)
         .insert({
           user_id: user.id,
@@ -256,7 +256,7 @@ const Play = () => {
           updated_at: new Date().toISOString(),
         })
         .select()
-        .single();
+        .single()) as { data: { id: string } | null; error: any };
 
       if (error || !queueEntry) {
         console.error("[Play] Queue insert error:", error);
