@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Swords, Loader2, Users, Wifi, WifiOff } from "lucide-react";
@@ -23,6 +23,9 @@ interface QueueEntry {
   match_id: string | null;
 }
 
+const normalizeClassName = (c: string) =>
+  c === "Incinerator" ? "Decay" : c === "Conjurer" ? "Vessel" : c;
+
 const Play = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -39,13 +42,14 @@ const Play = () => {
     if (stored) {
       try {
         let decks = JSON.parse(stored);
-        decks = decks.map((d: any) => ({
-          ...d,
-          mainClass: d.mainClass === "Incinerator" ? "Decay" : (d.mainClass === "Conjurer" ? "Vessel" : d.mainClass),
-          secondaryClasses: d.secondaryClasses?.map((c: string) => 
-            c === "Incinerator" ? "Decay" : (c === "Conjurer" ? "Vessel" : c)
-          ) || []
-        })).filter((d: SavedDeck) => MASTER_CLASSES[d.mainClass]);
+        decks = decks
+          .map((d: any) => ({
+            ...d,
+            mainClass: normalizeClassName(d.mainClass),
+            secondaryClasses:
+              d.secondaryClasses?.map((c: string) => normalizeClassName(c)) || [],
+          }))
+          .filter((d: SavedDeck) => MASTER_CLASSES[d.mainClass]);
         setSavedDecks(decks);
         if (decks.length > 0) {
           setSelectedDeck(decks[0]);
@@ -56,134 +60,147 @@ const Play = () => {
     }
   }, []);
 
-  // Search timer and Polling
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (matchmakingStatus === "searching") {
-      interval = setInterval(async () => {
-        setSearchTime((prev) => prev + 1);
-        
-        // Polling Strategy: Check MATCHES table directly (Robuster against RLS)
-        if (user) {
-             const { data: activeMatch } = await supabase
-                .from("matches" as any)
-                .select("id, player1_id, player2_id")
-                .or(`player1_id.eq.${user.id},player2_id.eq.${user.id}`)
-                .eq("status", "active")
-                .order("created_at", { ascending: false })
-                .limit(1)
-                .maybeSingle() as { data: { id: string, player1_id: string, player2_id: string } | null };
+  const matchFoundRef = useRef(false);
 
-             if (activeMatch) {
-                 // Determine opponent ID
-                 const opponentId = activeMatch.player1_id === user.id ? activeMatch.player2_id : activeMatch.player1_id;
-                 // Find queue ID for opponent to pass to handleMatchFound? 
-                 // handleMatchFound takes opponentQueueId to fetch info. 
-                 // We can fetch opponent info directly if we have ID.
-                 // Modified handleMatchFound to accept userId? Or just fetch queue logic there.
-                 // Let's just pass a dummy ID and update handleMatchFound to handle "ID is actually UserID" or just fetch profile by UserID.
-                 
-                 // Clean up my queue if exists
-                 if (queueEntryId) {
-                    await supabase.from("matchmaking_queue" as any).delete().eq("id", queueEntryId);
-                 }
-                 
-                 // Fake a queue ID or modify handle logic.
-                 // Let's modify handleMatchFound to fetch by user_id if queue lookup fails.
-                 handleMatchFound(opponentId, activeMatch.id, true); // true = isUserId
-                 return; 
-             }
-        }
-        
-        // Fallback: Check Queue status (if matched by someone else who somehow updated us)
-        if (queueEntryId) {
-             const { data, error } = await supabase
-                .from("matchmaking_queue" as any)
-                .select("status, matched_with, match_id")
-                .eq("id", queueEntryId)
-                .single() as { data: { status: string, matched_with: string, match_id: string } | null; error: any };
-            
-             if (data && data.status === 'matched' && data.matched_with && data.match_id) {
-                 handleMatchFound(data.matched_with, data.match_id);
-             } else if (data && data.status === 'searching') {
-                 tryMatchmaking();
-             }
-        }
-      }, 1000);
-    } else {
-      setSearchTime(0);
+  // Handler for when match is found (opponentId is ALWAYS opponent user_id)
+  const handleMatchFound = useCallback(
+    async (opponentUserId: string, matchId: string) => {
+      if (!user) return;
+      if (matchFoundRef.current) return;
+      if (matchmakingStatus === "found" || matchmakingStatus === "connecting") return;
+
+      matchFoundRef.current = true;
+      setMatchmakingStatus("found");
+
+      // Resolve opponent class from the match row (authoritative)
+      const { data: matchData, error: matchErr } = await supabase
+        .from("matches" as any)
+        .select("player1_id, player2_id, player1_deck, player2_deck")
+        .eq("id", matchId)
+        .single();
+
+      if (matchErr || !matchData) {
+        console.error("[Play] Failed to load match for opponent info", matchErr);
+      }
+
+      const opponentDeck = matchData
+        ? (matchData.player1_id === opponentUserId ? matchData.player1_deck : matchData.player2_deck)
+        : null;
+
+      const targetMainClass = normalizeClassName(opponentDeck?.mainClass || "Slayer");
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("username")
+        .eq("user_id", opponentUserId)
+        .maybeSingle();
+
+      setOpponentInfo({
+        username: profile?.username || "Rakip",
+        mainClass: targetMainClass,
+      });
+
+      // Brief delay for animation
+      setTimeout(() => {
+        setMatchmakingStatus("connecting");
+        setTimeout(() => {
+          navigate(`/online-game/${matchId}`);
+        }, 1500);
+      }, 1200);
+    },
+    [matchmakingStatus, navigate, user]
+  );
+
+  const attemptMatchmaking = useCallback(async () => {
+    if (!queueEntryId) return;
+    if (!user) return;
+    if (matchmakingStatus !== "searching") return;
+
+    try {
+      const { data, error } = await supabase.functions.invoke("matchmake", {
+        body: { queueEntryId },
+      });
+
+      if (error) {
+        console.error("[Play] matchmake invoke error", error);
+        return;
+      }
+
+      if (data?.status === "matched" && data.matchId && data.opponentUserId) {
+        void handleMatchFound(data.opponentUserId, data.matchId);
+      }
+    } catch (e) {
+      console.error("[Play] matchmake exception", e);
     }
+  }, [queueEntryId, user, matchmakingStatus, handleMatchFound]);
+
+  // Search timer
+  useEffect(() => {
+    if (matchmakingStatus !== "searching") {
+      setSearchTime(0);
+      return;
+    }
+
+    const interval = setInterval(() => {
+      setSearchTime((prev) => prev + 1);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [matchmakingStatus]);
+
+  // Heartbeat while searching (prevents matching with stale/offline users)
+  useEffect(() => {
+    if (matchmakingStatus !== "searching" || !queueEntryId) return;
+
+    const interval = setInterval(async () => {
+      try {
+        await supabase
+          .from("matchmaking_queue" as any)
+          .update({ updated_at: new Date().toISOString() })
+          .eq("id", queueEntryId);
+      } catch (e) {
+        console.error("[Play] heartbeat failed", e);
+      }
+    }, 8000);
+
     return () => clearInterval(interval);
   }, [matchmakingStatus, queueEntryId]);
 
-  // Helper to re-trigger matching attempt
-  const tryMatchmaking = async () => {
-      if (!user || !queueEntryId) return;
+  // Attempt matchmaking periodically while searching
+  useEffect(() => {
+    if (matchmakingStatus !== "searching" || !queueEntryId) return;
 
-      const { data: searchingPlayers } = await supabase
-        .from("matchmaking_queue" as any)
-        .select("*")
-        .eq("status", "searching")
-        .neq("user_id", user.id)
-        .order("created_at", { ascending: true })
-        .limit(1) as { data: QueueEntry[] | null };
+    // Quick first attempt
+    void attemptMatchmaking();
 
-      if (searchingPlayers && searchingPlayers.length > 0) {
-          const opponent = searchingPlayers[0];
-          // Attempt to match
-          // Double check if we are still searching (race condition)
-          const { data: myEntry } = await supabase.from("matchmaking_queue" as any).select("status").eq("id", queueEntryId).single() as { data: { status: string } | null };
-          if (myEntry?.status !== 'searching') return;
+    const interval = setInterval(() => {
+      void attemptMatchmaking();
+    }, 2000);
 
-           // Create a match with sync columns
-        const { data: match } = await supabase
-          .from("matches" as any)
-          .insert({
-            player1_id: opponent.user_id,
-            player2_id: user.id,
-            player1_deck: opponent.deck_data,
-            player2_deck: selectedDeck as unknown as Record<string, unknown>,
-            status: "active",
-            player1_field: [],
-            player2_field: [],
-            player1_ready: false,
-            player2_ready: false,
-            current_round: 1,
-            phase: "placement"
-          })
-          .select()
-          .single() as { data: { id: string } | null };
+    return () => clearInterval(interval);
+  }, [matchmakingStatus, queueEntryId, attemptMatchmaking]);
 
-        if (!match) return;
-
-        // Update entries
-        await supabase.from("matchmaking_queue" as any).update({ status: "matched", matched_with: queueEntryId, match_id: match.id }).eq("id", opponent.id);
-        await supabase.from("matchmaking_queue" as any).update({ status: "matched", matched_with: opponent.id, match_id: match.id }).eq("id", queueEntryId);
-        
-        handleMatchFound(opponent.id, match.id);
-      }
-  };
-
-  // Real-time subscription for matchmaking
+  // Real-time subscription for matchmaking updates (my queue row)
   useEffect(() => {
     if (!queueEntryId || !user) return;
 
     const channel = supabase
       .channel(`matchmaking-${queueEntryId}`)
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'matchmaking_queue',
-          filter: `id=eq.${queueEntryId}`
+          event: "UPDATE",
+          schema: "public",
+          table: "matchmaking_queue",
+          filter: `id=eq.${queueEntryId}`,
         },
         async (payload) => {
           const updated = payload.new as QueueEntry;
-          console.log("Queue update received:", updated);
-          
-          if (updated.status === 'matched' && updated.matched_with && updated.match_id) {
-            handleMatchFound(updated.matched_with, updated.match_id);
+          console.log("[Play] Queue update received:", updated);
+
+          // In our system matched_with is always opponent USER ID
+          if (updated.status === "matched" && updated.matched_with && updated.match_id) {
+            await handleMatchFound(updated.matched_with, updated.match_id);
           }
         }
       )
@@ -192,66 +209,7 @@ const Play = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [queueEntryId, user, navigate]);
-
-  // Handler for when match is found
-  const handleMatchFound = async (opponentId: string, matchId: string, isUserId = false) => {
-    if (matchmakingStatus === "found" || matchmakingStatus === "connecting") return;
-    
-    setMatchmakingStatus("found");
-    
-    // Get opponent info
-    // If isUserId is true, opponentId IS the user_id.
-    // If false, it's queue_id.
-    
-    let targetUserId = opponentId;
-    let targetMainClass = "Slayer"; // Default
-
-    if (!isUserId) {
-        const { data: opponentQueue } = await supabase
-          .from("matchmaking_queue" as any)
-          .select("main_class, user_id")
-          .eq("id", opponentId)
-          .maybeSingle() as { data: { main_class: string; user_id: string } | null };
-        
-        if (opponentQueue) {
-            targetUserId = opponentQueue.user_id;
-            targetMainClass = opponentQueue.main_class;
-        }
-    } else {
-        // Fetch class from Match? Or just Profile. Match has deck data.
-        // Let's info from Profile (username) and Match (class).
-        // For visual brevity, just fetch Profile. Class we can get from match if we wanted, but here we just need display.
-        // We'll default class or fetch from match if needed.
-        const { data: matchData } = await supabase.from("matches" as any).select("player1_id, player1_deck, player2_deck").eq("id", matchId).single() as { data: any };
-        if (matchData) {
-            const isP1 = matchData.player1_id === targetUserId;
-            const deck = isP1 ? matchData.player1_deck : matchData.player2_deck;
-            targetMainClass = deck?.mainClass || "Slayer";
-        }
-    }
-
-    const { data: profile } = await supabase
-        .from("profiles")
-        .select("username")
-        .eq("user_id", targetUserId)
-        .maybeSingle();
-      
-    setOpponentInfo({
-        username: profile?.username || "Rakip",
-        mainClass: targetMainClass
-    });
-    
-    
-    // Brief delay for animation
-    setTimeout(() => {
-      setMatchmakingStatus("connecting");
-      // Navigate to online game with match_id
-      setTimeout(() => {
-        navigate(`/online-game/${matchId}`);
-      }, 1500);
-    }, 2000);
-  };
+  }, [queueEntryId, user, handleMatchFound]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -268,37 +226,40 @@ const Play = () => {
       return;
     }
 
+    matchFoundRef.current = false;
+    setOpponentInfo(null);
+    setSearchTime(0);
     setMatchmakingStatus("searching");
 
     try {
-      // 1. Cleanup old entries
-      await supabase
-        .from("matchmaking_queue" as any)
-        .delete()
-        .eq("user_id", user.id);
+      // 1) Cleanup old entries
+      await supabase.from("matchmaking_queue" as any).delete().eq("user_id", user.id);
 
-      // 2. Add self to queue
-      // Deep clone to ensure clean JSON data
+      // 2) Build deck payload (normalize class names + shuffle ONCE)
       const deckData = JSON.parse(JSON.stringify(selectedDeck));
-      // IMPORTANT: Shuffle once at match-creation time (so both clients see same order)
+      deckData.mainClass = normalizeClassName(deckData.mainClass);
+      deckData.secondaryClasses = (deckData.secondaryClasses || []).map((c: string) => normalizeClassName(c));
+
       if (Array.isArray(deckData.cards)) {
         deckData.cards = shuffleDeck(deckData.cards);
       }
 
+      // 3) Insert my queue row
       const { data: queueEntry, error } = await supabase
         .from("matchmaking_queue" as any)
         .insert({
           user_id: user.id,
           deck_data: deckData,
           deck_name: selectedDeck.name,
-          main_class: selectedDeck.mainClass,
-          status: "searching"
+          main_class: normalizeClassName(selectedDeck.mainClass),
+          status: "searching",
+          updated_at: new Date().toISOString(),
         })
         .select()
-        .single() as { data: QueueEntry | null; error: any };
+        .single();
 
       if (error || !queueEntry) {
-        console.error("Queue error:", error);
+        console.error("[Play] Queue insert error:", error);
         toast.error("Eşleşme kuyruğuna eklenemedi");
         setMatchmakingStatus("idle");
         return;
@@ -306,82 +267,10 @@ const Play = () => {
 
       setQueueEntryId(queueEntry.id);
 
-      // Random delay to desync simultaneous searches (500ms - 2000ms)
-      await new Promise(r => setTimeout(r, 500 + Math.random() * 1000));
-
-      // 3. Look for opponent (active within last 2 minutes)
-      const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000).toISOString();
-
-      const { data: searchingPlayers, error: searchError } = await supabase
-        .from("matchmaking_queue" as any)
-        .select("*")
-        .eq("status", "searching")
-        .neq("user_id", user.id)
-        .gt("created_at", twoMinutesAgo)
-        .order("created_at", { ascending: true })
-        .limit(1) as { data: QueueEntry[] | null; error: any };
-
-      if (searchError) {
-        console.error("Search error:", searchError);
-        return;
-      }
-
-      if (searchingPlayers && searchingPlayers.length > 0) {
-        const opponent = searchingPlayers[0];
-        
-        // Double check opponent is still searching
-        const { data: oppCurrent } = await supabase
-            .from("matchmaking_queue" as any)
-            .select("status")
-            .eq("id", opponent.id)
-            .single() as { data: { status: string } | null };
-
-        if (!oppCurrent || oppCurrent.status !== 'searching') {
-             // Opponent was taken, just wait.
-             return;
-        }
-
-        // Create match
-        const { data: match, error: matchError } = await supabase
-          .from("matches" as any)
-          .insert({
-            player1_id: opponent.user_id,
-            player2_id: user.id,
-            player1_deck: opponent.deck_data,
-            player2_deck: deckData,
-            status: "active"
-          })
-          .select()
-          .single() as { data: { id: string } | null; error: any };
-
-        if (matchError || !match) {
-          console.error("Match creation error:", matchError);
-          return;
-        }
-
-        // Update entries
-        await supabase
-          .from("matchmaking_queue" as any)
-          .update({ 
-            status: "matched", 
-            matched_with: queueEntry.id,
-            match_id: match.id 
-          })
-          .eq("id", opponent.id);
-
-        await supabase
-          .from("matchmaking_queue" as any)
-          .update({ 
-            status: "matched", 
-            matched_with: opponent.id,
-            match_id: match.id 
-          })
-          .eq("id", queueEntry.id);
-
-        handleMatchFound(opponent.id, match.id);
-      }
+      // First attempt immediately (real matching is done in backend function)
+      void attemptMatchmaking();
     } catch (err) {
-      console.error("Matchmaking error:", err);
+      console.error("[Play] Matchmaking error:", err);
       toast.error("Bir hata oluştu");
       setMatchmakingStatus("idle");
     }
