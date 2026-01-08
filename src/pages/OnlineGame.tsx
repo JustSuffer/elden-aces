@@ -10,6 +10,8 @@ import { GameMatch } from "@/components/game/GameMatch";
 import { ClassName, Card } from "@/types/game";
 import { toast } from "sonner";
 import { calculateNewRatings, calculateDrawRatings } from "@/utils/eloCalculator";
+import { ReadyPopup } from "@/components/game/ReadyPopup";
+import { NextRoundWaitingPopup } from "@/components/game/NextRoundWaitingPopup";
 
 interface Match {
   id: string;
@@ -27,6 +29,9 @@ interface Match {
   winner_id?: string | null;
   player1_final_hp?: number;
   player2_final_hp?: number;
+  game_started?: boolean;
+  player1_next_round_ready?: boolean;
+  player2_next_round_ready?: boolean;
 }
 
 // Basic Error Boundary for catching render crashes
@@ -89,6 +94,17 @@ const OnlineGame = () => {
   const [gameEnded, setGameEnded] = useState(false);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   
+  // Game start ready states
+  const [showReadyPopup, setShowReadyPopup] = useState(true);
+  const [isPlayerGameReady, setIsPlayerGameReady] = useState(false);
+  const [isOpponentGameReady, setIsOpponentGameReady] = useState(false);
+  const [gameStarted, setGameStarted] = useState(false);
+  
+  // Next round ready states
+  const [waitingForNextRound, setWaitingForNextRound] = useState(false);
+  const [isPlayerNextRoundReady, setIsPlayerNextRoundReady] = useState(false);
+  const [isOpponentNextRoundReady, setIsOpponentNextRoundReady] = useState(false);
+  
   // Rematch hook
   const {
     rematchState,
@@ -139,6 +155,16 @@ const OnlineGame = () => {
       matchRef.current = data;
       setMatch(data);
       setCurrentRound(data.current_round || 1);
+      
+      // Check if game already started (reconnect scenario)
+      if (data.game_started) {
+        setGameStarted(true);
+        setShowReadyPopup(false);
+        const isP1 = user.id === data.player1_id;
+        setIsPlayerGameReady(isP1 ? !!data.player1_ready : !!data.player2_ready);
+        setIsOpponentGameReady(isP1 ? !!data.player2_ready : !!data.player1_ready);
+      }
+      
       setIsLoading(false);
     };
 
@@ -175,11 +201,53 @@ const OnlineGame = () => {
           matchRef.current = merged;
           setMatch(merged);
 
+          const isP1 = user.id === merged.player1_id;
+
+          // ========== GAME START READY SYNC ==========
+          if (!merged.game_started) {
+            // Check if this is initial ready state (before game starts)
+            const p1GameReady = merged.player1_ready;
+            const p2GameReady = merged.player2_ready;
+            
+            setIsOpponentGameReady(isP1 ? !!p2GameReady : !!p1GameReady);
+            
+            // Both ready -> start game
+            if (p1GameReady && p2GameReady) {
+              console.log("[OnlineGame] Both players ready, starting game...");
+              setTimeout(() => {
+                setGameStarted(true);
+                setShowReadyPopup(false);
+              }, 3500); // 3 second countdown + 0.5s buffer
+            }
+            return; // Don't process other updates until game starts
+          }
+
+          // ========== NEXT ROUND READY SYNC ==========
+          const p1NextRoundReady = merged.player1_next_round_ready;
+          const p2NextRoundReady = merged.player2_next_round_ready;
+          
+          setIsOpponentNextRoundReady(isP1 ? !!p2NextRoundReady : !!p1NextRoundReady);
+          
+          // Both next round ready -> advance round
+          if (p1NextRoundReady && p2NextRoundReady && waitingForNextRound) {
+            console.log("[OnlineGame] Both players ready for next round");
+            setWaitingForNextRound(false);
+            setIsPlayerNextRoundReady(false);
+            setIsOpponentNextRoundReady(false);
+          }
+
           // Sync current round from database (use ref to avoid stale closure)
           const roundFromDb = merged.current_round || 1;
           if (roundFromDb !== currentRoundRef.current) {
             console.log("[OnlineGame] Syncing round from DB:", roundFromDb);
             setCurrentRound(roundFromDb);
+
+            // If round changed, reset next round ready states
+            if (!merged.player1_next_round_ready && !merged.player2_next_round_ready) {
+              setWaitingForNextRound(false);
+              setIsPlayerNextRoundReady(false);
+              setIsOpponentNextRoundReady(false);
+            }
 
             // If round changed and both ready states are false, it's a new round
             if (!merged.player1_ready && !merged.player2_ready) {
@@ -189,8 +257,7 @@ const OnlineGame = () => {
             }
           }
 
-          // Check if opponent is ready
-          const isP1 = user.id === merged.player1_id;
+          // Check if opponent is ready (for card placement)
           const opponentIsReady = isP1 ? merged.player2_ready : merged.player1_ready;
           const myReady = isP1 ? merged.player1_ready : merged.player2_ready;
 
@@ -250,7 +317,60 @@ const OnlineGame = () => {
       console.log("[OnlineGame] Cleaning up realtime subscription");
       supabase.removeChannel(channel);
     };
-  }, [matchId, user, match?.player1_id]);
+  }, [matchId, user, match?.player1_id, waitingForNextRound]);
+
+  // Handle game start ready
+  const handleGameReady = useCallback(async () => {
+    if (!match || !user) return;
+    
+    console.log("[OnlineGame] Player ready for game start");
+    setIsPlayerGameReady(true);
+    
+    const readyColumn = isPlayer1 ? "player1_ready" : "player2_ready";
+    
+    const { error } = await supabase
+      .from("matches" as any)
+      .update({
+        [readyColumn]: true
+      })
+      .eq("id", match.id);
+    
+    if (error) {
+      console.error("[OnlineGame] Error setting game ready:", error);
+      toast.error("Hazır durumu gönderilemedi!");
+      setIsPlayerGameReady(false);
+      return;
+    }
+    
+    // Check if opponent is also ready
+    const { data: currentMatch } = await supabase
+      .from("matches" as any)
+      .select("player1_ready, player2_ready")
+      .eq("id", match.id)
+      .single() as { data: { player1_ready: boolean; player2_ready: boolean } | null };
+    
+    if (currentMatch) {
+      const opponentReady = isPlayer1 ? currentMatch.player2_ready : currentMatch.player1_ready;
+      setIsOpponentGameReady(!!opponentReady);
+      
+      if (currentMatch.player1_ready && currentMatch.player2_ready) {
+        // Mark game as started
+        await supabase
+          .from("matches" as any)
+          .update({ 
+            game_started: true,
+            player1_ready: false,
+            player2_ready: false
+          })
+          .eq("id", match.id);
+        
+        setTimeout(() => {
+          setGameStarted(true);
+          setShowReadyPopup(false);
+        }, 3500);
+      }
+    }
+  }, [match, user, isPlayer1]);
 
   // Submit player's moves to database
   const handleMovesReady = useCallback(async (moves: (Card | null)[]) => {
@@ -306,49 +426,78 @@ const OnlineGame = () => {
     }
   }, [match, user, isPlayer1, currentRound]);
 
-  // Handle round change - advance round in DB exactly once (race-safe)
+  // Handle round change - now requires both players to press Next Round
   const handleRoundChange = useCallback(async (newRound: number) => {
     if (!match) return;
 
     const fromRound = Number(matchRef.current?.current_round ?? currentRoundRef.current ?? 1);
     if (!Number.isFinite(fromRound) || newRound <= fromRound) return;
 
-    console.log("[OnlineGame] Requesting round advance in DB:", { fromRound, newRound });
+    console.log("[OnlineGame] Player requesting next round:", { fromRound, newRound });
 
-    // Prepare local UI; authoritative sync comes from realtime update
-    setOpponentMoves(undefined);
-    setOpponentReady(false);
-    setWaitingForOpponent(false);
+    // Set local state - waiting for opponent
+    setIsPlayerNextRoundReady(true);
+    setWaitingForNextRound(true);
 
-    // Either player may request the advance; only the first request that matches
-    // (current_round = fromRound AND both ready = true) will succeed.
-    const { data, error } = await supabase
+    const nextRoundReadyColumn = isPlayer1 ? "player1_next_round_ready" : "player2_next_round_ready";
+
+    // Mark this player as ready for next round
+    const { error: readyError } = await supabase
       .from("matches" as any)
       .update({
-        player1_ready: false,
-        player2_ready: false,
-        player1_field: [],
-        player2_field: [],
-        current_round: newRound,
+        [nextRoundReadyColumn]: true
       })
-      .eq("id", match.id)
-      .eq("current_round", fromRound)
-      .eq("player1_ready", true)
-      .eq("player2_ready", true)
-      .select("id");
+      .eq("id", match.id);
 
-    if (error) {
-      console.error("[OnlineGame] Error advancing round:", error);
+    if (readyError) {
+      console.error("[OnlineGame] Error setting next round ready:", readyError);
+      setWaitingForNextRound(false);
+      setIsPlayerNextRoundReady(false);
       return;
     }
 
-    const changed = Array.isArray(data) ? data.length > 0 : !!data;
-    if (!changed) {
-      console.log("[OnlineGame] Round advance skipped (already advanced or not ready yet)." );
-    } else {
-      console.log("[OnlineGame] Round advanced in DB.");
+    // Check if opponent is also ready
+    const { data: currentMatch } = await supabase
+      .from("matches" as any)
+      .select("player1_next_round_ready, player2_next_round_ready")
+      .eq("id", match.id)
+      .single() as { data: { player1_next_round_ready: boolean; player2_next_round_ready: boolean } | null };
+
+    if (currentMatch) {
+      const opponentNextRoundReady = isPlayer1 ? currentMatch.player2_next_round_ready : currentMatch.player1_next_round_ready;
+      setIsOpponentNextRoundReady(!!opponentNextRoundReady);
+
+      // Both ready - advance round
+      if (currentMatch.player1_next_round_ready && currentMatch.player2_next_round_ready) {
+        console.log("[OnlineGame] Both players ready, advancing round to:", newRound);
+        
+        // Prepare local UI
+        setOpponentMoves(undefined);
+        setOpponentReady(false);
+        setWaitingForOpponent(false);
+        setWaitingForNextRound(false);
+        setIsPlayerNextRoundReady(false);
+        setIsOpponentNextRoundReady(false);
+
+        // Advance round in DB
+        await supabase
+          .from("matches" as any)
+          .update({
+            player1_ready: false,
+            player2_ready: false,
+            player1_field: [],
+            player2_field: [],
+            player1_next_round_ready: false,
+            player2_next_round_ready: false,
+            current_round: newRound,
+          })
+          .eq("id", match.id)
+          .eq("current_round", fromRound);
+
+        console.log("[OnlineGame] Round advanced in DB.");
+      }
     }
-  }, [match]);
+  }, [match, isPlayer1]);
 
   // Handle game end - update stats and ELO
   const handleGameEnd = useCallback(async (winnerId: string | null, playerHP: number, opponentHP: number) => {
@@ -462,30 +611,51 @@ const OnlineGame = () => {
 
   return (
     <div className="relative">
-      {/* Online Status Bar */}
-      <div className="absolute top-4 right-4 z-50 flex items-center gap-3 bg-card/90 backdrop-blur-sm px-4 py-2 rounded-full border border-primary/30">
-        <div className="flex items-center gap-2">
-          <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-          <span className="text-xs text-muted-foreground font-medium">Çevrimiçi</span>
-        </div>
-        <div className="w-px h-4 bg-border" />
-        <div className="flex items-center gap-1">
-          <Clock className="w-3 h-3 text-muted-foreground" />
-          <span className="text-xs text-muted-foreground">Tur {currentRound}</span>
-        </div>
-        {waitingForOpponent && (
-          <>
-            <div className="w-px h-4 bg-border" />
-            <div className="flex items-center gap-1">
-              <Users className="w-3 h-3 text-amber-500" />
-              <span className="text-xs text-amber-500">Rakip bekleniyor...</span>
-            </div>
-          </>
-        )}
-      </div>
+      {/* Ready Popup - shown before game starts */}
+      <ReadyPopup
+        isOpen={showReadyPopup && !gameStarted}
+        isPlayerReady={isPlayerGameReady}
+        isOpponentReady={isOpponentGameReady}
+        playerClass={playerDeck.mainClass}
+        opponentClass={opponentClass}
+        onReady={handleGameReady}
+      />
 
-      {/* Waiting Overlay */}
-      {waitingForOpponent && (
+      {/* Next Round Waiting Popup */}
+      <NextRoundWaitingPopup
+        isOpen={waitingForNextRound && !isOpponentNextRoundReady}
+        isPlayerReady={isPlayerNextRoundReady}
+        isOpponentReady={isOpponentNextRoundReady}
+        currentRound={currentRound}
+        nextRound={currentRound + 1}
+      />
+
+      {/* Online Status Bar */}
+      {gameStarted && (
+        <div className="absolute top-4 right-4 z-50 flex items-center gap-3 bg-card/90 backdrop-blur-sm px-4 py-2 rounded-full border border-primary/30">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+            <span className="text-xs text-muted-foreground font-medium">Çevrimiçi</span>
+          </div>
+          <div className="w-px h-4 bg-border" />
+          <div className="flex items-center gap-1">
+            <Clock className="w-3 h-3 text-muted-foreground" />
+            <span className="text-xs text-muted-foreground">Tur {currentRound}</span>
+          </div>
+          {waitingForOpponent && (
+            <>
+              <div className="w-px h-4 bg-border" />
+              <div className="flex items-center gap-1">
+                <Users className="w-3 h-3 text-amber-500" />
+                <span className="text-xs text-amber-500">Rakip bekleniyor...</span>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Waiting Overlay for card placement */}
+      {waitingForOpponent && gameStarted && (
         <div className="fixed inset-0 z-40 bg-background/50 backdrop-blur-sm flex items-center justify-center pointer-events-none">
           <div className="bg-card border border-border rounded-xl p-8 flex flex-col items-center gap-4 animate-pulse">
             <Loader2 className="w-10 h-10 text-primary animate-spin" />
@@ -495,7 +665,8 @@ const OnlineGame = () => {
         </div>
       )}
 
-      {opponentDeck && opponentDeck.cards && opponentDeck.cards.length > 0 ? (
+      {/* Game Match - only show after game starts */}
+      {gameStarted && opponentDeck && opponentDeck.cards && opponentDeck.cards.length > 0 ? (
         <SafeGameMatch
           playerDeck={playerDeck}
           opponentClass={opponentClass}
@@ -506,7 +677,7 @@ const OnlineGame = () => {
           onMovesReady={handleMovesReady}
           onRoundChange={handleRoundChange}
         />
-      ) : (
+      ) : gameStarted ? (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm z-40">
           <Loader2 className="w-12 h-12 text-destructive animate-spin mb-4" />
           <p className="text-destructive font-bold text-center">
@@ -517,7 +688,7 @@ const OnlineGame = () => {
             Yenile
           </Button>
         </div>
-      )}
+      ) : null}
     </div>
   );
 };
