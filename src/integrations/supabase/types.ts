@@ -114,6 +114,7 @@ export type Database = {
           created_at: string
           current_round: number | null
           finished_at: string | null
+          game_started: boolean | null
           game_state: Json | null
           id: string
           phase: string | null
@@ -121,11 +122,13 @@ export type Database = {
           player1_field: Json | null
           player1_final_hp: number | null
           player1_id: string
+          player1_next_round_ready: boolean | null
           player1_ready: boolean | null
           player2_deck: Json
           player2_field: Json | null
           player2_final_hp: number | null
           player2_id: string
+          player2_next_round_ready: boolean | null
           player2_ready: boolean | null
           status: string
           updated_at: string
@@ -135,6 +138,7 @@ export type Database = {
           created_at?: string
           current_round?: number | null
           finished_at?: string | null
+          game_started?: boolean | null
           game_state?: Json | null
           id?: string
           phase?: string | null
@@ -142,11 +146,13 @@ export type Database = {
           player1_field?: Json | null
           player1_final_hp?: number | null
           player1_id: string
+          player1_next_round_ready?: boolean | null
           player1_ready?: boolean | null
           player2_deck: Json
           player2_field?: Json | null
           player2_final_hp?: number | null
           player2_id: string
+          player2_next_round_ready?: boolean | null
           player2_ready?: boolean | null
           status?: string
           updated_at?: string
@@ -156,6 +162,7 @@ export type Database = {
           created_at?: string
           current_round?: number | null
           finished_at?: string | null
+          game_started?: boolean | null
           game_state?: Json | null
           id?: string
           phase?: string | null
@@ -163,11 +170,13 @@ export type Database = {
           player1_field?: Json | null
           player1_final_hp?: number | null
           player1_id?: string
+          player1_next_round_ready?: boolean | null
           player1_ready?: boolean | null
           player2_deck?: Json
           player2_field?: Json | null
           player2_final_hp?: number | null
           player2_id?: string
+          player2_next_round_ready?: boolean | null
           player2_ready?: boolean | null
           status?: string
           updated_at?: string
