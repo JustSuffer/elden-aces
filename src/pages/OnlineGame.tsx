@@ -187,6 +187,9 @@ const OnlineGame = () => {
     fetchMatch();
   }, [matchId, user]);
 
+  // Track which round's opponentMoves we've processed to avoid stale data
+  const processedOpponentRoundRef = useRef<number>(0);
+
   // Subscribe to match updates via Realtime
   useEffect(() => {
     if (!matchId || !user || !match) return;
@@ -266,6 +269,11 @@ const OnlineGame = () => {
             console.log("[OnlineGame] Syncing round from DB:", roundFromDb);
             setCurrentRound(roundFromDb);
 
+            // CRITICAL: Clear opponent moves when round changes to prevent stale data
+            setOpponentMoves(undefined);
+            setOpponentReady(false);
+            setWaitingForOpponent(false);
+
             // Update opponent deck count based on new round
             const oppDeck = isP1 ? merged.player2_deck : merged.player1_deck;
             const initialDeckCount = (oppDeck?.cards?.length || 36) - 6;
@@ -279,16 +287,9 @@ const OnlineGame = () => {
               setIsPlayerNextRoundReady(false);
               setIsOpponentNextRoundReady(false);
             }
-
-            // If round changed and both ready states are false, it's a new round
-            if (!merged.player1_ready && !merged.player2_ready) {
-              setOpponentMoves(undefined);
-              setOpponentReady(false);
-              setWaitingForOpponent(false);
-            }
           }
 
-          // Check if opponent is ready (for card placement)
+          // Check if opponent is ready (for card placement) - only process for CURRENT round
           const opponentIsReady = isP1 ? merged.player2_ready : merged.player1_ready;
           const myReady = isP1 ? merged.player1_ready : merged.player2_ready;
 
@@ -303,10 +304,12 @@ const OnlineGame = () => {
 
           setOpponentReady(!!opponentIsReady);
 
-          // If both players are ready, sync the opponent's field
+          // If both players are ready, sync the opponent's field for THIS round
           if (myReady && opponentIsReady) {
             const opponentField = isP1 ? merged.player2_field : merged.player1_field;
-            console.log("[OnlineGame] Both ready! Opponent field:", opponentField);
+            const dbRound = merged.current_round || 1;
+            
+            console.log("[OnlineGame] Both ready! Opponent field:", opponentField, "for round:", dbRound);
 
             // Never resolve a round with an empty/partial opponent field (prevents 'bot gibi' oynama).
             if (!isValidField(opponentField)) {
@@ -314,27 +317,37 @@ const OnlineGame = () => {
                 console.log("[OnlineGame] Opponent field invalid/missing; fetching from DB...");
                 const { data } = (await supabase
                   .from("matches" as any)
-                  .select("player1_field, player2_field")
+                  .select("player1_field, player2_field, current_round")
                   .eq("id", matchId)
-                  .single()) as { data: Match | null };
+                  .single()) as { data: { player1_field: (Card | null)[]; player2_field: (Card | null)[]; current_round: number } | null };
 
                 const fetchedField = isP1 ? data?.player2_field : data?.player1_field;
-                console.log("[OnlineGame] Fetched opponent field:", fetchedField);
+                const fetchedRound = data?.current_round || 1;
+                
+                console.log("[OnlineGame] Fetched opponent field:", fetchedField, "for round:", fetchedRound);
 
-                if (isValidField(fetchedField)) {
-                  setOpponentMoves(fetchedField);
-                  setWaitingForOpponent(false);
-                  toast.success("Rakip hazır! Kartlar açılıyor...");
+                // Only set if the round matches current round and we haven't processed this round yet
+                if (isValidField(fetchedField) && fetchedRound === currentRoundRef.current) {
+                  if (processedOpponentRoundRef.current !== fetchedRound) {
+                    processedOpponentRoundRef.current = fetchedRound;
+                    setOpponentMoves(fetchedField);
+                    setWaitingForOpponent(false);
+                    toast.success("Rakip hazır! Kartlar açılıyor...");
+                  }
                 } else {
-                  console.warn("[OnlineGame] Opponent field still invalid; keeping waiting state.");
+                  console.warn("[OnlineGame] Opponent field still invalid or round mismatch; keeping waiting state.");
                 }
               })();
               return;
             }
 
-            setOpponentMoves(opponentField);
-            setWaitingForOpponent(false);
-            toast.success("Rakip hazır! Kartlar açılıyor...");
+            // Only set opponent moves if we haven't processed this round yet
+            if (processedOpponentRoundRef.current !== dbRound) {
+              processedOpponentRoundRef.current = dbRound;
+              setOpponentMoves(opponentField);
+              setWaitingForOpponent(false);
+              toast.success("Rakip hazır! Kartlar açılıyor...");
+            }
           }
         }
       )
@@ -407,7 +420,7 @@ const OnlineGame = () => {
   const handleMovesReady = useCallback(async (moves: (Card | null)[]) => {
     if (!match || !user) return;
 
-    console.log("[OnlineGame] Submitting moves:", moves);
+    console.log("[OnlineGame] Submitting moves for round:", currentRound, moves);
     setWaitingForOpponent(true);
 
     const fieldColumn = isPlayer1 ? "player1_field" : "player2_field";
@@ -429,10 +442,10 @@ const OnlineGame = () => {
       return;
     }
 
-    console.log("[OnlineGame] Moves submitted successfully");
+    console.log("[OnlineGame] Moves submitted successfully for round:", currentRound);
     toast.info("Hamleler gönderildi, rakip bekleniyor...");
 
-    // Check if opponent is already ready
+    // Check if opponent is already ready for THIS round
     const { data: currentMatch } = await supabase
       .from("matches" as any)
       .select("*")
@@ -441,15 +454,19 @@ const OnlineGame = () => {
 
     if (currentMatch) {
       const opponentIsReady = isPlayer1 ? currentMatch.player2_ready : currentMatch.player1_ready;
-      if (opponentIsReady) {
+      const dbRound = currentMatch.current_round || 1;
+      
+      // Only process if opponent is ready AND we're on the same round
+      if (opponentIsReady && dbRound === currentRound) {
         const opponentField = isPlayer1 ? currentMatch.player2_field : currentMatch.player1_field;
-        console.log("[OnlineGame] Opponent was already ready! Field:", opponentField);
+        console.log("[OnlineGame] Opponent was already ready for round:", dbRound, "Field:", opponentField);
 
-        if (isValidField(opponentField)) {
+        if (isValidField(opponentField) && processedOpponentRoundRef.current !== dbRound) {
+          processedOpponentRoundRef.current = dbRound;
           setOpponentMoves(opponentField);
           setWaitingForOpponent(false);
           toast.success("Rakip zaten hazırdı! Kartlar açılıyor...");
-        } else {
+        } else if (!isValidField(opponentField)) {
           console.warn("[OnlineGame] Opponent ready but field invalid; keeping waiting state.");
           // Keep waitingForOpponent=true until a valid field arrives.
         }
@@ -697,7 +714,7 @@ const OnlineGame = () => {
       )}
 
       {/* Game Match - only show after game starts */}
-      {gameStarted && opponentDeck && opponentDeck.cards && opponentDeck.cards.length > 0 ? (
+      {gameStarted && opponentDeck && (Array.isArray(opponentDeck.cards) ? opponentDeck.cards.length > 0 : true) ? (
         <SafeGameMatch
           playerDeck={playerDeck}
           opponentClass={opponentClass}
