@@ -2,7 +2,7 @@ import { MenuButton } from "@/components/ui/menu-button";
 import logo from "@/assets/acoria-logo.png";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { LogOut } from "lucide-react";
+import { LogOut, Trophy } from "lucide-react";
 import { motion } from "framer-motion";
 import { useLanguage } from "@/hooks/useLanguage";
 
@@ -127,10 +127,14 @@ const Menu = () => {
               </motion.div>
           </div>
 
-          <motion.div variants={itemVariants} className="grid grid-cols-3 gap-4 pt-2">
+          <motion.div variants={itemVariants} className="grid grid-cols-4 gap-4 pt-2">
              <MenuButton onClick={() => navigate("/credits")} className="h-10 text-xs px-1 border-white/20 hover:border-white/40">{t("menu.team")}</MenuButton>
              <MenuButton onClick={() => navigate("/how-to-play")} className="h-10 text-xs px-1 border-white/20 hover:border-white/40">{t("menu.howToPlay")}</MenuButton>
              <MenuButton onClick={() => navigate("/tutorial")} className="h-10 text-xs px-1 border-white/20 hover:border-white/40">{t("menu.tutorial")}</MenuButton>
+             <MenuButton onClick={() => navigate("/leaderboard")} className="h-10 text-xs px-1 border-primary/30 hover:border-primary/60 flex items-center justify-center gap-1">
+               <Trophy className="w-3 h-3" />
+               ELO
+             </MenuButton>
           </motion.div>
           
           {/* Logout Button */}
