@@ -126,19 +126,22 @@ export function useGameState(initParams?: GameInitParams) {
 
     // Use injected opponent deck for PvP or create bot deck
     let opponentDeck: Card[];
-    if (initParams?.opponentDeck && initParams.opponentDeck.length > 0) {
+    // Ensure opponentDeck is a valid array
+    const injectedOpponentDeck = Array.isArray(initParams?.opponentDeck) ? initParams.opponentDeck : [];
+    
+    if (injectedOpponentDeck.length > 0) {
         // If Online, deck is already randomized/fixed in DB. Do NOT shuffle again locally.
-        if (initParams.isOnline) {
-            opponentDeck = [...initParams.opponentDeck];
+        if (initParams?.isOnline) {
+            opponentDeck = [...injectedOpponentDeck];
         } else {
-            opponentDeck = shuffleDeck([...initParams.opponentDeck]);
+            opponentDeck = shuffleDeck([...injectedOpponentDeck]);
         }
     } else {
         opponentDeck = createBotDeck(oClass);
     }
     
     // Bot logic for Mimic Opponent (if bot is Mimic)
-    if (oClass === "Mimic" && !initParams?.opponentDeck) {
+    if (oClass === "Mimic" && injectedOpponentDeck.length === 0) {
         const mimicClassData = MASTER_CLASSES["Mimic"];
         const extraMimicCards: Card[] = [];
         for (let i = 1; i <= 6; i++) {
@@ -181,14 +184,16 @@ export function useGameState(initParams?: GameInitParams) {
         playerDeck = shuffleDeck(playerDeck);
     } else {
         // Normal Case
-        const inputCards = initParams?.playerDeck.cards;
-        if (inputCards && inputCards.length > 0) {
+        const inputCards = Array.isArray(initParams?.playerDeck?.cards) ? initParams.playerDeck.cards : [];
+        if (inputCards.length > 0) {
             if (initParams?.isOnline) {
                 playerDeck = [...inputCards];
             } else {
                 playerDeck = shuffleDeck([...inputCards]);
             }
         } else {
+            // Fallback: create bot deck if no cards available
+            console.warn("[useGameState] No cards in player deck, falling back to bot deck");
             playerDeck = createBotDeck(pClass);
         }
     }
