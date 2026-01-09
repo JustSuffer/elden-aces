@@ -32,6 +32,10 @@ interface Match {
   game_started?: boolean;
   player1_next_round_ready?: boolean;
   player2_next_round_ready?: boolean;
+  game_state?: {
+    player1_deck_count?: number;
+    player2_deck_count?: number;
+  };
 }
 
 // Basic Error Boundary for catching render crashes
@@ -105,6 +109,9 @@ const OnlineGame = () => {
   const [isPlayerNextRoundReady, setIsPlayerNextRoundReady] = useState(false);
   const [isOpponentNextRoundReady, setIsOpponentNextRoundReady] = useState(false);
   
+  // Opponent deck count for real-time tracking
+  const [opponentDeckCount, setOpponentDeckCount] = useState<number | undefined>(undefined);
+  
   // Rematch hook
   const {
     rematchState,
@@ -156,11 +163,20 @@ const OnlineGame = () => {
       setMatch(data);
       setCurrentRound(data.current_round || 1);
       
+      // Initialize opponent deck count based on their deck size and current round
+      // Standard deck is 36 cards, initial hand is 6, so deck starts at 30
+      // Each round draws 5 cards (approximately)
+      const isP1 = user.id === data.player1_id;
+      const oppDeck = isP1 ? data.player2_deck : data.player1_deck;
+      const initialDeckCount = (oppDeck?.cards?.length || 36) - 6; // After initial hand
+      const estimatedCardsUsed = ((data.current_round || 1) - 1) * 5;
+      const estimatedDeckCount = Math.max(0, initialDeckCount - estimatedCardsUsed);
+      setOpponentDeckCount(estimatedDeckCount);
+      
       // Check if game already started (reconnect scenario)
       if (data.game_started) {
         setGameStarted(true);
         setShowReadyPopup(false);
-        const isP1 = user.id === data.player1_id;
         setIsPlayerGameReady(isP1 ? !!data.player1_ready : !!data.player2_ready);
         setIsOpponentGameReady(isP1 ? !!data.player2_ready : !!data.player1_ready);
       }
@@ -222,6 +238,14 @@ const OnlineGame = () => {
             return; // Don't process other updates until game starts
           }
 
+          // ========== SYNC OPPONENT DECK COUNT ==========
+          if (merged.game_state) {
+            const oppDeckCount = isP1 ? merged.game_state.player2_deck_count : merged.game_state.player1_deck_count;
+            if (oppDeckCount !== undefined) {
+              setOpponentDeckCount(oppDeckCount);
+            }
+          }
+
           // ========== NEXT ROUND READY SYNC ==========
           const p1NextRoundReady = merged.player1_next_round_ready;
           const p2NextRoundReady = merged.player2_next_round_ready;
@@ -241,6 +265,13 @@ const OnlineGame = () => {
           if (roundFromDb !== currentRoundRef.current) {
             console.log("[OnlineGame] Syncing round from DB:", roundFromDb);
             setCurrentRound(roundFromDb);
+
+            // Update opponent deck count based on new round
+            const oppDeck = isP1 ? merged.player2_deck : merged.player1_deck;
+            const initialDeckCount = (oppDeck?.cards?.length || 36) - 6;
+            const estimatedCardsUsed = (roundFromDb - 1) * 5;
+            const newDeckCount = Math.max(0, initialDeckCount - estimatedCardsUsed);
+            setOpponentDeckCount(newDeckCount);
 
             // If round changed, reset next round ready states
             if (!merged.player1_next_round_ready && !merged.player2_next_round_ready) {
@@ -674,6 +705,7 @@ const OnlineGame = () => {
           opponentDeck={opponentDeck}
           opponentMoves={opponentMoves}
           serverRound={currentRound}
+          opponentDeckCount={opponentDeckCount}
           onMovesReady={handleMovesReady}
           onRoundChange={handleRoundChange}
         />

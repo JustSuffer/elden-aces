@@ -32,6 +32,7 @@ interface GameMatchProps {
   opponentDeck?: SavedDeck;
   opponentMoves?: (Card | null)[];
   serverRound?: number;
+  opponentDeckCount?: number; // Real-time opponent deck count for online mode
   onMovesReady?: (moves: (Card | null)[]) => Promise<void>;
   onRoundChange?: (newRound: number) => Promise<void>;
 }
@@ -43,6 +44,7 @@ export const GameMatch = ({
   opponentDeck,
   opponentMoves,
   serverRound,
+  opponentDeckCount,
   onMovesReady,
   onRoundChange,
 }: GameMatchProps) => {
@@ -365,7 +367,7 @@ export const GameMatch = ({
         <div className="flex-1 flex flex-col items-center justify-between p-4 md:p-8 gap-4 md:gap-8">
           {/* Opponent Area */}
           <div className="w-full max-w-6xl flex items-start gap-4">
-            <DeckCounter count={gameState.opponentDeck.length} isOpponent />
+            <DeckCounter count={isOnline && opponentDeckCount !== undefined ? opponentDeckCount : gameState.opponentDeck.length} isOpponent />
             <div className="flex-1 flex flex-col items-center gap-4">
               <div className="flex flex-col w-full max-w-[200px] md:max-w-[300px]">
                 <div className="flex items-center gap-3">
