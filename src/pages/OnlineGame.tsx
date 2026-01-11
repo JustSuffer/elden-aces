@@ -420,29 +420,50 @@ const OnlineGame = () => {
   const handleMovesReady = useCallback(async (moves: (Card | null)[]) => {
     if (!match || !user) return;
 
-    console.log("[OnlineGame] Submitting moves for round:", currentRound, moves);
+    const roundToPlay = currentRoundRef.current;
+
+    console.log("[OnlineGame] Submitting moves for round:", roundToPlay, moves);
     setWaitingForOpponent(true);
 
     const fieldColumn = isPlayer1 ? "player1_field" : "player2_field";
     const readyColumn = isPlayer1 ? "player1_ready" : "player2_ready";
 
+    // IMPORTANT:
+    // - current_round is advanced ONLY in handleRoundChange (when both players click next round)
+    // - This update is guarded by current_round to prevent late packets overwriting the wrong round
     const { error } = await supabase
       .from("matches" as any)
       .update({
         [fieldColumn]: moves,
         [readyColumn]: true,
-        current_round: currentRound
       })
-      .eq("id", match.id);
+      .eq("id", match.id)
+      .eq("current_round", roundToPlay);
 
     if (error) {
       console.error("[OnlineGame] Error submitting moves:", error);
-      toast.error("Hamleler gönderilemedi!");
+      toast.error("Hamleler gönderilemedi (tur senkronu kaydı). Yeniden senkronize ediliyor...");
+
+      // Force a refetch to resync local state with DB
+      const { data: latest } = (await supabase
+        .from("matches" as any)
+        .select("*")
+        .eq("id", match.id)
+        .single()) as { data: Match | null };
+
+      if (latest) {
+        matchRef.current = latest;
+        setMatch(latest);
+        setCurrentRound(latest.current_round || 1);
+        setOpponentMoves(undefined);
+        setOpponentReady(false);
+      }
+
       setWaitingForOpponent(false);
       return;
     }
 
-    console.log("[OnlineGame] Moves submitted successfully for round:", currentRound);
+    console.log("[OnlineGame] Moves submitted successfully for round:", roundToPlay);
     toast.info("Hamleler gönderildi, rakip bekleniyor...");
 
     // Check if opponent is already ready for THIS round
@@ -455,9 +476,9 @@ const OnlineGame = () => {
     if (currentMatch) {
       const opponentIsReady = isPlayer1 ? currentMatch.player2_ready : currentMatch.player1_ready;
       const dbRound = currentMatch.current_round || 1;
-      
+
       // Only process if opponent is ready AND we're on the same round
-      if (opponentIsReady && dbRound === currentRound) {
+      if (opponentIsReady && dbRound === roundToPlay) {
         const opponentField = isPlayer1 ? currentMatch.player2_field : currentMatch.player1_field;
         console.log("[OnlineGame] Opponent was already ready for round:", dbRound, "Field:", opponentField);
 
@@ -472,7 +493,7 @@ const OnlineGame = () => {
         }
       }
     }
-  }, [match, user, isPlayer1, currentRound]);
+  }, [match, user, isPlayer1]);
 
   // Handle round change - now requires both players to press Next Round
   const handleRoundChange = useCallback(async (newRound: number) => {
@@ -652,9 +673,27 @@ const OnlineGame = () => {
     );
   }
 
-  // Determine player's deck and opponent's class
-  const playerDeck = isPlayer1 ? match.player1_deck : match.player2_deck;
-  const opponentDeck = isPlayer1 ? match.player2_deck : match.player1_deck;
+  // Normalize legacy class names (older decks may still store Conjurer/Incinerator)
+  const normalizeClassName = (c: string) => (c === "Incinerator" ? "Decay" : c === "Conjurer" ? "Vessel" : c);
+
+  // Determine player's deck and opponent's class (sanitize for runtime)
+  const rawPlayerDeck = isPlayer1 ? match.player1_deck : match.player2_deck;
+  const rawOpponentDeck = isPlayer1 ? match.player2_deck : match.player1_deck;
+
+  const playerDeck: SavedDeck = {
+    ...rawPlayerDeck,
+    mainClass: normalizeClassName(String(rawPlayerDeck.mainClass)) as ClassName,
+    secondaryClasses: (rawPlayerDeck.secondaryClasses || []).map((c: any) => normalizeClassName(String(c)) as ClassName),
+    cards: Array.isArray(rawPlayerDeck.cards) ? rawPlayerDeck.cards : [],
+  };
+
+  const opponentDeck: SavedDeck = {
+    ...rawOpponentDeck,
+    mainClass: normalizeClassName(String(rawOpponentDeck.mainClass)) as ClassName,
+    secondaryClasses: (rawOpponentDeck.secondaryClasses || []).map((c: any) => normalizeClassName(String(c)) as ClassName),
+    cards: Array.isArray(rawOpponentDeck.cards) ? rawOpponentDeck.cards : [],
+  };
+
   const opponentClass = opponentDeck.mainClass as ClassName;
 
   return (
