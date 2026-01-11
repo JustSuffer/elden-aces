@@ -55,6 +55,9 @@ export const GameMatch = ({
   const [showWinConAnimation, setShowWinConAnimation] = useState(false);
   const [winConAnimationType, setWinConAnimationType] = useState<string | null>(null);
 
+  // Online: prevent local round from advancing before server confirmation (fixes 1-round delay / wrong cards)
+  const [requestedNextRoundFor, setRequestedNextRoundFor] = useState<number | null>(null);
+
   const timeoutHandledRoundRef = useRef<number | null>(null);
 
   const {
@@ -93,6 +96,7 @@ export const GameMatch = ({
         local: gameState.round,
         server: serverRound,
       });
+      setRequestedNextRoundFor(null);
       nextRound();
     }
   }, [isOnline, serverRound, gameState.round, gameState.phase, nextRound]);
@@ -266,31 +270,43 @@ export const GameMatch = ({
     const maxRounds = gameState.maxRounds || 7;
     const newRound = gameState.round + 1 + (gameState.pendingRoundSkip || 0);
 
-    if (gameState.pendingRoundSkip && gameState.pendingRoundSkip > 0) {
-      setShowHourglass(true);
-      setTimeout(async () => {
-        setShowHourglass(false);
-        nextRound();
-        // Notify server about round change in online mode
-        if (isOnline && onRoundChange) {
-          await onRoundChange(newRound);
-        }
-      }, 2500);
-      return;
-    }
-
     // If game ended (HP depleted or round limit), nextRound() will transition to "end".
     if (gameState.round >= maxRounds || gameState.playerHP <= 0 || gameState.opponentHP <= 0) {
       nextRound();
       return;
     }
 
-    nextRound();
-
-    // Notify server about round change in online mode
+    // Online mode MUST NOT advance locally until DB round advances.
+    // Otherwise the client can enter "placement" for round N+1 while server is still on round N,
+    // and will re-sync opponentMoves from the previous round (the bug you're seeing).
     if (isOnline && onRoundChange) {
+      if (requestedNextRoundFor === gameState.round) return;
+      setRequestedNextRoundFor(gameState.round);
+
+      if (gameState.pendingRoundSkip && gameState.pendingRoundSkip > 0) {
+        setShowHourglass(true);
+        setTimeout(async () => {
+          setShowHourglass(false);
+          await onRoundChange(newRound);
+        }, 2500);
+        return;
+      }
+
       await onRoundChange(newRound);
+      return;
     }
+
+    // Offline mode
+    if (gameState.pendingRoundSkip && gameState.pendingRoundSkip > 0) {
+      setShowHourglass(true);
+      setTimeout(() => {
+        setShowHourglass(false);
+        nextRound();
+      }, 2500);
+      return;
+    }
+
+    nextRound();
   };
 
   const requiredCards = gameState.playerMust4Cards ? 4 : 5;
@@ -482,6 +498,13 @@ export const GameMatch = ({
                   variant="default"
                   size="lg"
                   onClick={handleNextRound}
+                  disabled={
+                    isOnline &&
+                    requestedNextRoundFor === gameState.round &&
+                    gameState.playerHP > 0 &&
+                    gameState.opponentHP > 0 &&
+                    gameState.round < (gameState.maxRounds || 7)
+                  }
                   className="w-full mt-4"
                 >
                   {gameState.round >= 6 || gameState.playerHP <= 0 || gameState.opponentHP <= 0
