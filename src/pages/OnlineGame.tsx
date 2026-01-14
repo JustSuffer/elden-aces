@@ -188,7 +188,9 @@ const OnlineGame = () => {
   }, [matchId, user]);
 
   // Track which round's opponentMoves we've processed to avoid stale data
+  // Reset when round changes to allow processing the new round's data
   const processedOpponentRoundRef = useRef<number>(0);
+  const lastSyncedRoundRef = useRef<number>(0);
 
   // Subscribe to match updates via Realtime
   useEffect(() => {
@@ -266,7 +268,12 @@ const OnlineGame = () => {
           // Sync current round from database (use ref to avoid stale closure)
           const roundFromDb = merged.current_round || 1;
           if (roundFromDb !== currentRoundRef.current) {
-            console.log("[OnlineGame] Syncing round from DB:", roundFromDb);
+            console.log("[OnlineGame] Syncing round from DB:", roundFromDb, "Previous:", currentRoundRef.current);
+            
+            // CRITICAL: Reset processed round tracker so new round's cards can be processed
+            processedOpponentRoundRef.current = 0;
+            lastSyncedRoundRef.current = roundFromDb;
+            
             setCurrentRound(roundFromDb);
 
             // CRITICAL: Clear opponent moves when round changes to prevent stale data
@@ -287,6 +294,8 @@ const OnlineGame = () => {
               setIsPlayerNextRoundReady(false);
               setIsOpponentNextRoundReady(false);
             }
+            
+            return; // Don't process field data from old round payload
           }
 
           // Check if opponent is ready (for card placement) - only process for CURRENT round
@@ -309,7 +318,13 @@ const OnlineGame = () => {
             const opponentField = isP1 ? merged.player2_field : merged.player1_field;
             const dbRound = merged.current_round || 1;
             
-            console.log("[OnlineGame] Both ready! Opponent field:", opponentField, "for round:", dbRound);
+            console.log("[OnlineGame] Both ready! Opponent field:", opponentField, "for round:", dbRound, "processedRound:", processedOpponentRoundRef.current);
+
+            // Ensure we're processing the CURRENT round, not a stale update
+            if (dbRound !== currentRoundRef.current) {
+              console.warn("[OnlineGame] Ignoring field update - round mismatch:", { dbRound, currentRound: currentRoundRef.current });
+              return;
+            }
 
             // Never resolve a round with an empty/partial opponent field (prevents 'bot gibi' oynama).
             if (!isValidField(opponentField)) {
@@ -343,10 +358,13 @@ const OnlineGame = () => {
 
             // Only set opponent moves if we haven't processed this round yet
             if (processedOpponentRoundRef.current !== dbRound) {
+              console.log("[OnlineGame] Setting opponent moves for round:", dbRound);
               processedOpponentRoundRef.current = dbRound;
               setOpponentMoves(opponentField);
               setWaitingForOpponent(false);
               toast.success("Rakip hazır! Kartlar açılıyor...");
+            } else {
+              console.log("[OnlineGame] Already processed round:", dbRound, "- skipping");
             }
           }
         }
@@ -539,6 +557,9 @@ const OnlineGame = () => {
       // Both ready - advance round
       if (currentMatch.player1_next_round_ready && currentMatch.player2_next_round_ready) {
         console.log("[OnlineGame] Both players ready, advancing round to:", newRound);
+        
+        // CRITICAL: Reset processed round tracker for new round
+        processedOpponentRoundRef.current = 0;
         
         // Prepare local UI
         setOpponentMoves(undefined);
