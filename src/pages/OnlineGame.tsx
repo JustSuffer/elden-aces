@@ -267,7 +267,9 @@ const OnlineGame = () => {
 
           // Sync current round from database (use ref to avoid stale closure)
           const roundFromDb = merged.current_round || 1;
-          if (roundFromDb !== currentRoundRef.current) {
+          const roundChanged = roundFromDb !== currentRoundRef.current;
+          
+          if (roundChanged) {
             console.log("[OnlineGame] Syncing round from DB:", roundFromDb, "Previous:", currentRoundRef.current);
             
             // CRITICAL: Reset processed round tracker so new round's cards can be processed
@@ -288,14 +290,12 @@ const OnlineGame = () => {
             const newDeckCount = Math.max(0, initialDeckCount - estimatedCardsUsed);
             setOpponentDeckCount(newDeckCount);
 
-            // If round changed, reset next round ready states
-            if (!merged.player1_next_round_ready && !merged.player2_next_round_ready) {
-              setWaitingForNextRound(false);
-              setIsPlayerNextRoundReady(false);
-              setIsOpponentNextRoundReady(false);
-            }
+            // Reset next round ready states since we just advanced
+            setWaitingForNextRound(false);
+            setIsPlayerNextRoundReady(false);
+            setIsOpponentNextRoundReady(false);
             
-            return; // Don't process field data from old round payload
+            // Don't return here - continue to check ready states for new round
           }
 
           // Check if opponent is ready (for card placement) - only process for CURRENT round
@@ -569,8 +569,8 @@ const OnlineGame = () => {
         setIsPlayerNextRoundReady(false);
         setIsOpponentNextRoundReady(false);
 
-        // Advance round in DB
-        await supabase
+        // Advance round in DB - remove optimistic locking to prevent race conditions
+        const { error: updateError } = await supabase
           .from("matches" as any)
           .update({
             player1_ready: false,
@@ -581,8 +581,22 @@ const OnlineGame = () => {
             player2_next_round_ready: false,
             current_round: newRound,
           })
-          .eq("id", match.id)
-          .eq("current_round", fromRound);
+          .eq("id", match.id);
+
+        if (updateError) {
+          console.error("[OnlineGame] Error advancing round:", updateError);
+          // Refetch match to sync state
+          const { data: freshMatch } = await supabase
+            .from("matches" as any)
+            .select("current_round")
+            .eq("id", match.id)
+            .single() as { data: { current_round: number } | null };
+          
+          if (freshMatch && freshMatch.current_round >= newRound) {
+            console.log("[OnlineGame] Round already advanced by other player");
+            setCurrentRound(freshMatch.current_round);
+          }
+        }
 
         console.log("[OnlineGame] Round advanced in DB.");
       }
