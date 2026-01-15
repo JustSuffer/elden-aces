@@ -188,9 +188,7 @@ const OnlineGame = () => {
   }, [matchId, user]);
 
   // Track which round's opponentMoves we've processed to avoid stale data
-  // Reset when round changes to allow processing the new round's data
   const processedOpponentRoundRef = useRef<number>(0);
-  const lastSyncedRoundRef = useRef<number>(0);
 
   // Subscribe to match updates via Realtime
   useEffect(() => {
@@ -267,15 +265,8 @@ const OnlineGame = () => {
 
           // Sync current round from database (use ref to avoid stale closure)
           const roundFromDb = merged.current_round || 1;
-          const roundChanged = roundFromDb !== currentRoundRef.current;
-          
-          if (roundChanged) {
-            console.log("[OnlineGame] Syncing round from DB:", roundFromDb, "Previous:", currentRoundRef.current);
-            
-            // CRITICAL: Reset processed round tracker so new round's cards can be processed
-            processedOpponentRoundRef.current = 0;
-            lastSyncedRoundRef.current = roundFromDb;
-            
+          if (roundFromDb !== currentRoundRef.current) {
+            console.log("[OnlineGame] Syncing round from DB:", roundFromDb);
             setCurrentRound(roundFromDb);
 
             // CRITICAL: Clear opponent moves when round changes to prevent stale data
@@ -290,12 +281,12 @@ const OnlineGame = () => {
             const newDeckCount = Math.max(0, initialDeckCount - estimatedCardsUsed);
             setOpponentDeckCount(newDeckCount);
 
-            // Reset next round ready states since we just advanced
-            setWaitingForNextRound(false);
-            setIsPlayerNextRoundReady(false);
-            setIsOpponentNextRoundReady(false);
-            
-            // Don't return here - continue to check ready states for new round
+            // If round changed, reset next round ready states
+            if (!merged.player1_next_round_ready && !merged.player2_next_round_ready) {
+              setWaitingForNextRound(false);
+              setIsPlayerNextRoundReady(false);
+              setIsOpponentNextRoundReady(false);
+            }
           }
 
           // Check if opponent is ready (for card placement) - only process for CURRENT round
@@ -318,13 +309,7 @@ const OnlineGame = () => {
             const opponentField = isP1 ? merged.player2_field : merged.player1_field;
             const dbRound = merged.current_round || 1;
             
-            console.log("[OnlineGame] Both ready! Opponent field:", opponentField, "for round:", dbRound, "processedRound:", processedOpponentRoundRef.current);
-
-            // Ensure we're processing the CURRENT round, not a stale update
-            if (dbRound !== currentRoundRef.current) {
-              console.warn("[OnlineGame] Ignoring field update - round mismatch:", { dbRound, currentRound: currentRoundRef.current });
-              return;
-            }
+            console.log("[OnlineGame] Both ready! Opponent field:", opponentField, "for round:", dbRound);
 
             // Never resolve a round with an empty/partial opponent field (prevents 'bot gibi' oynama).
             if (!isValidField(opponentField)) {
@@ -358,13 +343,10 @@ const OnlineGame = () => {
 
             // Only set opponent moves if we haven't processed this round yet
             if (processedOpponentRoundRef.current !== dbRound) {
-              console.log("[OnlineGame] Setting opponent moves for round:", dbRound);
               processedOpponentRoundRef.current = dbRound;
               setOpponentMoves(opponentField);
               setWaitingForOpponent(false);
               toast.success("Rakip hazır! Kartlar açılıyor...");
-            } else {
-              console.log("[OnlineGame] Already processed round:", dbRound, "- skipping");
             }
           }
         }
@@ -558,9 +540,6 @@ const OnlineGame = () => {
       if (currentMatch.player1_next_round_ready && currentMatch.player2_next_round_ready) {
         console.log("[OnlineGame] Both players ready, advancing round to:", newRound);
         
-        // CRITICAL: Reset processed round tracker for new round
-        processedOpponentRoundRef.current = 0;
-        
         // Prepare local UI
         setOpponentMoves(undefined);
         setOpponentReady(false);
@@ -569,8 +548,8 @@ const OnlineGame = () => {
         setIsPlayerNextRoundReady(false);
         setIsOpponentNextRoundReady(false);
 
-        // Advance round in DB - remove optimistic locking to prevent race conditions
-        const { error: updateError } = await supabase
+        // Advance round in DB
+        await supabase
           .from("matches" as any)
           .update({
             player1_ready: false,
@@ -581,22 +560,8 @@ const OnlineGame = () => {
             player2_next_round_ready: false,
             current_round: newRound,
           })
-          .eq("id", match.id);
-
-        if (updateError) {
-          console.error("[OnlineGame] Error advancing round:", updateError);
-          // Refetch match to sync state
-          const { data: freshMatch } = await supabase
-            .from("matches" as any)
-            .select("current_round")
-            .eq("id", match.id)
-            .single() as { data: { current_round: number } | null };
-          
-          if (freshMatch && freshMatch.current_round >= newRound) {
-            console.log("[OnlineGame] Round already advanced by other player");
-            setCurrentRound(freshMatch.current_round);
-          }
-        }
+          .eq("id", match.id)
+          .eq("current_round", fromRound);
 
         console.log("[OnlineGame] Round advanced in DB.");
       }
