@@ -126,8 +126,10 @@ export function useGameState(initParams?: GameInitParams) {
 
     // Use injected opponent deck for PvP or create bot deck
     let opponentDeck: Card[];
-    // Ensure opponentDeck is a valid array
-    const injectedOpponentDeck = Array.isArray(initParams?.opponentDeck) ? initParams.opponentDeck : [];
+    // Ensure opponentDeck is a valid array - handle undefined, null, or non-array cases
+    const injectedOpponentDeck = Array.isArray(initParams?.opponentDeck) 
+      ? initParams.opponentDeck.filter((c): c is Card => c !== null && c !== undefined && typeof c === 'object')
+      : [];
     
     if (injectedOpponentDeck.length > 0) {
         // If Online, deck is already randomized/fixed in DB. Do NOT shuffle again locally.
@@ -137,6 +139,8 @@ export function useGameState(initParams?: GameInitParams) {
             opponentDeck = shuffleDeck([...injectedOpponentDeck]);
         }
     } else {
+        // Fallback to bot deck - this prevents black screen when opponent deck is empty/invalid
+        console.warn("[useGameState] No valid opponent deck provided, creating bot deck for class:", oClass);
         opponentDeck = createBotDeck(oClass);
     }
     
@@ -183,8 +187,10 @@ export function useGameState(initParams?: GameInitParams) {
         
         playerDeck = shuffleDeck(playerDeck);
     } else {
-        // Normal Case
-        const inputCards = Array.isArray(initParams?.playerDeck?.cards) ? initParams.playerDeck.cards : [];
+        // Normal Case - filter out any null/undefined cards
+        const inputCards = Array.isArray(initParams?.playerDeck?.cards) 
+          ? initParams.playerDeck.cards.filter((c): c is Card => c !== null && c !== undefined && typeof c === 'object')
+          : [];
         if (inputCards.length > 0) {
             if (initParams?.isOnline) {
                 playerDeck = [...inputCards];
@@ -193,7 +199,7 @@ export function useGameState(initParams?: GameInitParams) {
             }
         } else {
             // Fallback: create bot deck if no cards available
-            console.warn("[useGameState] No cards in player deck, falling back to bot deck");
+            console.warn("[useGameState] No valid cards in player deck, falling back to bot deck for class:", pClass);
             playerDeck = createBotDeck(pClass);
         }
     }
