@@ -32,6 +32,8 @@ interface Match {
   game_started?: boolean;
   player1_next_round_ready?: boolean;
   player2_next_round_ready?: boolean;
+  player1_field_round?: number;
+  player2_field_round?: number;
   game_state?: {
     player1_deck_count?: number;
     player2_deck_count?: number;
@@ -134,8 +136,14 @@ const OnlineGame = () => {
   }, [currentRound]);
 
   // Validate DB field arrays (avoid resolving with empty/partial data)
+  // Accept length===5 (proper [null,null,null,null,null] or filled) 
+  // Also accept length===0 (reset state) but treat as invalid for damage resolution
   const isValidField = (field: unknown): field is (Card | null)[] =>
     Array.isArray(field) && field.length === 5;
+
+  // Check if field round matches current round (prevents stale data)
+  const isFieldForCurrentRound = (fieldRound: number | undefined, round: number): boolean =>
+    fieldRound !== undefined && fieldRound === round;
 
   // Determine if current user is player 1
   const isPlayer1 = match ? user?.id === match.player1_id : false;
@@ -307,9 +315,17 @@ const OnlineGame = () => {
           // If both players are ready, sync the opponent's field for THIS round
           if (myReady && opponentIsReady) {
             const opponentField = isP1 ? merged.player2_field : merged.player1_field;
+            const opponentFieldRound = isP1 ? merged.player2_field_round : merged.player1_field_round;
             const dbRound = merged.current_round || 1;
             
-            console.log("[OnlineGame] Both ready! Opponent field:", opponentField, "for round:", dbRound);
+            console.log("[OnlineGame] Both ready! Opponent field:", opponentField, "fieldRound:", opponentFieldRound, "dbRound:", dbRound);
+
+            // CRITICAL: Only accept opponent's field if it's for the CURRENT round
+            // This prevents showing stale cards from previous rounds
+            if (!isFieldForCurrentRound(opponentFieldRound, dbRound)) {
+              console.warn("[OnlineGame] Opponent field_round mismatch, ignoring stale data:", { opponentFieldRound, dbRound });
+              return;
+            }
 
             // Never resolve a round with an empty/partial opponent field (prevents 'bot gibi' oynama).
             if (!isValidField(opponentField)) {
@@ -317,17 +333,18 @@ const OnlineGame = () => {
                 console.log("[OnlineGame] Opponent field invalid/missing; fetching from DB...");
                 const { data } = (await supabase
                   .from("matches" as any)
-                  .select("player1_field, player2_field, current_round")
+                  .select("player1_field, player2_field, player1_field_round, player2_field_round, current_round")
                   .eq("id", matchId)
-                  .single()) as { data: { player1_field: (Card | null)[]; player2_field: (Card | null)[]; current_round: number } | null };
+                  .single()) as { data: { player1_field: (Card | null)[]; player2_field: (Card | null)[]; player1_field_round: number; player2_field_round: number; current_round: number } | null };
 
                 const fetchedField = isP1 ? data?.player2_field : data?.player1_field;
+                const fetchedFieldRound = isP1 ? data?.player2_field_round : data?.player1_field_round;
                 const fetchedRound = data?.current_round || 1;
                 
-                console.log("[OnlineGame] Fetched opponent field:", fetchedField, "for round:", fetchedRound);
+                console.log("[OnlineGame] Fetched opponent field:", fetchedField, "fieldRound:", fetchedFieldRound, "dbRound:", fetchedRound);
 
-                // Only set if the round matches current round and we haven't processed this round yet
-                if (isValidField(fetchedField) && fetchedRound === currentRoundRef.current) {
+                // Only set if the field_round matches current round and we haven't processed this round yet
+                if (isValidField(fetchedField) && isFieldForCurrentRound(fetchedFieldRound, fetchedRound) && fetchedRound === currentRoundRef.current) {
                   if (processedOpponentRoundRef.current !== fetchedRound) {
                     processedOpponentRoundRef.current = fetchedRound;
                     setOpponentMoves(fetchedField);
@@ -427,15 +444,18 @@ const OnlineGame = () => {
 
     const fieldColumn = isPlayer1 ? "player1_field" : "player2_field";
     const readyColumn = isPlayer1 ? "player1_ready" : "player2_ready";
+    const fieldRoundColumn = isPlayer1 ? "player1_field_round" : "player2_field_round";
 
     // IMPORTANT:
     // - current_round is advanced ONLY in handleRoundChange (when both players click next round)
     // - This update is guarded by current_round to prevent late packets overwriting the wrong round
+    // - field_round tracks which round this field belongs to (prevents stale data display)
     const { error } = await supabase
       .from("matches" as any)
       .update({
         [fieldColumn]: moves,
         [readyColumn]: true,
+        [fieldRoundColumn]: roundToPlay,
       })
       .eq("id", match.id)
       .eq("current_round", roundToPlay);
@@ -475,12 +495,13 @@ const OnlineGame = () => {
 
     if (currentMatch) {
       const opponentIsReady = isPlayer1 ? currentMatch.player2_ready : currentMatch.player1_ready;
+      const opponentFieldRound = isPlayer1 ? currentMatch.player2_field_round : currentMatch.player1_field_round;
       const dbRound = currentMatch.current_round || 1;
 
-      // Only process if opponent is ready AND we're on the same round
-      if (opponentIsReady && dbRound === roundToPlay) {
+      // Only process if opponent is ready AND we're on the same round AND field is for current round
+      if (opponentIsReady && dbRound === roundToPlay && isFieldForCurrentRound(opponentFieldRound, dbRound)) {
         const opponentField = isPlayer1 ? currentMatch.player2_field : currentMatch.player1_field;
-        console.log("[OnlineGame] Opponent was already ready for round:", dbRound, "Field:", opponentField);
+        console.log("[OnlineGame] Opponent was already ready for round:", dbRound, "Field:", opponentField, "fieldRound:", opponentFieldRound);
 
         if (isValidField(opponentField) && processedOpponentRoundRef.current !== dbRound) {
           processedOpponentRoundRef.current = dbRound;
@@ -548,14 +569,17 @@ const OnlineGame = () => {
         setIsPlayerNextRoundReady(false);
         setIsOpponentNextRoundReady(false);
 
-        // Advance round in DB
+        // Advance round in DB - reset fields to proper 5-slot arrays and clear field_round
+        const emptyField = [null, null, null, null, null];
         await supabase
           .from("matches" as any)
           .update({
             player1_ready: false,
             player2_ready: false,
-            player1_field: [],
-            player2_field: [],
+            player1_field: emptyField,
+            player2_field: emptyField,
+            player1_field_round: 0,
+            player2_field_round: 0,
             player1_next_round_ready: false,
             player2_next_round_ready: false,
             current_round: newRound,
@@ -680,21 +704,47 @@ const OnlineGame = () => {
   const rawPlayerDeck = isPlayer1 ? match.player1_deck : match.player2_deck;
   const rawOpponentDeck = isPlayer1 ? match.player2_deck : match.player1_deck;
 
+  // Safely extract cards array - handle undefined, null, or invalid data
+  const safeGetCards = (deck: SavedDeck | null | undefined): Card[] => {
+    if (!deck) return [];
+    if (!deck.cards) return [];
+    if (!Array.isArray(deck.cards)) return [];
+    return deck.cards;
+  };
+
+  // Safely get main class with fallback
+  const safeGetMainClass = (deck: SavedDeck | null | undefined): ClassName => {
+    if (!deck) return "Vitalist";
+    if (!deck.mainClass) return "Vitalist";
+    const normalized = normalizeClassName(String(deck.mainClass));
+    // Validate that it's a known class
+    const validClasses = ["Vitalist", "Slayer", "Fateweaver", "Oracle", "Chronokeeper", "Cryomancer", "Decay", "Siren", "Augmentor", "Vessel", "Mimic"];
+    return validClasses.includes(normalized) ? normalized as ClassName : "Vitalist";
+  };
+
   const playerDeck: SavedDeck = {
-    ...rawPlayerDeck,
-    mainClass: normalizeClassName(String(rawPlayerDeck.mainClass)) as ClassName,
-    secondaryClasses: (rawPlayerDeck.secondaryClasses || []).map((c: any) => normalizeClassName(String(c)) as ClassName),
-    cards: Array.isArray(rawPlayerDeck.cards) ? rawPlayerDeck.cards : [],
+    id: rawPlayerDeck?.id || "unknown",
+    name: rawPlayerDeck?.name || "Unknown Deck",
+    mainClass: safeGetMainClass(rawPlayerDeck),
+    secondaryClasses: Array.isArray(rawPlayerDeck?.secondaryClasses) 
+      ? rawPlayerDeck.secondaryClasses.map((c: any) => normalizeClassName(String(c)) as ClassName) 
+      : [],
+    cards: safeGetCards(rawPlayerDeck),
+    createdAt: rawPlayerDeck?.createdAt || new Date().toISOString(),
   };
 
   const opponentDeck: SavedDeck = {
-    ...rawOpponentDeck,
-    mainClass: normalizeClassName(String(rawOpponentDeck.mainClass)) as ClassName,
-    secondaryClasses: (rawOpponentDeck.secondaryClasses || []).map((c: any) => normalizeClassName(String(c)) as ClassName),
-    cards: Array.isArray(rawOpponentDeck.cards) ? rawOpponentDeck.cards : [],
+    id: rawOpponentDeck?.id || "unknown",
+    name: rawOpponentDeck?.name || "Unknown Deck",
+    mainClass: safeGetMainClass(rawOpponentDeck),
+    secondaryClasses: Array.isArray(rawOpponentDeck?.secondaryClasses)
+      ? rawOpponentDeck.secondaryClasses.map((c: any) => normalizeClassName(String(c)) as ClassName)
+      : [],
+    cards: safeGetCards(rawOpponentDeck),
+    createdAt: rawOpponentDeck?.createdAt || new Date().toISOString(),
   };
 
-  const opponentClass = opponentDeck.mainClass as ClassName;
+  const opponentClass = opponentDeck.mainClass;
 
   return (
     <div className="relative">
@@ -753,7 +803,7 @@ const OnlineGame = () => {
       )}
 
       {/* Game Match - only show after game starts */}
-      {gameStarted && opponentDeck && (Array.isArray(opponentDeck.cards) ? opponentDeck.cards.length > 0 : true) ? (
+      {gameStarted && playerDeck.cards.length > 0 ? (
         <SafeGameMatch
           playerDeck={playerDeck}
           opponentClass={opponentClass}
@@ -769,8 +819,8 @@ const OnlineGame = () => {
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm z-40">
           <Loader2 className="w-12 h-12 text-destructive animate-spin mb-4" />
           <p className="text-destructive font-bold text-center">
-            Rakip verisi bekleniyor...<br/>
-            (Veri senkronizasyonu hatası)
+            Deste verisi bekleniyor...<br/>
+            (Kendi deste veriniz yüklenemedi)
           </p>
           <Button onClick={() => window.location.reload()} className="mt-4" variant="outline">
             Yenile

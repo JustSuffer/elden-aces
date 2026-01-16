@@ -120,12 +120,14 @@ export type Database = {
           phase: string | null
           player1_deck: Json
           player1_field: Json | null
+          player1_field_round: number | null
           player1_final_hp: number | null
           player1_id: string
           player1_next_round_ready: boolean | null
           player1_ready: boolean | null
           player2_deck: Json
           player2_field: Json | null
+          player2_field_round: number | null
           player2_final_hp: number | null
           player2_id: string
           player2_next_round_ready: boolean | null
@@ -144,12 +146,14 @@ export type Database = {
           phase?: string | null
           player1_deck: Json
           player1_field?: Json | null
+          player1_field_round?: number | null
           player1_final_hp?: number | null
           player1_id: string
           player1_next_round_ready?: boolean | null
           player1_ready?: boolean | null
           player2_deck: Json
           player2_field?: Json | null
+          player2_field_round?: number | null
           player2_final_hp?: number | null
           player2_id: string
           player2_next_round_ready?: boolean | null
@@ -168,12 +172,14 @@ export type Database = {
           phase?: string | null
           player1_deck?: Json
           player1_field?: Json | null
+          player1_field_round?: number | null
           player1_final_hp?: number | null
           player1_id?: string
           player1_next_round_ready?: boolean | null
           player1_ready?: boolean | null
           player2_deck?: Json
           player2_field?: Json | null
+          player2_field_round?: number | null
           player2_final_hp?: number | null
           player2_id?: string
           player2_next_round_ready?: boolean | null
