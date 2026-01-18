@@ -88,10 +88,12 @@ export const GameMatch = ({
     }
   }, [isOnline, opponentMoves, gameState.phase, syncOnlineRound]);
 
-  // If the server advanced the round (e.g., other player clicked Next), catch up locally.
+  // If the server advanced the round (e.g., both players confirmed Next), catch up locally.
+  // IMPORTANT: This MUST also run while we're still on the "end" phase; otherwise one client can get stuck.
   useEffect(() => {
     if (!isOnline || !serverRound) return;
-    if (serverRound > gameState.round && gameState.phase !== "end") {
+
+    if (serverRound > gameState.round) {
       console.log("[GameMatch] Server round advanced, syncing local round:", {
         local: gameState.round,
         server: serverRound,
@@ -99,7 +101,7 @@ export const GameMatch = ({
       setRequestedNextRoundFor(null);
       nextRound();
     }
-  }, [isOnline, serverRound, gameState.round, gameState.phase, nextRound]);
+  }, [isOnline, serverRound, gameState.round, nextRound]);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
