@@ -200,7 +200,7 @@ const OnlineGame = () => {
 
   // Subscribe to match updates via Realtime
   useEffect(() => {
-    if (!matchId || !user || !match) return;
+    if (!matchId || !user) return;
 
     console.log("[OnlineGame] Setting up realtime subscription for match:", matchId);
 
@@ -263,13 +263,6 @@ const OnlineGame = () => {
           
           setIsOpponentNextRoundReady(isP1 ? !!p2NextRoundReady : !!p1NextRoundReady);
           
-          // Both next round ready -> advance round
-          if (p1NextRoundReady && p2NextRoundReady && waitingForNextRound) {
-            console.log("[OnlineGame] Both players ready for next round");
-            setWaitingForNextRound(false);
-            setIsPlayerNextRoundReady(false);
-            setIsOpponentNextRoundReady(false);
-          }
 
           // Sync current round from database (use ref to avoid stale closure)
           const roundFromDb = merged.current_round || 1;
@@ -289,12 +282,10 @@ const OnlineGame = () => {
             const newDeckCount = Math.max(0, initialDeckCount - estimatedCardsUsed);
             setOpponentDeckCount(newDeckCount);
 
-            // If round changed, reset next round ready states
-            if (!merged.player1_next_round_ready && !merged.player2_next_round_ready) {
-              setWaitingForNextRound(false);
-              setIsPlayerNextRoundReady(false);
-              setIsOpponentNextRoundReady(false);
-            }
+            // Round advanced on server -> we can safely close the next-round waiting UI.
+            setWaitingForNextRound(false);
+            setIsPlayerNextRoundReady(false);
+            setIsOpponentNextRoundReady(false);
           }
 
           // Check if opponent is ready (for card placement) - only process for CURRENT round
@@ -378,7 +369,7 @@ const OnlineGame = () => {
       console.log("[OnlineGame] Cleaning up realtime subscription");
       supabase.removeChannel(channel);
     };
-  }, [matchId, user, match?.player1_id, waitingForNextRound]);
+  }, [matchId, user?.id]);
 
   // Handle game start ready
   const handleGameReady = useCallback(async () => {
@@ -760,7 +751,7 @@ const OnlineGame = () => {
 
       {/* Next Round Waiting Popup */}
       <NextRoundWaitingPopup
-        isOpen={waitingForNextRound && !isOpponentNextRoundReady}
+        isOpen={waitingForNextRound}
         isPlayerReady={isPlayerNextRoundReady}
         isOpponentReady={isOpponentNextRoundReady}
         currentRound={currentRound}
