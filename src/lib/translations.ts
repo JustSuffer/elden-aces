@@ -322,7 +322,7 @@ export const translations = {
   },
   tr: {
     // Menu
-    "menu.subtitle": "İlahi Bir Strateji Kart Oyunu",
+    "menu.subtitle": "Kadim Bir Strateji Kart Oyunu",
     "menu.playOnline": "Çevrimiçi Oyna",
     "menu.playBot": "Bot ile Oyna",
     "menu.profile": "Profil",
@@ -363,7 +363,7 @@ export const translations = {
     "common.loading": "Yükleniyor...",
 
     // Landing
-    "landing.title1": "İLAHİ BİR KART OYUNU",
+    "landing.title1": "KADİM BİR KART OYUNU",
     "landing.title2": "STRATEJİ VE KADER",
     "landing.cta.start": "MACERAYA BAŞLA",
     "landing.cta.login": "GİRİŞ YAP",
