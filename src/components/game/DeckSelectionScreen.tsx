@@ -6,6 +6,9 @@ import { SavedDeck } from "@/types/deck";
 import { ClassName } from "@/types/game";
 import { MASTER_CLASSES } from "@/data/gameData";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { Card } from "@/types/game";
 
 const ALL_CLASSES: ClassName[] = [
   "Vitalist", "Slayer", "Fateweaver", "Oracle", "Chronokeeper",
@@ -18,41 +21,49 @@ interface DeckSelectionScreenProps {
 
 export const DeckSelectionScreen = ({ onStartGame }: DeckSelectionScreenProps) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [savedDecks, setSavedDecks] = useState<SavedDeck[]>([]);
   const [selectedDeck, setSelectedDeck] = useState<SavedDeck | null>(null);
   const [opponentClass, setOpponentClass] = useState<ClassName | null>(null);
 
   useEffect(() => {
-    const stored = localStorage.getItem("acoria-saved-decks");
-    if (stored) {
-      try {
-        let decks = JSON.parse(stored);
-        
-        // Migration: Old Class Names -> New
-        decks = decks.map((d: any) => ({
-          ...d,
-          mainClass: d.mainClass === "Incinerator" ? "Decay" : (d.mainClass === "Conjurer" ? "Vessel" : d.mainClass),
-          secondaryClasses: d.secondaryClasses ? d.secondaryClasses.map((c: any) => 
-             c === "Incinerator" ? "Decay" : (c === "Conjurer" ? "Vessel" : c)
-          ) : []
-        })).filter((d: any) => MASTER_CLASSES[d.mainClass as ClassName]);
+    const fetchDecks = async () => {
+      if (!user) return;
 
-        setSavedDecks(decks);
-        if (decks.length > 0) {
-          setSelectedDeck(decks[0]);
+      try {
+        const { data, error } = await supabase
+          .from('decks')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        if (data) {
+          const mappedDecks: SavedDeck[] = data.map(d => ({
+            id: d.id,
+            name: d.name,
+            mainClass: d.main_class as ClassName,
+            secondaryClasses: d.secondary_classes as ClassName[],
+            cards: d.cards as unknown as Card[],
+            createdAt: d.created_at
+          }));
+
+          setSavedDecks(mappedDecks);
+          if (mappedDecks.length > 0) {
+            setSelectedDeck(mappedDecks[0]);
+          }
         }
-        
-        // Save back sanitized version
-        localStorage.setItem("acoria-saved-decks", JSON.stringify(decks));
-      } catch (e) {
-        console.error("Failed to load decks", e);
-        // Do not clear immediately to avoid data loss on simple json error, but safe to ignore.
+      } catch (error) {
+        console.error("Failed to load decks", error);
       }
-    }
+    };
+
+    fetchDecks();
+
     // Randomly select opponent class
     const randomClass = ALL_CLASSES[Math.floor(Math.random() * ALL_CLASSES.length)];
     setOpponentClass(randomClass);
-  }, []);
+  }, [user]);
 
   const handleRandomizeOpponent = () => {
     const randomClass = ALL_CLASSES[Math.floor(Math.random() * ALL_CLASSES.length)];
@@ -107,7 +118,7 @@ export const DeckSelectionScreen = ({ onStartGame }: DeckSelectionScreenProps) =
           <h2 className="text-2xl font-bold text-primary glow-gold mb-6 font-cinzel text-center">
             Desteni Seç
           </h2>
-          
+
           <div className="space-y-3 max-h-[400px] overflow-y-auto acoria-scrollbar pr-2">
             {savedDecks.map((deck) => {
               const classData = MASTER_CLASSES[deck.mainClass];
@@ -118,13 +129,13 @@ export const DeckSelectionScreen = ({ onStartGame }: DeckSelectionScreenProps) =
                   onClick={() => setSelectedDeck(deck)}
                   className={cn(
                     "w-full p-4 rounded-lg border-2 transition-all duration-200 text-left",
-                    isSelected 
-                      ? "border-primary bg-primary/20 shadow-lg shadow-primary/30" 
+                    isSelected
+                      ? "border-primary bg-primary/20 shadow-lg shadow-primary/30"
                       : "border-border hover:border-primary/50 bg-card/50"
                   )}
                 >
                   <div className="flex items-center gap-4">
-                    <div 
+                    <div
                       className="text-4xl font-bold"
                       style={{ color: classData.color }}
                     >
@@ -189,7 +200,7 @@ export const DeckSelectionScreen = ({ onStartGame }: DeckSelectionScreenProps) =
 
           {opponentClass && (
             <div className="flex flex-col items-center justify-center py-8">
-              <div 
+              <div
                 className="text-8xl font-bold mb-4"
                 style={{ color: MASTER_CLASSES[opponentClass].color }}
               >
@@ -222,31 +233,31 @@ export const DeckSelectionScreen = ({ onStartGame }: DeckSelectionScreenProps) =
               )}
 
               <div className="w-full border-t border-border/50 my-6" />
-              
+
               <div className="w-full">
                 <h3 className="text-xs font-bold text-muted-foreground mb-3 text-center uppercase tracking-widest">
-                    Veya Listeden Seçin
+                  Veya Listeden Seçin
                 </h3>
                 <div className="grid grid-cols-4 gap-2 max-h-[200px] overflow-y-auto acoria-scrollbar p-1">
-                    {ALL_CLASSES.map((cls) => (
-                        <button
-                            key={cls}
-                            onClick={() => setOpponentClass(cls)}
-                            className={cn(
-                                "flex flex-col items-center justify-center p-2 rounded border transition-all h-16",
-                                opponentClass === cls 
-                                ? "bg-destructive/20 border-destructive shadow-[0_0_10px_rgba(239,68,68,0.3)] scale-105" 
-                                : "bg-background/30 border-border/50 hover:bg-destructive/10 hover:border-destructive/50"
-                            )}
-                        >
-                            <span className="text-xl font-bold" style={{ color: MASTER_CLASSES[cls].color }}>
-                                {MASTER_CLASSES[cls].symbol}
-                            </span>
-                             <span className="text-[10px] font-bold text-muted-foreground mt-1 truncate w-full text-center">
-                                {cls}
-                            </span>
-                        </button>
-                    ))}
+                  {ALL_CLASSES.map((cls) => (
+                    <button
+                      key={cls}
+                      onClick={() => setOpponentClass(cls)}
+                      className={cn(
+                        "flex flex-col items-center justify-center p-2 rounded border transition-all h-16",
+                        opponentClass === cls
+                          ? "bg-destructive/20 border-destructive shadow-[0_0_10px_rgba(239,68,68,0.3)] scale-105"
+                          : "bg-background/30 border-border/50 hover:bg-destructive/10 hover:border-destructive/50"
+                      )}
+                    >
+                      <span className="text-xl font-bold" style={{ color: MASTER_CLASSES[cls].color }}>
+                        {MASTER_CLASSES[cls].symbol}
+                      </span>
+                      <span className="text-[10px] font-bold text-muted-foreground mt-1 truncate w-full text-center">
+                        {cls}
+                      </span>
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>

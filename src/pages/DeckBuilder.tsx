@@ -9,6 +9,8 @@ import { ClassName, Card, SpecialCardType } from "@/types/game";
 import { SavedDeck } from "@/types/deck";
 import { MASTER_CLASSES, SPECIAL_CARDS_DATA } from "@/data/gameData";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 const ALL_CLASSES: ClassName[] = [
   "Vitalist", "Slayer", "Fateweaver", "Oracle", "Chronokeeper",
@@ -44,36 +46,63 @@ function generateSpecialCards(): Card[] {
 
 const DeckBuilder = () => {
   const navigate = useNavigate();
-  
+  const { user } = useAuth();
+
   const [deckName, setDeckName] = useState("");
   const [mainClass, setMainClass] = useState<ClassName | null>(null);
   const [secondaryClasses, setSecondaryClasses] = useState<ClassName[]>([]);
   const [savedDecks, setSavedDecks] = useState<SavedDeck[]>([]);
   const [editingDeckId, setEditingDeckId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Load saved decks on mount
-  useEffect(() => {
-    const stored = localStorage.getItem("acoria-saved-decks");
-    if (stored) {
-      setSavedDecks(JSON.parse(stored));
+  // Load saved decks from Supabase
+  const fetchDecks = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('decks')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      if (data) {
+        const mappedDecks: SavedDeck[] = data.map(d => ({
+          id: d.id,
+          name: d.name,
+          mainClass: d.main_class as ClassName,
+          secondaryClasses: d.secondary_classes as ClassName[],
+          cards: d.cards as unknown as Card[],
+          createdAt: d.created_at
+        }));
+        setSavedDecks(mappedDecks);
+      }
+    } catch (error) {
+      console.error('Error fetching decks:', error);
+      toast.error('Desteler yüklenirken bir hata oluştu.');
     }
-  }, []);
+  };
 
-  const availableSecondary = useMemo(() => 
+  useEffect(() => {
+    fetchDecks();
+  }, [user]);
+
+  const availableSecondary = useMemo(() =>
     ALL_CLASSES.filter(c => c !== mainClass),
     [mainClass]
   );
 
   const customDeck = useMemo<Card[]>(() => {
     if (!mainClass || secondaryClasses.length !== 3) return [];
-    
+
     const deck: Card[] = [];
     deck.push(...generateClassCards(mainClass));
     deck.push(...generateSpecialCards());
     secondaryClasses.forEach(className => {
       deck.push(...generateClassCards(className));
     });
-    
+
     return deck;
   }, [mainClass, secondaryClasses]);
 
@@ -102,41 +131,61 @@ const DeckBuilder = () => {
     toast.success("Deste sıfırlandı!");
   };
 
-  const handleSaveDeck = () => {
+  const handleSaveDeck = async () => {
     const requiredCount = mainClass === "Vessel" ? 4 : 3;
     if (!mainClass || secondaryClasses.length !== requiredCount) {
       toast.error(`Ana sınıf ve ${requiredCount} yardımcı sınıf seçmelisiniz!`);
       return;
     }
-    
+
     if (!deckName.trim()) {
       toast.error("Deste ismi girmelisiniz!");
       return;
     }
 
-    const newDeck: SavedDeck = {
-      id: editingDeckId || `deck-${Date.now()}`,
-      name: deckName.trim(),
-      mainClass,
-      secondaryClasses,
-      cards: customDeck,
-      createdAt: new Date().toISOString(),
-    };
-
-    let updatedDecks: SavedDeck[];
-    if (editingDeckId) {
-      updatedDecks = savedDecks.map(d => d.id === editingDeckId ? newDeck : d);
-      toast.success("Deste güncellendi!");
-    } else {
-      updatedDecks = [...savedDecks, newDeck];
-      toast.success("Deste kaydedildi!");
+    if (!user) {
+      toast.error("Deste kaydetmek için giriş yapmalısınız!");
+      return;
     }
 
-    setSavedDecks(updatedDecks);
-    localStorage.setItem("acoria-saved-decks", JSON.stringify(updatedDecks));
-    
-    // Reset form
-    handleResetDeck();
+    setIsLoading(true);
+
+    try {
+      const deckData = {
+        name: deckName.trim(),
+        main_class: mainClass,
+        secondary_classes: secondaryClasses,
+        cards: customDeck as any,
+        user_id: user.id
+      };
+
+      if (editingDeckId) {
+        // Update existing deck
+        const { error } = await supabase
+          .from('decks')
+          .update(deckData)
+          .eq('id', editingDeckId);
+
+        if (error) throw error;
+        toast.success("Deste güncellendi!");
+      } else {
+        // Create new deck
+        const { error } = await supabase
+          .from('decks')
+          .insert(deckData);
+
+        if (error) throw error;
+        toast.success("Deste kaydedildi!");
+      }
+
+      await fetchDecks();
+      handleResetDeck();
+    } catch (error) {
+      console.error('Error saving deck:', error);
+      toast.error('Deste kaydedilirken bir hata oluştu.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleEditDeck = (deck: SavedDeck) => {
@@ -145,13 +194,28 @@ const DeckBuilder = () => {
     setMainClass(deck.mainClass);
     setSecondaryClasses(deck.secondaryClasses);
     toast.info(`"${deck.name}" düzenleniyor...`);
+
+    // Scroll to top to show edit form
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleDeleteDeck = (deckId: string) => {
-    const updatedDecks = savedDecks.filter(d => d.id !== deckId);
-    setSavedDecks(updatedDecks);
-    localStorage.setItem("acoria-saved-decks", JSON.stringify(updatedDecks));
-    toast.success("Deste silindi!");
+  const handleDeleteDeck = async (deckId: string) => {
+    if (!confirm("Bu desteyi silmek istediğinizden emin misiniz?")) return;
+
+    try {
+      const { error } = await supabase
+        .from('decks')
+        .delete()
+        .eq('id', deckId);
+
+      if (error) throw error;
+
+      toast.success("Deste silindi!");
+      fetchDecks();
+    } catch (error) {
+      console.error('Error deleting deck:', error);
+      toast.error('Deste silinirken bir hata oluştu.');
+    }
   };
 
   const isComplete = mainClass && secondaryClasses.length === (mainClass === "Vessel" ? 4 : 3);
@@ -185,6 +249,9 @@ const DeckBuilder = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {savedDecks.map((deck) => {
                 const classData = MASTER_CLASSES[deck.mainClass];
+                // Handle case where class data might be missing if classes changed
+                if (!classData) return null;
+
                 return (
                   <div
                     key={deck.id}
@@ -194,7 +261,7 @@ const DeckBuilder = () => {
                       <div>
                         <h3 className="font-bold text-foreground">{deck.name}</h3>
                         <div className="flex items-center gap-2 mt-1">
-                          <span 
+                          <span
                             className="text-2xl font-bold"
                             style={{ color: classData.color }}
                           >
@@ -247,14 +314,14 @@ const DeckBuilder = () => {
                 className="bg-background/50"
               />
             </div>
-            <Button 
-              variant="default" 
-              onClick={handleSaveDeck} 
+            <Button
+              variant="default"
+              onClick={handleSaveDeck}
               className="gap-2"
-              disabled={!isComplete || !deckName.trim()}
+              disabled={!isComplete || !deckName.trim() || isLoading}
             >
               <Save className="w-4 h-4" />
-              {editingDeckId ? "Güncelle" : "Kaydet"}
+              {isLoading ? "Kaydediliyor..." : (editingDeckId ? "Güncelle" : "Kaydet")}
             </Button>
           </div>
         </section>
@@ -277,12 +344,12 @@ const DeckBuilder = () => {
                   onClick={() => handleMainClassSelect(className)}
                   className={cn(
                     "p-4 rounded-lg border-2 transition-all duration-200 text-left",
-                    isSelected 
-                      ? "border-primary bg-primary/20 shadow-lg shadow-primary/30" 
+                    isSelected
+                      ? "border-primary bg-primary/20 shadow-lg shadow-primary/30"
                       : "border-border hover:border-primary/50 bg-card/50"
                   )}
                 >
-                  <div 
+                  <div
                     className="text-3xl mb-2 font-bold"
                     style={{ color: classData.color }}
                   >
@@ -319,11 +386,11 @@ const DeckBuilder = () => {
                     disabled={isDisabled}
                     className={cn(
                       "p-4 rounded-lg border-2 transition-all duration-200 text-left relative",
-                      isSelected 
-                        ? "border-primary bg-primary/20" 
+                      isSelected
+                        ? "border-primary bg-primary/20"
                         : isDisabled
-                        ? "border-border/50 bg-card/30 opacity-50 cursor-not-allowed"
-                        : "border-border hover:border-primary/50 bg-card/50"
+                          ? "border-border/50 bg-card/30 opacity-50 cursor-not-allowed"
+                          : "border-border hover:border-primary/50 bg-card/50"
                     )}
                   >
                     {isSelected && (
@@ -331,7 +398,7 @@ const DeckBuilder = () => {
                         <Check className="w-3 h-3 text-primary-foreground" />
                       </div>
                     )}
-                    <div 
+                    <div
                       className="text-2xl mb-1 font-bold"
                       style={{ color: classData.color }}
                     >
