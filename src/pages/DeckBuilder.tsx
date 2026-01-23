@@ -102,6 +102,7 @@ const DeckBuilder = () => {
     toast.success("Deste sıfırlandı!");
   };
 
+  //düzeltildi
   const handleSaveDeck = () => {
     const requiredCount = mainClass === "Vessel" ? 4 : 3;
     if (!mainClass || secondaryClasses.length !== requiredCount) {
