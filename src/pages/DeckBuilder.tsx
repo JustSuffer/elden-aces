@@ -180,9 +180,9 @@ const DeckBuilder = () => {
 
       await fetchDecks();
       handleResetDeck();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving deck:', error);
-      toast.error('Deste kaydedilirken bir hata oluştu.');
+      toast.error(`Deste kaydedilirken hata: ${error.message || 'Bilinmeyen hata'}`);
     } finally {
       setIsLoading(false);
     }
@@ -212,9 +212,9 @@ const DeckBuilder = () => {
 
       toast.success("Deste silindi!");
       fetchDecks();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting deck:', error);
-      toast.error('Deste silinirken bir hata oluştu.');
+      toast.error(`Deste silinirken hata: ${error.message || 'Bilinmeyen hata'}`);
     }
   };
 
