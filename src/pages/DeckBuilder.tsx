@@ -94,7 +94,8 @@ const DeckBuilder = () => {
   );
 
   const customDeck = useMemo<Card[]>(() => {
-    if (!mainClass || secondaryClasses.length !== 3) return [];
+    const requiredCount = mainClass === "Vessel" ? 4 : 3;
+    if (!mainClass || secondaryClasses.length !== requiredCount) return [];
 
     const deck: Card[] = [];
     deck.push(...generateClassCards(mainClass));
