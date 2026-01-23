@@ -9,6 +9,8 @@ import { ClassName, Card, SpecialCardType } from "@/types/game";
 import { SavedDeck } from "@/types/deck";
 import { MASTER_CLASSES, SPECIAL_CARDS_DATA } from "@/data/gameData";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 const ALL_CLASSES: ClassName[] = [
   "Vitalist", "Slayer", "Fateweaver", "Oracle", "Chronokeeper",
@@ -44,12 +46,14 @@ function generateSpecialCards(): Card[] {
 
 const DeckBuilder = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   
   const [deckName, setDeckName] = useState("");
   const [mainClass, setMainClass] = useState<ClassName | null>(null);
   const [secondaryClasses, setSecondaryClasses] = useState<ClassName[]>([]);
   const [savedDecks, setSavedDecks] = useState<SavedDeck[]>([]);
   const [editingDeckId, setEditingDeckId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Load saved decks on mount
   useEffect(() => {
@@ -65,7 +69,8 @@ const DeckBuilder = () => {
   );
 
   const customDeck = useMemo<Card[]>(() => {
-    if (!mainClass || secondaryClasses.length !== 3) return [];
+    const requiredCount = mainClass === "Vessel" ? 4 : 3;
+    if (!mainClass || secondaryClasses.length !== requiredCount) return [];
     
     const deck: Card[] = [];
     deck.push(...generateClassCards(mainClass));
@@ -79,7 +84,7 @@ const DeckBuilder = () => {
 
   const handleMainClassSelect = (className: ClassName) => {
     setMainClass(className);
-    setSecondaryClasses(prev => prev.filter(c => c !== className));
+    setSecondaryClasses([]);
   };
 
   const handleSecondaryToggle = (className: ClassName) => {
@@ -90,6 +95,7 @@ const DeckBuilder = () => {
       } else if (prev.length < limit) {
         return [...prev, className];
       }
+      toast.error(`En fazla ${limit} yardımcı sınıf seçebilirsiniz!`);
       return prev;
     });
   };
@@ -99,10 +105,10 @@ const DeckBuilder = () => {
     setSecondaryClasses([]);
     setDeckName("");
     setEditingDeckId(null);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     toast.success("Deste sıfırlandı!");
   };
 
-  //düzeltildi dasdasdas
   const handleSaveDeck = () => {
     const requiredCount = mainClass === "Vessel" ? 4 : 3;
     if (!mainClass || secondaryClasses.length !== requiredCount) {
@@ -146,6 +152,7 @@ const DeckBuilder = () => {
     setMainClass(deck.mainClass);
     setSecondaryClasses(deck.secondaryClasses);
     toast.info(`"${deck.name}" düzenleniyor...`);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleDeleteDeck = (deckId: string) => {
@@ -252,10 +259,10 @@ const DeckBuilder = () => {
               variant="default" 
               onClick={handleSaveDeck} 
               className="gap-2"
-              disabled={!isComplete || !deckName.trim()}
+              disabled={!isComplete || !deckName.trim() || isLoading}
             >
               <Save className="w-4 h-4" />
-              {editingDeckId ? "Güncelle" : "Kaydet"}
+              {isLoading ? "Kaydediliyor..." : (editingDeckId ? "Güncelle" : "Kaydet")}
             </Button>
           </div>
         </section>
