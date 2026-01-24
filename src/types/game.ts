@@ -51,6 +51,7 @@ export interface ClassData {
     [key in ClassName]?: string;
   };
   threatenQuote?: string;
+  heroName?: string;
 }
 
 export interface GameSideEffects {

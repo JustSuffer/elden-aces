@@ -23,6 +23,14 @@ import { MASTER_CLASSES } from "@/data/gameData";
 import { ClassInfoPanel } from "@/components/game/ClassInfoPanel";
 import { SpecialCardInfoPanel } from "@/components/game/SpecialCardInfoPanel";
 import { useLanguage } from "@/hooks/useLanguage";
+import { CharacterAvatar } from "@/components/game/CharacterAvatar";
+import { useChat, PREDEFINED_MESSAGES } from "@/hooks/useChat";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface GameMatchProps {
   playerDeck: SavedDeck;
@@ -59,6 +67,9 @@ export const GameMatch = ({
   const [requestedNextRoundFor, setRequestedNextRoundFor] = useState<number | null>(null);
 
   const timeoutHandledRoundRef = useRef<number | null>(null);
+
+  // Chat System
+  const { playerMessage, opponentMessage, sendPlayerMessage, sendOpponentMessage } = useChat();
 
   const {
     gameState,
@@ -306,6 +317,18 @@ export const GameMatch = ({
         nextRound();
       }, 2500);
       return;
+      return;
+    }
+
+    // Bot Chat Logic (Random Occasional Messages)
+    if (!isOnline && Math.random() < 0.3) {
+      const botMessages = [
+        "Sıra bende...",
+        "İyisin...",
+        "Hmm...",
+        "Göreceğiz...",
+      ];
+      sendOpponentMessage(botMessages[Math.floor(Math.random() * botMessages.length)]);
     }
 
     nextRound();
@@ -403,6 +426,13 @@ export const GameMatch = ({
                   />
                 </div>
               </div>
+               {/* Opponent Avatar */}
+               <CharacterAvatar 
+                  className={gameState.opponentClass} 
+                  isPlayer={false} 
+                  chatMessage={opponentMessage}
+                  characterName={MASTER_CLASSES[gameState.opponentClass].heroName || gameState.opponentClass}
+                />
               {/* Opponent Field with Knife Bar */}
               <div className="flex items-center gap-4">
                 <div className="grid grid-cols-5 gap-2 md:gap-4 justify-items-center">
@@ -631,6 +661,31 @@ export const GameMatch = ({
                   />
                 </div>
               </div>
+
+               {/* Player Avatar with Chat Menu */}
+               <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <div className="outline-none">
+                        <CharacterAvatar 
+                          className={gameState.playerClass} 
+                          isPlayer={true} 
+                          chatMessage={playerMessage}
+                          characterName={MASTER_CLASSES[gameState.playerClass].heroName || gameState.playerClass}
+                        />
+                      </div>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="bg-black/90 border-gold/50 text-gold font-cinzel">
+                      {PREDEFINED_MESSAGES.map((msg, idx) => (
+                        <DropdownMenuItem 
+                          key={idx} 
+                          onClick={() => sendPlayerMessage(msg)}
+                          className="focus:bg-gold/20 focus:text-gold cursor-pointer"
+                        >
+                          {msg}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                </DropdownMenu>
 
               {/* Player Hand - Draggable Cards */}
               {gameState.phase === "placement" && (

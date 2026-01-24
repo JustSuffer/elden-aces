@@ -20,6 +20,7 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
       Slayer: "Must have LESS HP than Slayer to win.",
     },
     threatenQuote: "Doğa senin sonun olacak!",
+    heroName: "Freya",
   },
   Slayer: {
     name: "Slayer",
@@ -41,6 +42,7 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
       Vitalist: "Must have MORE HP than Vitalist to win.",
     },
     threatenQuote: "Kellen koleksiyonuma yakışacak!",
+    heroName: "Ragnar",
   },
   Fateweaver: {
     name: "Fateweaver",
@@ -58,6 +60,7 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
     ],
     winCondition: "5 Gamma (γ) Oyna",
     threatenQuote: "Kaderin ipleri elimde!",
+    heroName: "Dante",
   },
   Oracle: {
     name: "Oracle",
@@ -78,6 +81,7 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
       Vitalist: "Empty Deck = 25 Pure Dmg.",
     },
     threatenQuote: "Geleceğinde sadece ölüm görüyorum!",
+    heroName: "Vesper",
   },
   Chronokeeper: {
     name: "Chronokeeper",
@@ -95,6 +99,7 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
     ],
     winCondition: "7. Raundu Gör",
     threatenQuote: "Zamanın doldu!",
+    heroName: "Rix",
   },
   Cryomancer: { // Fixed Missing Class
     name: "Cryomancer",
@@ -112,6 +117,7 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
     ],
     winCondition: "2 Özel Kart Dondur",
     threatenQuote: "Soğuk nefesini kesecek!",
+    heroName: "Alric",
   },
   Decay: {
     name: "Decay",
@@ -130,6 +136,7 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
     winCondition: "R5 sonunda Rakip Deste 0",
     loseCondition: "Die if opponent has cards at R5.",
     threatenQuote: "Çürüyüp toz olacaksın!",
+    heroName: "Mordred",
   },
   Siren: {
     name: "Siren",
@@ -147,6 +154,7 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
     ],
     winCondition: "5 Çalıntı Kart Oyna",
     threatenQuote: "Şarkım son duyduğun şey olacak!",
+    heroName: "Lina",
   },
   Augmentor: {
     name: "Augmentor",
@@ -164,6 +172,7 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
     ],
     winCondition: "12 Değerli Augmentor Kartı Oyna",
     threatenQuote: "Gelişmiş teknolojime boyun eğ!",
+    heroName: "Olin",
   },
   Vessel: {
     name: "Vessel",
@@ -181,6 +190,7 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
     ],
     winCondition: "5 Adet Sigma/Delta Kartı Oyna",
     threatenQuote: "Kozmik güç seni yok edecek!",
+    heroName: "Helios",
   },
   Mimic: {
     name: "Mimic",
@@ -201,6 +211,7 @@ export const MASTER_CLASSES: Record<ClassName, ClassData> = {
       Fateweaver: "Copies Dice odds.",
     },
     threatenQuote: "Senin gücün artık benim!",
+    heroName: "Jane",
   },
 };
 
