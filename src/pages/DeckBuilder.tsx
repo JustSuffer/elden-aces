@@ -74,6 +74,10 @@ const DeckBuilder = () => {
     
     const deck: Card[] = [];
     deck.push(...generateClassCards(mainClass));
+    // Mimic Special Rule: Add 6 extra Main Class cards to reach 12 for Win Condition
+    if (mainClass === "Mimic") {
+         deck.push(...generateClassCards(mainClass).map(c => ({...c, id: `mimic-extra-${c.id}`})));
+    }
     deck.push(...generateSpecialCards());
     secondaryClasses.forEach(className => {
       deck.push(...generateClassCards(className));
@@ -106,7 +110,7 @@ const DeckBuilder = () => {
     setDeckName("");
     setEditingDeckId(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    toast.success("Deste sıfırlandı!");
+    toast.success("Deste oluşturuldu!");
   };
 
   const handleSaveDeck = () => {
@@ -368,7 +372,7 @@ const DeckBuilder = () => {
                   </p>
                 </div>
                 <div className="text-right space-y-1">
-                  <p className="text-lg font-bold text-primary">{customDeck.length}/{mainClass === "Vessel" ? 36 : 30} Kart</p>
+                  <p className="text-lg font-bold text-primary">{customDeck.length}/{(mainClass === "Vessel" || mainClass === "Mimic") ? 36 : 30} Kart</p>
                   <p className="text-sm text-muted-foreground">
                     {numericCards.length} Sayısal | {specialCards.length} Özel
                   </p>
@@ -394,7 +398,7 @@ const DeckBuilder = () => {
             {/* Main Class Cards */}
             <section>
               <h3 className="text-xl font-bold mb-4 font-cinzel" style={{ color: MASTER_CLASSES[mainClass].color }}>
-                {mainClass} Kartları (6) - Ana Sınıf
+                {mainClass} Kartları ({mainClass === "Mimic" ? "12 (Çift)" : "6"}) - Ana Sınıf
               </h3>
               <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
                 {numericCards
