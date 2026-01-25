@@ -48,10 +48,10 @@ export const CharacterAvatar = ({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Name Tag - Always on Right side, Only on Hover */}
+      {/* Name Tag - Always on Left side, Only on Hover */}
       <div className={cn(
-        "absolute top-1/2 -translate-y-1/2 ml-4 px-4 py-2 bg-black/90 border border-gold/50 rounded-lg text-sm font-cinzel text-gold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-50 shadow-[0_0_15px_rgba(197,160,89,0.3)]",
-        "left-full" 
+        "absolute top-1/2 -translate-y-1/2 mr-4 px-4 py-2 bg-black/90 border border-gold/50 rounded-lg text-sm font-cinzel text-gold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-50 shadow-[0_0_15px_rgba(197,160,89,0.3)]",
+        "right-full" 
       )}>
         {characterName}
       </div>
