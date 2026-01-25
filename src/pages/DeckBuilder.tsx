@@ -230,22 +230,14 @@ const DeckBuilder = () => {
                     key={deck.id}
                     className="p-4 rounded-lg border border-border bg-card/50 hover:border-primary/50 transition-all flex items-center gap-4 group"
                   >
-                    {/* Avatar for Saved Deck */}
-                    <div className="relative w-16 h-16 rounded-full border-2 border-primary/50 overflow-hidden shadow-lg group-hover:border-primary transition-colors">
+                    {/* Avatar for Saved Deck - Clean Look */}
+                    <div className="shrink-0">
                       <CharacterAvatar 
                         className={deck.mainClass} 
                         isPlayer={true} 
-                        characterName="" 
-                        // Disable chat/hover features for mini display if possible, or just ignore since no chatMessage passed
+                        characterName=""
+                        sizeClass="w-16 h-16" // Smaller visual for list
                       />
-                      {/* We're reusing a complex component here, might need to adjust styles via CSS or a simplified prop if it has absolute positioning issues. 
-                          Ideally CharacterAvatar should be flexible. 
-                          The one in GameMatch has absolute positioning for chat bubbles. 
-                          Here we just want the image. Let's create a simpler avatar view or assume CharacterAvatar is robust.
-                          Actually, CharacterAvatar has absolute positioning for Name Tag and Chat Bubble.
-                          For this list, we might want just a clean image.
-                          Let's assume the user wants the FULL fancy avatar.
-                      */}
                     </div>
                     
                     <div className="flex-1 min-w-0">
@@ -463,47 +455,46 @@ const DeckBuilder = () => {
             </section>
 
              {/* Preview Details */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 opacity-80 hover:opacity-100 transition-opacity">
-               {/* Main Class Cards */}
-               <section>
-                 <h3 className="text-lg font-bold mb-4 font-cinzel flex items-center gap-2" style={{ color: MASTER_CLASSES[mainClass].color }}>
-                   {MASTER_CLASSES[mainClass].symbol} {mainClass} Kartları
-                 </h3>
-                 <div className="grid grid-cols-6 gap-2">
-                   {numericCards
-                     .filter(c => c.classSymbol === MASTER_CLASSES[mainClass].symbol)
-                     .map((card) => (
-                       <GameCard key={card.id} card={card} isPlaceholder />
-                     ))}
-                 </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in zoom-in duration-500">
+               {/* Main Class Summary */}
+               <section className="bg-black/40 border border-primary/30 p-4 rounded-lg text-center flex flex-col items-center justify-center gap-2 group hover:border-primary transition-colors">
+                  <div className="text-3xl font-bold transition-transform group-hover:scale-110" style={{ color: MASTER_CLASSES[mainClass].color }}>
+                    {MASTER_CLASSES[mainClass].symbol}
+                  </div>
+                  <h3 className="text-lg font-bold font-cinzel text-foreground">
+                    {mainClass} Kartları
+                  </h3>
+                  <div className="text-sm text-yellow-500/80 font-mono tracking-wider">
+                    {mainClass === "Mimic" ? "12 Adet (Çift)" : "6 Adet (1-6)"}
+                  </div>
                </section>
 
-               {/* Special Cards */}
-               <section>
-                 <h3 className="text-lg font-bold text-primary mb-4 glow-gold font-cinzel">
-                   Özel Kartlar
-                 </h3>
-                 <div className="grid grid-cols-6 gap-2">
-                   {specialCards.map((card) => (
-                     <GameCard key={card.id} card={card} isPlaceholder />
-                   ))}
-                 </div>
+               {/* Special Cards Summary */}
+               <section className="bg-black/40 border border-primary/30 p-4 rounded-lg text-center flex flex-col items-center justify-center gap-2 group hover:border-primary transition-colors">
+                  <div className="text-3xl font-bold text-primary transition-transform group-hover:scale-110">
+                    ★
+                  </div>
+                  <h3 className="text-lg font-bold font-cinzel text-foreground">
+                    Özel Kartlar
+                  </h3>
+                  <div className="text-sm text-yellow-500/80 font-mono tracking-wider">
+                    6 Adet (Twisted, Deflate, Delta, Sigma)
+                  </div>
                </section>
             </div>
             
-            {/* Secondary Classes Preview */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 opacity-80 hover:opacity-100 transition-opacity">
+            {/* Secondary Classes Summary */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-in fade-in zoom-in duration-500 delay-100">
               {secondaryClasses.map((className) => (
-                <section key={className}>
-                  <h3 className="text-lg font-bold mb-4 font-cinzel flex items-center gap-2" style={{ color: MASTER_CLASSES[className].color }}>
-                    {MASTER_CLASSES[className].symbol} {className}
+                <section key={className} className="bg-black/40 border border-border/50 p-4 rounded-lg text-center flex flex-col items-center justify-center gap-2 hover:border-primary/50 transition-colors">
+                   <div className="text-2xl font-bold" style={{ color: MASTER_CLASSES[className].color }}>
+                    {MASTER_CLASSES[className].symbol}
+                  </div>
+                  <h3 className="text-base font-bold font-cinzel text-foreground">
+                     {className}
                   </h3>
-                  <div className="grid grid-cols-6 gap-2">
-                    {numericCards
-                      .filter(c => c.classSymbol === MASTER_CLASSES[className].symbol)
-                      .map((card) => (
-                        <GameCard key={card.id} card={card} isPlaceholder />
-                      ))}
+                  <div className="text-xs text-muted-foreground font-mono">
+                    6 Adet (1-6)
                   </div>
                 </section>
               ))}
