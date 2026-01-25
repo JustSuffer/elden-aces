@@ -24,7 +24,8 @@ import { ClassInfoPanel } from "@/components/game/ClassInfoPanel";
 import { SpecialCardInfoPanel } from "@/components/game/SpecialCardInfoPanel";
 import { useLanguage } from "@/hooks/useLanguage";
 import { CharacterAvatar } from "@/components/game/CharacterAvatar";
-import { useChat, PREDEFINED_MESSAGES } from "@/hooks/useChat";
+import { useChat } from "@/hooks/useChat";
+import { CHAT_OPTIONS, CHARACTER_CHAT, ChatKey } from "@/data/chatData";
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -322,13 +323,10 @@ export const GameMatch = ({
 
     // Bot Chat Logic (Random Occasional Messages)
     if (!isOnline && Math.random() < 0.3) {
-      const botMessages = [
-        "Sıra bende...",
-        "İyisin...",
-        "Hmm...",
-        "Göreceğiz...",
-      ];
-      sendOpponentMessage(botMessages[Math.floor(Math.random() * botMessages.length)]);
+      const keys = Object.keys(CHAT_OPTIONS) as ChatKey[];
+      const randomKey = keys[Math.floor(Math.random() * keys.length)];
+      const messageData = CHARACTER_CHAT[gameState.opponentClass][randomKey];
+      sendOpponentMessage(`${messageData.tr} / ${messageData.en}`);
     }
 
     nextRound();
@@ -675,13 +673,16 @@ export const GameMatch = ({
                       </div>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="bg-black/90 border-gold/50 text-gold font-cinzel">
-                      {PREDEFINED_MESSAGES.map((msg, idx) => (
+                      {(Object.entries(CHAT_OPTIONS) as [ChatKey, { label: string }][]).map(([key, option]) => (
                         <DropdownMenuItem 
-                          key={idx} 
-                          onClick={() => sendPlayerMessage(msg)}
+                          key={key} 
+                          onClick={() => {
+                             const msg = CHARACTER_CHAT[gameState.playerClass][key];
+                             sendPlayerMessage(`${msg.tr} / ${msg.en}`);
+                          }}
                           className="focus:bg-gold/20 focus:text-gold cursor-pointer"
                         >
-                          {msg}
+                          {option.label}
                         </DropdownMenuItem>
                       ))}
                     </DropdownMenuContent>

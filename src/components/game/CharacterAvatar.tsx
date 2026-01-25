@@ -28,7 +28,6 @@ export const CharacterAvatar = ({
       "Oracle": "oracle.jpg",
       "Vessel": "vessel.jpg",
       "Fateweaver": "fateweaver.jpg",
-      // Placeholders for others
       "Slayer": "slayer.jpg",
       "Siren": "siren.jpg", 
       "Decay": "decay.jpg",
@@ -42,17 +41,17 @@ export const CharacterAvatar = ({
   return (
     <div 
       className={cn(
-        "relative group cursor-pointer transition-transform duration-300 hover:scale-105",
+        "relative group cursor-pointer transition-transform duration-300 hover:scale-105 z-50",
         isPlayer ? "origin-bottom-left" : "origin-top-right"
       )}
       onClick={onClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Name Tag */}
+      {/* Name Tag - Always on Right side, Only on Hover */}
       <div className={cn(
-        "absolute z-20 px-3 py-1 bg-black/80 border border-gold/50 rounded text-xs font-cinzel text-gold whitespace-nowrap",
-        isPlayer ? "-top-8 left-0" : "-bottom-8 right-0"
+        "absolute top-1/2 -translate-y-1/2 ml-4 px-4 py-2 bg-black/90 border border-gold/50 rounded-lg text-sm font-cinzel text-gold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-50 shadow-[0_0_15px_rgba(197,160,89,0.3)]",
+        "left-full" 
       )}>
         {characterName}
       </div>
@@ -71,7 +70,7 @@ export const CharacterAvatar = ({
 
       {/* Chat Bubble Position */}
       <div className={cn(
-        "absolute z-30 w-48 pointer-events-none transition-all duration-300",
+        "absolute z-[60] w-64 pointer-events-none transition-all duration-300",
         isPlayer ? "left-full bottom-full ml-2 mb-2 origin-bottom-left" : "right-full top-full mr-2 mt-2 origin-top-right"
       )}>
         <ChatBubble message={chatMessage} isVisible={!!chatMessage} />
