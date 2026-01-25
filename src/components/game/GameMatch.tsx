@@ -411,29 +411,33 @@ export const GameMatch = ({
           <div className="w-full max-w-6xl flex items-start gap-4">
             <DeckCounter count={isOnline && opponentDeckCount !== undefined ? opponentDeckCount : gameState.opponentDeck.length} isOpponent />
             <div className="flex-1 flex flex-col items-center gap-4">
-              <div className="flex flex-col w-full max-w-[200px] md:max-w-[300px]">
-                <div className="flex items-center gap-3">
-                  <span
-                    className="text-3xl font-bold"
-                    style={{ color: opponentClassData.color }}
-                  >
-                    {opponentClassData.symbol}
-                  </span>
-                  <HPBar
-                    current={gameState.opponentHP}
-                    max={opponentClassData.initialHP}
-                    label={`${t("game.damage.opponent")} (${gameState.opponentClass})`}
-                    isOpponent
+                <div className="flex items-center gap-4">
+                  {/* Opponent Avatar */}
+                  <CharacterAvatar 
+                    className={gameState.opponentClass} 
+                    isPlayer={false} 
+                    chatMessage={opponentMessage}
+                    characterName={MASTER_CLASSES[gameState.opponentClass].heroName || gameState.opponentClass}
                   />
+
+                  {/* Opponent HP & Info */}
+                  <div className="flex flex-col w-full max-w-[200px] md:max-w-[300px]">
+                    <div className="flex items-center gap-3">
+                      <span
+                        className="text-3xl font-bold"
+                        style={{ color: opponentClassData.color }}
+                      >
+                        {opponentClassData.symbol}
+                      </span>
+                      <HPBar
+                        current={gameState.opponentHP}
+                        max={opponentClassData.initialHP}
+                        label={`${t("game.damage.opponent")} (${gameState.opponentClass})`}
+                        isOpponent
+                      />
+                    </div>
+                  </div>
                 </div>
-              </div>
-               {/* Opponent Avatar */}
-               <CharacterAvatar 
-                  className={gameState.opponentClass} 
-                  isPlayer={false} 
-                  chatMessage={opponentMessage}
-                  characterName={MASTER_CLASSES[gameState.opponentClass].heroName || gameState.opponentClass}
-                />
               {/* Opponent Field with Knife Bar */}
               <div className="flex items-center gap-4">
                 <div className="grid grid-cols-5 gap-2 md:gap-4 justify-items-center">
@@ -647,50 +651,53 @@ export const GameMatch = ({
                 )}
               </div>
 
-              <div className="flex flex-col w-full max-w-[200px] md:max-w-[300px]">
-                <div className="flex items-center gap-3">
-                  <span
-                    className="text-3xl font-bold"
-                    style={{ color: playerClassData.color }}
-                  >
-                    {playerClassData.symbol}
-                  </span>
-                  <HPBar
-                    current={gameState.playerHP}
-                    max={playerClassData.initialHP}
-                    label={`${t("game.damage.you")} (${gameState.playerClass})`}
-                  />
-                </div>
-              </div>
+                <div className="flex items-center gap-4">
+                  {/* Player Avatar with Chat Menu */}
+                  <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <div className="outline-none">
+                          <CharacterAvatar 
+                            className={gameState.playerClass} 
+                            isPlayer={true} 
+                            chatMessage={playerMessage}
+                            characterName={MASTER_CLASSES[gameState.playerClass].heroName || gameState.playerClass}
+                          />
+                        </div>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="bg-black/90 border-gold/50 text-gold font-cinzel">
+                        {(Object.entries(CHAT_OPTIONS) as [ChatKey, { label: string }][]).map(([key, option]) => (
+                          <DropdownMenuItem 
+                            key={key} 
+                            onClick={() => {
+                              const msgData = CHARACTER_CHAT[gameState.playerClass][key];
+                              const msg = language === 'tr' ? msgData.tr : msgData.en;
+                              sendPlayerMessage(msg);
+                            }}
+                            className="focus:bg-gold/20 focus:text-gold cursor-pointer"
+                          >
+                            {option.label}
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                  </DropdownMenu>
 
-               {/* Player Avatar with Chat Menu */}
-               <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <div className="outline-none">
-                        <CharacterAvatar 
-                          className={gameState.playerClass} 
-                          isPlayer={true} 
-                          chatMessage={playerMessage}
-                          characterName={MASTER_CLASSES[gameState.playerClass].heroName || gameState.playerClass}
-                        />
-                      </div>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="bg-black/90 border-gold/50 text-gold font-cinzel">
-                      {(Object.entries(CHAT_OPTIONS) as [ChatKey, { label: string }][]).map(([key, option]) => (
-                        <DropdownMenuItem 
-                          key={key} 
-                          onClick={() => {
-                             const msgData = CHARACTER_CHAT[gameState.playerClass][key];
-                             const msg = language === 'tr' ? msgData.tr : msgData.en;
-                             sendPlayerMessage(msg);
-                          }}
-                          className="focus:bg-gold/20 focus:text-gold cursor-pointer"
-                        >
-                          {option.label}
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                  {/* Player HP & Info */}
+                  <div className="flex flex-col w-full max-w-[200px] md:max-w-[300px]">
+                    <div className="flex items-center gap-3">
+                      <span
+                        className="text-3xl font-bold"
+                        style={{ color: playerClassData.color }}
+                      >
+                        {playerClassData.symbol}
+                      </span>
+                      <HPBar
+                        current={gameState.playerHP}
+                        max={playerClassData.initialHP}
+                        label={`${t("game.damage.you")} (${gameState.playerClass})`}
+                      />
+                    </div>
+                  </div>
+                </div>
 
               {/* Player Hand - Draggable Cards */}
               {gameState.phase === "placement" && (
