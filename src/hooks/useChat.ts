@@ -6,13 +6,13 @@ export function useChat() {
 
   const sendPlayerMessage = useCallback((msg: string) => {
     setPlayerMessage(msg);
-    // Auto-hide after 3 seconds
-    setTimeout(() => setPlayerMessage(null), 3000);
+    // Auto-hide after 6 seconds
+    setTimeout(() => setPlayerMessage(null), 6000);
   }, []);
 
   const sendOpponentMessage = useCallback((msg: string) => {
     setOpponentMessage(msg);
-    setTimeout(() => setOpponentMessage(null), 3000);
+    setTimeout(() => setOpponentMessage(null), 6000);
   }, []);
 
   return {

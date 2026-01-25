@@ -58,7 +58,7 @@ export const GameMatch = ({
   onRoundChange,
 }: GameMatchProps) => {
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [vfxEffects, setVfxEffects] = useState<VfxEffect[]>([]);
   const [showHourglass, setShowHourglass] = useState(false);
   const [showWinConAnimation, setShowWinConAnimation] = useState(false);
@@ -326,7 +326,10 @@ export const GameMatch = ({
       const keys = Object.keys(CHAT_OPTIONS) as ChatKey[];
       const randomKey = keys[Math.floor(Math.random() * keys.length)];
       const messageData = CHARACTER_CHAT[gameState.opponentClass][randomKey];
-      sendOpponentMessage(`${messageData.tr} / ${messageData.en}`);
+      // Use current language for bot message too, or default to generic logic if opponent has different lang preference (mocking local for now)
+      // Since it's a bot, let's use the player's language setting so they can understand it.
+      const msg = language === 'tr' ? messageData.tr : messageData.en;
+      sendOpponentMessage(msg);
     }
 
     nextRound();
@@ -677,8 +680,9 @@ export const GameMatch = ({
                         <DropdownMenuItem 
                           key={key} 
                           onClick={() => {
-                             const msg = CHARACTER_CHAT[gameState.playerClass][key];
-                             sendPlayerMessage(`${msg.tr} / ${msg.en}`);
+                             const msgData = CHARACTER_CHAT[gameState.playerClass][key];
+                             const msg = language === 'tr' ? msgData.tr : msgData.en;
+                             sendPlayerMessage(msg);
                           }}
                           className="focus:bg-gold/20 focus:text-gold cursor-pointer"
                         >
