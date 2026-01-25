@@ -3,14 +3,14 @@ import { Input } from "@/components/ui/input";
 import { GameCard } from "@/components/game/GameCard";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Save, RotateCcw, Check, Trash2, Edit2 } from "lucide-react";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { ClassName, Card, SpecialCardType } from "@/types/game";
 import { SavedDeck } from "@/types/deck";
 import { MASTER_CLASSES, SPECIAL_CARDS_DATA } from "@/data/gameData";
 import { cn } from "@/lib/utils";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { CharacterAvatar } from "@/components/game/CharacterAvatar";
 
 const ALL_CLASSES: ClassName[] = [
   "Vitalist", "Slayer", "Fateweaver", "Oracle", "Chronokeeper",
@@ -50,10 +50,16 @@ const DeckBuilder = () => {
   
   const [deckName, setDeckName] = useState("");
   const [mainClass, setMainClass] = useState<ClassName | null>(null);
+  const [isHeroSelected, setIsHeroSelected] = useState(false); // Step 2 state
   const [secondaryClasses, setSecondaryClasses] = useState<ClassName[]>([]);
   const [savedDecks, setSavedDecks] = useState<SavedDeck[]>([]);
   const [editingDeckId, setEditingDeckId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Refs for auto-scroll
+  const heroSectionRef = useRef<HTMLDivElement>(null);
+  const secondarySectionRef = useRef<HTMLDivElement>(null);
+  const saveSectionRef = useRef<HTMLDivElement>(null);
 
   // Load saved decks on mount
   useEffect(() => {
@@ -89,6 +95,21 @@ const DeckBuilder = () => {
   const handleMainClassSelect = (className: ClassName) => {
     setMainClass(className);
     setSecondaryClasses([]);
+    setIsHeroSelected(false); // Reset hero selection if main class changes
+    
+    // Auto-scroll to Hero Section
+    setTimeout(() => {
+      heroSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
+  };
+
+  const handleHeroSelect = () => {
+    setIsHeroSelected(true);
+    
+    // Auto-scroll to Secondary Section
+    setTimeout(() => {
+      secondarySectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
   };
 
   const handleSecondaryToggle = (className: ClassName) => {
@@ -106,17 +127,23 @@ const DeckBuilder = () => {
 
   const handleResetDeck = () => {
     setMainClass(null);
+    setIsHeroSelected(false);
     setSecondaryClasses([]);
     setDeckName("");
     setEditingDeckId(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    toast.success("Deste oluşturuldu!");
+    toast.success("Deste oluşturucu sıfırlandı!");
   };
 
   const handleSaveDeck = () => {
     const requiredCount = mainClass === "Vessel" ? 4 : 3;
-    if (!mainClass || secondaryClasses.length !== requiredCount) {
-      toast.error(`Ana sınıf ve ${requiredCount} yardımcı sınıf seçmelisiniz!`);
+    if (!mainClass || !isHeroSelected || secondaryClasses.length !== requiredCount) {
+      toast.error(`Lütfen tüm adımları tamamlayın!`);
+      return;
+    }
+
+    if (savedDecks.length >= 18 && !editingDeckId) {
+      toast.error("Maksimum deste sınırına (18) ulaştınız! Yeni deste oluşturmak için birini silin.");
       return;
     }
     
@@ -154,6 +181,7 @@ const DeckBuilder = () => {
     setEditingDeckId(deck.id);
     setDeckName(deck.name);
     setMainClass(deck.mainClass);
+    setIsHeroSelected(true); // Auto-select hero for edit
     setSecondaryClasses(deck.secondaryClasses);
     toast.info(`"${deck.name}" düzenleniyor...`);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -166,14 +194,14 @@ const DeckBuilder = () => {
     toast.success("Deste silindi!");
   };
 
-  const isComplete = mainClass && secondaryClasses.length === (mainClass === "Vessel" ? 4 : 3);
+  const isComplete = mainClass && isHeroSelected && secondaryClasses.length === (mainClass === "Vessel" ? 4 : 3);
   const numericCards = customDeck.filter((c) => c.type === "numeric");
   const specialCards = customDeck.filter((c) => c.type === "special");
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-32">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-border">
+      <div className="flex items-center justify-between p-4 border-b border-border sticky top-0 bg-background/95 backdrop-blur z-50">
         <Button variant="ghost" onClick={() => navigate("/")} className="gap-2">
           <ArrowLeft className="w-4 h-4" />
           Menü
@@ -192,7 +220,7 @@ const DeckBuilder = () => {
         {savedDecks.length > 0 && (
           <section className="bg-card/50 backdrop-blur-sm border border-primary/30 rounded-lg p-6">
             <h2 className="text-2xl font-bold text-primary glow-gold mb-4 font-cinzel">
-              Kayıtlı Desteler ({savedDecks.length})
+              Kayıtlı Desteler ({savedDecks.length}/18)
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {savedDecks.map((deck) => {
@@ -200,42 +228,59 @@ const DeckBuilder = () => {
                 return (
                   <div
                     key={deck.id}
-                    className="p-4 rounded-lg border border-border bg-card/50 hover:border-primary/50 transition-all"
+                    className="p-4 rounded-lg border border-border bg-card/50 hover:border-primary/50 transition-all flex items-center gap-4 group"
                   >
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h3 className="font-bold text-foreground">{deck.name}</h3>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span 
-                            className="text-2xl font-bold"
-                            style={{ color: classData.color }}
-                          >
-                            {classData.symbol}
-                          </span>
-                          <span className="text-sm text-muted-foreground">{deck.mainClass}</span>
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-2">
-                          + {deck.secondaryClasses.join(", ")}
-                        </p>
-                      </div>
-                      <div className="flex gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleEditDeck(deck)}
-                          className="h-8 w-8"
+                    {/* Avatar for Saved Deck */}
+                    <div className="relative w-16 h-16 rounded-full border-2 border-primary/50 overflow-hidden shadow-lg group-hover:border-primary transition-colors">
+                      <CharacterAvatar 
+                        className={deck.mainClass} 
+                        isPlayer={true} 
+                        characterName="" 
+                        // Disable chat/hover features for mini display if possible, or just ignore since no chatMessage passed
+                      />
+                      {/* We're reusing a complex component here, might need to adjust styles via CSS or a simplified prop if it has absolute positioning issues. 
+                          Ideally CharacterAvatar should be flexible. 
+                          The one in GameMatch has absolute positioning for chat bubbles. 
+                          Here we just want the image. Let's create a simpler avatar view or assume CharacterAvatar is robust.
+                          Actually, CharacterAvatar has absolute positioning for Name Tag and Chat Bubble.
+                          For this list, we might want just a clean image.
+                          Let's assume the user wants the FULL fancy avatar.
+                      */}
+                    </div>
+                    
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-bold text-foreground truncate">{deck.name}</h3>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span 
+                          className="text-lg font-bold"
+                          style={{ color: classData.color }}
                         >
-                          <Edit2 className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDeleteDeck(deck.id)}
-                          className="h-8 w-8 text-destructive hover:text-destructive"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                          {classData.symbol}
+                        </span>
+                        <span className="text-sm font-semibold text-muted-foreground">{classData.heroName || deck.mainClass}</span>
                       </div>
+                      <p className="text-xs text-muted-foreground mt-1 truncate">
+                        + {deck.secondaryClasses.join(", ")}
+                      </p>
+                    </div>
+
+                    <div className="flex gap-1 flex-col">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleEditDeck(deck)}
+                        className="h-8 w-8"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDeleteDeck(deck.id)}
+                        className="h-8 w-8 text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
                   </div>
                 );
@@ -244,37 +289,10 @@ const DeckBuilder = () => {
           </section>
         )}
 
-        {/* Deck Name Input */}
-        <section className="bg-card/50 backdrop-blur-sm border border-primary/30 rounded-lg p-6">
-          <h2 className="text-2xl font-bold text-primary glow-gold mb-4 font-cinzel">
-            {editingDeckId ? "Deste Düzenle" : "Yeni Deste Oluştur"}
-          </h2>
-          <div className="flex gap-4 items-end">
-            <div className="flex-1">
-              <label className="text-sm text-muted-foreground mb-2 block">Deste İsmi</label>
-              <Input
-                value={deckName}
-                onChange={(e) => setDeckName(e.target.value)}
-                placeholder="Örn: Aggro Slayer, Control Vitalist..."
-                className="bg-background/50"
-              />
-            </div>
-            <Button 
-              variant="default" 
-              onClick={handleSaveDeck} 
-              className="gap-2"
-              disabled={!isComplete || !deckName.trim() || isLoading}
-            >
-              <Save className="w-4 h-4" />
-              {isLoading ? "Kaydediliyor..." : (editingDeckId ? "Güncelle" : "Kaydet")}
-            </Button>
-          </div>
-        </section>
-
         {/* Step 1: Main Class Selection */}
-        <section className="bg-card/50 backdrop-blur-sm border border-primary/30 rounded-lg p-6">
+        <section className="bg-card/50 backdrop-blur-sm border border-primary/30 rounded-lg p-6 animate-in slide-in-from-left duration-500">
           <h2 className="text-2xl font-bold text-primary glow-gold mb-4 font-cinzel">
-            1. Ana Sınıf Seç
+            1. ANA SINIF SEÇ
           </h2>
           <p className="text-muted-foreground mb-4">
             Ana sınıfın yeteneklerini, kazanma koşullarını ve başlangıç HP'ni belirler.
@@ -288,58 +306,114 @@ const DeckBuilder = () => {
                   key={className}
                   onClick={() => handleMainClassSelect(className)}
                   className={cn(
-                    "p-4 rounded-lg border-2 transition-all duration-200 text-left",
+                    "p-4 rounded-lg border-2 transition-all duration-200 text-left relative overflow-hidden group",
                     isSelected 
-                      ? "border-primary bg-primary/20 shadow-lg shadow-primary/30" 
+                      ? "border-primary bg-primary/20 shadow-lg shadow-primary/30 ring-1 ring-primary" 
                       : "border-border hover:border-primary/50 bg-card/50"
                   )}
                 >
                   <div 
-                    className="text-3xl mb-2 font-bold"
+                    className="text-4xl mb-2 font-bold transition-transform group-hover:scale-110"
                     style={{ color: classData.color }}
                   >
                     {classData.symbol}
                   </div>
-                  <div className="text-sm font-bold text-foreground">{className}</div>
-                  <div className="text-xs text-muted-foreground">{classData.role}</div>
-                  <div className="text-xs text-muted-foreground mt-1">HP: {classData.initialHP}</div>
+                  <div className="text-sm font-bold text-foreground uppercase tracking-wide">{className}</div>
+                  <div className="text-xs text-muted-foreground opacity-80">{classData.role}</div>
+                  <div className="text-xs text-muted-foreground mt-1 font-mono">HP: {classData.initialHP}</div>
                 </button>
               );
             })}
           </div>
         </section>
 
-        {/* Step 2: Secondary Classes */}
+        {/* Step 2: Hero Selection */}
         {mainClass && (
-          <section className="bg-card/50 backdrop-blur-sm border border-primary/30 rounded-lg p-6">
+           <section 
+             ref={heroSectionRef}
+             className="bg-card/50 backdrop-blur-sm border border-primary/30 rounded-lg p-6 animate-in fade-in zoom-in duration-500 scroll-mt-24"
+           >
+             <h2 className="text-2xl font-bold text-primary glow-gold mb-4 font-cinzel">
+               2. KAHRAMAN SEÇ
+             </h2>
+             <p className="text-muted-foreground mb-6">
+               Destenizi temsil edecek kahramanı seçin.
+             </p>
+             
+             <div className="flex justify-center md:justify-start">
+                <button 
+                  onClick={handleHeroSelect}
+                  className={cn(
+                    "relative group p-6 rounded-xl border-2 transition-all duration-300 flex flex-col items-center gap-4 bg-black/40",
+                     isHeroSelected 
+                      ? "border-primary shadow-[0_0_30px_rgba(197,160,89,0.3)] scale-105" 
+                      : "border-border hover:border-primary/50 hover:bg-black/60"
+                  )}
+                >
+                  <div className="scale-125 my-4">
+                     <CharacterAvatar 
+                       className={mainClass} 
+                       isPlayer={true} 
+                       characterName="" // Name is shown below
+                     />
+                  </div>
+                  <div className="text-center mt-2">
+                    <div className="text-xl font-bold text-primary font-cinzel">
+                      {MASTER_CLASSES[mainClass].heroName || mainClass}
+                    </div>
+                    <div className="text-sm text-muted-foreground uppercase tracking-widest text-[10px]">
+                      {MASTER_CLASSES[mainClass].role}
+                    </div>
+                  </div>
+                  
+                  {isHeroSelected && (
+                    <div className="absolute top-4 right-4 w-8 h-8 bg-primary rounded-full flex items-center justify-center animate-in zoom-in">
+                      <Check className="w-5 h-5 text-black font-bold" />
+                    </div>
+                  )}
+                </button>
+             </div>
+           </section>
+        )}
+
+        {/* Step 3: Secondary Classes */}
+        {mainClass && isHeroSelected && (
+          <section 
+            ref={secondarySectionRef}
+            className="bg-card/50 backdrop-blur-sm border border-primary/30 rounded-lg p-6 animate-in slide-in-from-bottom duration-500 scroll-mt-24"
+          >
             <h2 className="text-2xl font-bold text-primary glow-gold mb-4 font-cinzel">
-              2. Yardımcı Sınıflar ({mainClass === "Vessel" ? "4" : "3"} Adet)
+              3. YARDIMCI SINIFLAR ({mainClass === "Vessel" ? "4" : "3"} ADET)
             </h2>
             <p className="text-muted-foreground mb-4">
               Desteye eklemek için {mainClass === "Vessel" ? "4" : "3"} sınıf seç. Her sınıf 6 sayısal kart (1-6) ekler.
-              <span className="text-primary font-bold"> ({secondaryClasses.length}/{mainClass === "Vessel" ? "4" : "3"} seçildi)</span>
+              <span className={cn("font-bold ml-2", secondaryClasses.length === (mainClass === "Vessel" ? 4 : 3) ? "text-green-500" : "text-primary")}> 
+                ({secondaryClasses.length}/{mainClass === "Vessel" ? "4" : "3"} seçildi)
+              </span>
             </p>
             <div className="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-5 gap-3">
               {availableSecondary.map((className) => {
                 const classData = MASTER_CLASSES[className];
                 const isSelected = secondaryClasses.includes(className);
-                const isDisabled = !isSelected && secondaryClasses.length >= (mainClass === "Vessel" ? 4 : 3);
+                const limit = mainClass === "Vessel" ? 4 : 3;
+                const isDisabled = !isSelected && secondaryClasses.length >= limit;
+                
                 return (
                   <button
                     key={className}
                     onClick={() => !isDisabled && handleSecondaryToggle(className)}
                     disabled={isDisabled}
                     className={cn(
-                      "p-4 rounded-lg border-2 transition-all duration-200 text-left relative",
+                      "p-4 rounded-lg border-2 transition-all duration-200 text-left relative overflow-hidden",
                       isSelected 
-                        ? "border-primary bg-primary/20" 
+                        ? "border-primary bg-primary/20 shadow-inner" 
                         : isDisabled
-                        ? "border-border/50 bg-card/30 opacity-50 cursor-not-allowed"
+                        ? "border-border/30 bg-card/20 opacity-40 cursor-not-allowed grayscale"
                         : "border-border hover:border-primary/50 bg-card/50"
                     )}
                   >
                     {isSelected && (
-                      <div className="absolute top-2 right-2 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
+                      <div className="absolute top-2 right-2 w-5 h-5 bg-primary rounded-full flex items-center justify-center animate-in zoom-in">
                         <Check className="w-3 h-3 text-primary-foreground" />
                       </div>
                     )}
@@ -358,87 +432,84 @@ const DeckBuilder = () => {
           </section>
         )}
 
-        {/* Deck Preview */}
+        {/* Deck Preview & Save */}
         {isComplete && (
-          <>
-            <div className="bg-card/50 backdrop-blur-sm border border-primary/30 rounded-lg p-6">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h2 className="text-2xl font-bold text-primary glow-gold mb-2 font-cinzel">
-                    Deste Önizleme
-                  </h2>
-                  <p className="text-muted-foreground">
-                    Ana Sınıf: <span className="text-primary font-bold">{mainClass}</span>
-                  </p>
+          <div ref={saveSectionRef} className="space-y-8 animate-in fade-in duration-700">
+             {/* Save Area */}
+            <section className="bg-card/90 backdrop-blur border border-primary rounded-lg p-6 shadow-2xl shadow-primary/10 sticky bottom-4 z-40">
+              <h2 className="text-2xl font-bold text-primary glow-gold mb-4 font-cinzel">
+                {editingDeckId ? "DESTE YENİLE" : "DESTEYİ KAYDET"}
+              </h2>
+              <div className="flex flex-col md:flex-row gap-4 items-end">
+                <div className="flex-1 w-full">
+                  <label className="text-sm text-yellow-500/80 mb-2 block uppercase tracking-wider font-bold">Deste İsmi</label>
+                  <Input
+                    value={deckName}
+                    onChange={(e) => setDeckName(e.target.value)}
+                    placeholder="Örn: Efsanevi Deste"
+                    className="bg-black/50 border-gold/30 text-lg h-12"
+                  />
                 </div>
-                <div className="text-right space-y-1">
-                  <p className="text-lg font-bold text-primary">{customDeck.length}/{(mainClass === "Vessel" || mainClass === "Mimic") ? 36 : 30} Kart</p>
-                  <p className="text-sm text-muted-foreground">
-                    {numericCards.length} Sayısal | {specialCards.length} Özel
-                  </p>
-                </div>
+                <Button 
+                  variant="default" 
+                  onClick={handleSaveDeck} 
+                  className="w-full md:w-auto h-12 gap-3 text-lg font-bold bg-primary hover:bg-primary/90 text-black px-8"
+                  disabled={isLoading}
+                >
+                  <Save className="w-5 h-5" />
+                  {isLoading ? "KAYDEDİLİYOR..." : (editingDeckId ? "GÜNCELLE" : "KAYDET")}
+                </Button>
               </div>
+            </section>
+
+             {/* Preview Details */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 opacity-80 hover:opacity-100 transition-opacity">
+               {/* Main Class Cards */}
+               <section>
+                 <h3 className="text-lg font-bold mb-4 font-cinzel flex items-center gap-2" style={{ color: MASTER_CLASSES[mainClass].color }}>
+                   {MASTER_CLASSES[mainClass].symbol} {mainClass} Kartları
+                 </h3>
+                 <div className="grid grid-cols-6 gap-2">
+                   {numericCards
+                     .filter(c => c.classSymbol === MASTER_CLASSES[mainClass].symbol)
+                     .map((card) => (
+                       <GameCard key={card.id} card={card} isPlaceholder />
+                     ))}
+                 </div>
+               </section>
+
+               {/* Special Cards */}
+               <section>
+                 <h3 className="text-lg font-bold text-primary mb-4 glow-gold font-cinzel">
+                   Özel Kartlar
+                 </h3>
+                 <div className="grid grid-cols-6 gap-2">
+                   {specialCards.map((card) => (
+                     <GameCard key={card.id} card={card} isPlaceholder />
+                   ))}
+                 </div>
+               </section>
             </div>
-
-            {/* Special Cards */}
-            <section>
-              <h3 className="text-xl font-bold text-primary mb-4 glow-gold font-cinzel">
-                Özel Kartlar (6)
-              </h3>
-              <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
-                {specialCards.map((card) => (
-                  <div key={card.id} className="flex flex-col items-center gap-2">
-                    <GameCard card={card} />
-                    <p className="text-xs text-center text-muted-foreground">{card.name}</p>
+            
+            {/* Secondary Classes Preview */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 opacity-80 hover:opacity-100 transition-opacity">
+              {secondaryClasses.map((className) => (
+                <section key={className}>
+                  <h3 className="text-lg font-bold mb-4 font-cinzel flex items-center gap-2" style={{ color: MASTER_CLASSES[className].color }}>
+                    {MASTER_CLASSES[className].symbol} {className}
+                  </h3>
+                  <div className="grid grid-cols-6 gap-2">
+                    {numericCards
+                      .filter(c => c.classSymbol === MASTER_CLASSES[className].symbol)
+                      .map((card) => (
+                        <GameCard key={card.id} card={card} isPlaceholder />
+                      ))}
                   </div>
-                ))}
-              </div>
-            </section>
-
-            {/* Main Class Cards */}
-            <section>
-              <h3 className="text-xl font-bold mb-4 font-cinzel" style={{ color: MASTER_CLASSES[mainClass].color }}>
-                {mainClass} Kartları ({mainClass === "Mimic" ? "12 (Çift)" : "6"}) - Ana Sınıf
-              </h3>
-              <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
-                {numericCards
-                  .filter(c => c.classSymbol === MASTER_CLASSES[mainClass].symbol)
-                  .map((card) => (
-                    <GameCard key={card.id} card={card} />
-                  ))}
-              </div>
-            </section>
-
-            {/* Secondary Class Cards */}
-            {secondaryClasses.map((className) => (
-              <section key={className}>
-                <h3 className="text-xl font-bold mb-4 font-cinzel" style={{ color: MASTER_CLASSES[className].color }}>
-                  {className} Kartları (6)
-                </h3>
-                <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
-                  {numericCards
-                    .filter(c => c.classSymbol === MASTER_CLASSES[className].symbol)
-                    .map((card) => (
-                      <GameCard key={card.id} card={card} />
-                    ))}
-                </div>
-              </section>
-            ))}
-          </>
+                </section>
+              ))}
+            </div>
+          </div>
         )}
-
-        {/* Deck Building Rules */}
-        <div className="bg-card/50 backdrop-blur-sm border border-primary/30 rounded-lg p-6 max-w-2xl mx-auto">
-          <h4 className="text-lg font-bold text-primary mb-3 font-cinzel">Deste Kuralları</h4>
-          <ul className="space-y-2 text-sm text-muted-foreground">
-            <li>• Her deste tam olarak <span className="text-primary font-bold">30 kart</span> içerir</li>
-            <li>• <span className="text-primary">Ana Sınıf:</span> 6 sayısal kart (1-6) + yetenekler</li>
-            <li>• <span className="text-primary">Özel Kartlar:</span> 6 kart (2× Twisted α, 2× Deflate β, 1× Delta Δ, 1× Sigma Σ)</li>
-            <li>• <span className="text-primary">Yardımcı Sınıflar:</span> 3 sınıf seç, her biri 6 kart (1-6) ekler</li>
-            <li>• Toplam: 6 (ana) + 6 (özel) + 18 (3×6 yardımcı) = 30 kart</li>
-            <li>• Gamma (γ) sadece oyun içi Zar ile elde edilebilir</li>
-          </ul>
-        </div>
       </div>
     </div>
   );
