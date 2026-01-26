@@ -522,8 +522,8 @@ export const GameMatch = ({
 
           {/* Center Area - Buttons, Damage Info, and Round Header */}
           <div className="flex flex-col items-center justify-center gap-4 z-10 relative w-full px-8">
-            {/* Round Info - Positioned far right but sharing same Y-axis context as buttons (Precisely Adjusted) */}
-            <div className="absolute right-8 bottom-0 flex flex-col items-end text-right gap-0 pointer-events-none select-none opacity-80 hover:opacity-100 transition-opacity translate-y-[-50%]">
+            {/* Round Info - Adjusted further down for better alignment */}
+            <div className="absolute right-8 bottom-0 flex flex-col items-end text-right gap-0 pointer-events-none select-none opacity-80 hover:opacity-100 transition-opacity translate-y-[-30%]">
                 <h1 className="text-5xl md:text-6xl font-bold text-primary glow-gold font-cinzel leading-none mb-1">
                   {t("game.round")} {gameState.round}/{gameState.maxRounds || 7}
                 </h1>
