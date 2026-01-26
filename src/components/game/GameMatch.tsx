@@ -409,27 +409,24 @@ export const GameMatch = ({
         <div className="flex-1 flex flex-col items-center justify-between p-4 md:p-8 gap-4 md:gap-8">
           {/* Opponent Area */}
           <div className="w-full max-w-6xl flex items-start justify-center gap-4">
-            <div className="flex-1 flex flex-col items-center gap-4">
-                {/* Grid Layout for Perfect Symmetry: Left (Deck) - Center (Avatar) - Right (HP) */}
-                <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-6 w-full max-w-5xl">
-                  {/* Left: Deck Counter (Right Aligned to touch Avatar) */}
-                  <div className="flex justify-end">
-                    <DeckCounter count={isOnline && opponentDeckCount !== undefined ? opponentDeckCount : gameState.opponentDeck.length} isOpponent />
-                  </div>
-                  
-                  {/* Center: Avatar */}
-                  <div className="flex justify-center">
-                    <CharacterAvatar 
-                      className={gameState.opponentClass} 
-                      isPlayer={false} 
-                      chatMessage={opponentMessage}
-                      characterName={MASTER_CLASSES[gameState.opponentClass].heroName || gameState.opponentClass}
-                    />
-                  </div>
+             {/* Left: Deck Counter (Fixed Width for Alignment) */}
+            <div className="w-32 flex justify-end shrink-0 pt-2">
+                <DeckCounter count={isOnline && opponentDeckCount !== undefined ? opponentDeckCount : gameState.opponentDeck.length} isOpponent />
+            </div>
 
-                  {/* Right: HP Bar (Left Aligned to touch Avatar) */}
-                  <div className="flex justify-start w-full max-w-[280px] md:max-w-[400px]">
-                    <div className="flex items-center gap-3 w-full">
+            <div className="flex-1 flex flex-col items-center gap-4">
+                <div className="flex items-center gap-6">
+                  {/* Opponent Avatar */}
+                  <CharacterAvatar 
+                    className={gameState.opponentClass} 
+                    isPlayer={false} 
+                    chatMessage={opponentMessage}
+                    characterName={MASTER_CLASSES[gameState.opponentClass].heroName || gameState.opponentClass}
+                  />
+
+                  {/* Opponent HP & Info */}
+                  <div className="flex flex-col w-full max-w-[280px] md:max-w-[400px]">
+                    <div className="flex items-center gap-3">
                       <span
                         className="text-3xl font-bold"
                         style={{ color: opponentClassData.color }}
@@ -639,6 +636,11 @@ export const GameMatch = ({
 
           {/* Player Area */}
           <div className="w-full max-w-6xl flex items-end justify-center gap-4">
+            {/* Left: Deck Counter (Fixed Width for Alignment) */}
+            <div className="w-32 flex justify-end shrink-0 pb-2">
+                 <DeckCounter count={gameState.playerDeck.length} />
+            </div>
+
             <div className="flex-1 flex flex-col items-center gap-4">
               {/* Player Field - Droppable Slots with Knife Bar */}
               <div className="flex items-center gap-4">
@@ -662,47 +664,39 @@ export const GameMatch = ({
                 )}
               </div>
 
-                {/* Grid Layout for Perfect Symmetry: Left (Deck) - Center (Avatar) - Right (HP) */}
-                <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-6 w-full max-w-5xl">
-                   {/* Left: Deck Counter (Right Aligned) */}
-                   <div className="flex justify-end">
-                      <DeckCounter count={gameState.playerDeck.length} />
-                   </div>
-                  
-                  {/* Center: Avatar */}
-                  <div className="flex justify-center">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <div className="outline-none">
-                            <CharacterAvatar 
-                              className={gameState.playerClass} 
-                              isPlayer={true} 
-                              chatMessage={playerMessage}
-                              characterName={MASTER_CLASSES[gameState.playerClass].heroName || gameState.playerClass}
-                            />
-                          </div>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="bg-black/90 border-gold/50 text-gold font-cinzel">
-                          {(Object.entries(CHAT_OPTIONS) as [ChatKey, { label: string }][]).map(([key, option]) => (
-                            <DropdownMenuItem 
-                              key={key} 
-                              onClick={() => {
-                                const msgData = CHARACTER_CHAT[gameState.playerClass][key];
-                                const msg = language === 'tr' ? msgData.tr : msgData.en;
-                                sendPlayerMessage(msg);
-                              }}
-                              className="focus:bg-gold/20 focus:text-gold cursor-pointer"
-                            >
-                              {option.label}
-                            </DropdownMenuItem>
-                          ))}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
+                <div className="flex items-center gap-6">
+                  {/* Player Avatar with Chat Menu */}
+                  <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <div className="outline-none">
+                          <CharacterAvatar 
+                            className={gameState.playerClass} 
+                            isPlayer={true} 
+                            chatMessage={playerMessage}
+                            characterName={MASTER_CLASSES[gameState.playerClass].heroName || gameState.playerClass}
+                          />
+                        </div>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="bg-black/90 border-gold/50 text-gold font-cinzel">
+                        {(Object.entries(CHAT_OPTIONS) as [ChatKey, { label: string }][]).map(([key, option]) => (
+                          <DropdownMenuItem 
+                            key={key} 
+                            onClick={() => {
+                              const msgData = CHARACTER_CHAT[gameState.playerClass][key];
+                              const msg = language === 'tr' ? msgData.tr : msgData.en;
+                              sendPlayerMessage(msg);
+                            }}
+                            className="focus:bg-gold/20 focus:text-gold cursor-pointer"
+                          >
+                            {option.label}
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                  </DropdownMenu>
 
-                  {/* Right: HP Bar */}
-                  <div className="flex justify-start w-full max-w-[280px] md:max-w-[400px]">
-                    <div className="flex items-center gap-3 w-full">
+                  {/* Player HP & Info */}
+                  <div className="flex flex-col w-full max-w-[280px] md:max-w-[400px]">
+                    <div className="flex items-center gap-3">
                       <span
                         className="text-3xl font-bold"
                         style={{ color: playerClassData.color }}

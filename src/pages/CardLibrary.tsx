@@ -83,7 +83,7 @@ const CardLibrary = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-border sticky top-0 bg-background/95 backdrop-blur z-20">
+      <div className="flex items-center justify-between p-4 border-b border-border sticky top-0 bg-background/95 backdrop-blur z-[100]">
         <Button variant="ghost" onClick={() => navigate("/")} className="gap-2">
           <ArrowLeft className="w-4 h-4" />
           {t("menu.back")}
@@ -96,7 +96,7 @@ const CardLibrary = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex justify-center border-b border-border/50 sticky top-[73px] bg-background/95 backdrop-blur z-10">
+      <div className="flex justify-center border-b border-border/50 sticky top-[73px] bg-background/95 backdrop-blur z-[90]">
         <div className="flex gap-8">
             <button
                 onClick={() => setActiveTab('cards')}
@@ -208,7 +208,7 @@ const CardLibrary = () => {
 
         {/* HEROES VIEW */}
         {activeTab === 'heroes' && (
-             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 pt-8">
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                     {ALL_CLASSES.map((className) => {
                         const classData = MASTER_CLASSES[className];
