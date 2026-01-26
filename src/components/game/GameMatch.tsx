@@ -464,18 +464,18 @@ export const GameMatch = ({
           </div>
 
           {/* Center Area - Buttons and Damage Info (Left) */}
-          <div className="flex flex-col items-center justify-center gap-4 z-10 relative">
+          <div className="flex flex-col items-center justify-center gap-4 z-10 relative ml-32">
             {/* Damage Info - Appearing to the left of the buttons */}
             {(gameState.phase === "damage" || gameState.phase === "reveal") && gameState.damageResult && (
-                <div className="absolute right-full mr-6 top-1/2 -translate-y-1/2 w-[280px] text-right pointer-events-none">
-                    <div className="bg-black/60 p-3 rounded-lg border border-primary/20 backdrop-blur-md animate-in slide-in-from-right-10 fade-in duration-500">
+                <div className="absolute right-full mr-6 top-1/2 -translate-y-1/2 w-max max-w-[450px] text-right pointer-events-none">
+                    <div className="bg-black/60 p-3 rounded-lg border border-primary/20 backdrop-blur-md animate-in slide-in-from-right-10 fade-in duration-500 shadow-2xl">
                         <div className="flex justify-end gap-3 text-lg font-bold mb-2 border-b border-primary/20 pb-1">
                             <span className="text-theta shadow-black drop-shadow-md">-{gameState.damageResult.playerDamage} <span className="text-xs">YOU</span></span>
                             <span className="text-omega shadow-black drop-shadow-md">-{gameState.damageResult.opponentDamage} <span className="text-xs">OPP</span></span>
                         </div>
                         <div className="space-y-1">
                           {gameState.damageResult.details.map((detail, i) => (
-                              <p key={i} className="text-xs text-muted-foreground font-medium animate-in fade-in slide-in-from-right-4" style={{ animationDelay: `${i * 100}ms` }}>
+                              <p key={i} className="text-xs text-muted-foreground font-medium animate-in fade-in slide-in-from-right-4 whitespace-normal" style={{ animationDelay: `${i * 100}ms` }}>
                                 {detail}
                               </p>
                           ))}
