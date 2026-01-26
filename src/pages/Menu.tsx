@@ -2,9 +2,12 @@ import { MenuButton } from "@/components/ui/menu-button";
 import logo from "@/assets/acoria-logo.png";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { LogOut, Trophy } from "lucide-react";
-import { motion } from "framer-motion";
+import { LogOut, Trophy, X, Monitor } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useEffect, useState } from "react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -30,6 +33,25 @@ const Menu = () => {
   const navigate = useNavigate();
   const { signOut } = useAuth();
   const { t } = useLanguage();
+  const [showPopup, setShowPopup] = useState(false);
+  const [dontShowAgain, setDontShowAgain] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("acoria_f11_reminder_hidden");
+    if (saved !== "true") {
+      const timer = setTimeout(() => setShowPopup(true), 1500);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  const handleDontShowAgainChange = (checked: boolean) => {
+    setDontShowAgain(checked);
+    if (checked) {
+      localStorage.setItem("acoria_f11_reminder_hidden", "true");
+    } else {
+      localStorage.removeItem("acoria_f11_reminder_hidden");
+    }
+  };
 
   const handleSignOut = async () => {
     await signOut();
@@ -163,6 +185,68 @@ const Menu = () => {
       {/* Decorative Elements */}
       <div className="absolute top-10 left-10 w-32 h-32 border border-primary/20 rounded-full animate-spin-slow pointer-events-none" />
       <div className="absolute bottom-20 right-20 w-48 h-48 border border-primary/10 rounded-full animate-spin-slower pointer-events-none" />
+
+      {/* F11 Reminder Popup */}
+      <AnimatePresence>
+        {showPopup && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.9, y: 20, opacity: 0 }}
+              className="relative w-full max-w-md bg-card/90 border-2 border-primary/40 p-8 rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden"
+            >
+              {/* Background Glow */}
+              <div className="absolute -top-24 -left-24 w-48 h-48 bg-primary/10 blur-3xl rounded-full" />
+              <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-primary/5 blur-3xl rounded-full" />
+
+              <button 
+                onClick={() => setShowPopup(false)}
+                className="absolute top-4 right-4 p-1 rounded-full hover:bg-white/10 transition-colors text-muted-foreground hover:text-primary"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="flex flex-col items-center text-center space-y-6">
+                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
+                  <Monitor className="w-8 h-8 text-primary animate-pulse" />
+                </div>
+
+                <h2 className="text-xl md:text-2xl font-bold font-cinzel text-primary glow-gold leading-relaxed">
+                  {t("menu.popup.f11.message")}
+                </h2>
+
+                <div className="flex items-center space-x-3 pt-4 border-t border-primary/10 w-full justify-center">
+                  <Checkbox 
+                    id="dont-show-again" 
+                    checked={dontShowAgain}
+                    onCheckedChange={(checked) => handleDontShowAgainChange(!!checked)}
+                    className="border-primary/40 data-[state=checked]:bg-primary data-[state=checked]:text-black"
+                  />
+                  <Label 
+                    htmlFor="dont-show-again"
+                    className="text-xs tracking-widest text-muted-foreground hover:text-primary cursor-pointer transition-colors uppercase"
+                  >
+                    {t("menu.popup.f11.dontShowAgain")}
+                  </Label>
+                </div>
+                
+                <button
+                  onClick={() => setShowPopup(false)}
+                  className="mt-2 text-[10px] tracking-[0.3em] uppercase text-muted-foreground/30 hover:text-primary/50 transition-colors"
+                >
+                  [ {t("menu.back").toUpperCase()} ]
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

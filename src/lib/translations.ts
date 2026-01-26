@@ -17,6 +17,8 @@ export const translations = {
     "menu.logout": "Log Out",
     "menu.back": "Back",
     "menu.prepare": "Prepare for Battle",
+    "menu.popup.f11.message": "FOR A BETTER GAMING EXPERIENCE, PLEASE PRESS F11",
+    "menu.popup.f11.dontShowAgain": "DO NOT SHOW THIS AGAIN",
 
     // Settings
     "settings.title": "Settings",
@@ -337,6 +339,8 @@ export const translations = {
     "menu.logout": "Çıkış Yap",
     "menu.back": "Geri",
     "menu.prepare": "Savaşa Hazırlan",
+    "menu.popup.f11.message": "DAHA İYİ BİR OYUN DENEYİMİ İÇİN F11 TUSUNA BASINIZ",
+    "menu.popup.f11.dontShowAgain": "BU MESAJI BİR DAHA GÖSTERME",
 
     // Settings
     "settings.title": "Ayarlar",
