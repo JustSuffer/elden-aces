@@ -50,12 +50,12 @@ export const CHARACTER_CHAT: Record<ClassName, Record<ChatKey, ChatMessage>> = {
     THINKING: { tr: "Kehanet ne diyor...", en: "What does the prophecy say..." },
   },
   Chronokeeper: {
-    GREETING: { tr: "Zamanın doluyor...", en: "Your time is running out..." },
-    GOOD_GAME: { tr: "Geçmişte kaldın.", en: "You are in the past." },
-    LUCKY: { tr: "Zamanı büktün mü?", en: "Did you bend time?" },
-    MISTAKE: { tr: "Geri alınamaz bir hata.", en: "An irreversible mistake." },
-    MY_TURN: { tr: "Saat işliyor.", en: "The clock ticks." },
-    THINKING: { tr: "Zaman akıyor...", en: "Time flows..." },
+    GREETING: { tr: "RIX", en: "RIX" },
+    GOOD_GAME: { tr: "RIX RIX", en: "RIX RIX" },
+    LUCKY: { tr: "RIIIIIX...", en: "RIIIIIX..." },
+    MISTAKE: { tr: "RIX RIX RIX", en: "RIX RIX RIX" },
+    MY_TURN: { tr: "RRRRIX", en: "RRRRIX" },
+    THINKING: { tr: "RRRRRR", en: "RRRRRR" },
   },
   Cryomancer: {
     GREETING: { tr: "İliklerine kadar üşüyeceksin.", en: "You will freeze to the bone." },
