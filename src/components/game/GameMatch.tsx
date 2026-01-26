@@ -408,13 +408,14 @@ export const GameMatch = ({
         {/* Game Area */}
         <div className="flex-1 flex flex-col items-center justify-between p-4 md:p-8 gap-4 md:gap-8">
           {/* Opponent Area */}
-          <div className="w-full max-w-6xl flex items-start justify-center gap-4">
-             {/* Left: Deck Counter (Fixed Width for Alignment) */}
-            <div className="w-32 flex justify-end shrink-0 pt-2">
+          <div className="w-full max-w-7xl grid grid-cols-[160px_1fr_160px] gap-4 items-start mx-auto">
+             {/* Left: Deck Counter */}
+            <div className="flex justify-end pt-2 pr-6">
                 <DeckCounter count={isOnline && opponentDeckCount !== undefined ? opponentDeckCount : gameState.opponentDeck.length} isOpponent />
             </div>
 
-            <div className="flex-1 flex flex-col items-center gap-4">
+            {/* Center: Avatar & HP */}
+            <div className="flex flex-col items-center gap-4 justify-self-center w-full">
                 <div className="flex items-center gap-6">
                   {/* Opponent Avatar */}
                   <CharacterAvatar 
@@ -442,6 +443,11 @@ export const GameMatch = ({
                     </div>
                   </div>
                 </div>
+            </div>
+
+            {/* Right: Spacer */}
+            <div />
+          </div>
               {/* Opponent Field with Knife Bar */}
               <div className="flex items-center gap-4">
                 <div className="grid grid-cols-5 gap-2 md:gap-4 justify-items-center">
@@ -464,8 +470,6 @@ export const GameMatch = ({
                   />
                 )}
               </div>
-            </div>
-          </div>
 
           {/* Center Area - Buttons and Damage Info (Left) */}
           <div className="flex flex-col items-center justify-center gap-4 z-10 relative ml-32">
@@ -635,13 +639,14 @@ export const GameMatch = ({
 
 
           {/* Player Area */}
-          <div className="w-full max-w-6xl flex items-end justify-center gap-4">
-            {/* Left: Deck Counter (Fixed Width for Alignment) */}
-            <div className="w-32 flex justify-end shrink-0 pb-2">
+          <div className="w-full max-w-7xl grid grid-cols-[160px_1fr_160px] gap-4 items-end mx-auto">
+            {/* Left: Deck Counter */}
+            <div className="flex justify-end pb-2">
                  <DeckCounter count={gameState.playerDeck.length} />
             </div>
 
-            <div className="flex-1 flex flex-col items-center gap-4">
+            {/* Center: Field & Avatar */}
+            <div className="flex flex-col items-center gap-4 justify-self-center w-full">
               {/* Player Field - Droppable Slots with Knife Bar */}
               <div className="flex items-center gap-4">
                 <div className="grid grid-cols-5 gap-2 md:gap-4 mb-4 justify-items-center">
@@ -711,6 +716,11 @@ export const GameMatch = ({
                     </div>
                   </div>
                 </div>
+            </div>
+
+            {/* Right: Spacer */}
+            <div />
+          </div>
 
               {/* Player Hand - Draggable Cards */}
               {gameState.phase === "placement" && (
