@@ -384,6 +384,54 @@ export const GameMatch = ({
     }
   }, [gameState.phase, gameState.damageResult, isMimicVsMimic, gameState.mimicCounter, gameState.playerClass, winConAnimationType, showWinConAnimation, gameState.winReason, gameState.winner]);
 
+  // Bot Auto-Chat Logic
+  const prevRoundRef = useRef(1);
+  useEffect(() => {
+    if (isOnline) return; // Only for bot games
+
+    const oppClass = gameState.opponentClass;
+    const chatData = CHARACTER_CHAT[oppClass];
+    if (!chatData) return;
+
+    const sendMessage = (key: ChatKey) => {
+      const msg = language === 'tr' ? chatData[key].tr : chatData[key].en;
+      setOpponentMessage(msg);
+      setTimeout(() => setOpponentMessage(null), 4000);
+    };
+
+    // Game Start Greeting
+    if (gameState.round === 1 && gameState.phase === "placement" && prevRoundRef.current === 1) {
+        // Simple check to ensure it only runs once at start
+        // We might need a stricter check or a 'hasGreeted' state, but effect dependency on phase helps.
+        // Actually, let's use a timeout on mount or just check strict equality
+        const timer = setTimeout(() => sendMessage("GREETING"), 1000);
+        return () => clearTimeout(timer);
+    }
+
+    // Reaction to Round Result (End of Damage Phase)
+    if (gameState.phase === "damage" && gameState.damageResult) {
+       const timer = setTimeout(() => {
+           const diff = gameState.damageResult!.opponentDamage - gameState.damageResult!.playerDamage; // Did opponent take more damage?
+           // If opponent took more damage (diff > 0), they are losing this round -> MISTAKE / LUCKY
+           // If opponent took less damage (diff < 0), they won this round -> GOOD_GAME / THINKING
+           
+           if (diff > 0) {
+               // Bot lost this round
+               sendMessage(Math.random() > 0.5 ? "MISTAKE" : "LUCKY");
+           } else if (diff < 0) {
+               // Bot won this round
+               sendMessage(Math.random() > 0.5 ? "GOOD_GAME" : "THINKING");
+           } else {
+               // Draw
+               sendMessage("THINKING");
+           }
+       }, 1500);
+       return () => clearTimeout(timer);
+    }
+
+    prevRoundRef.current = gameState.round;
+  }, [gameState.round, gameState.phase, gameState.damageResult, isOnline, language, gameState.opponentClass]);
+
   return (
     <DndContext onDragEnd={handleDragEnd}>
       <div className="min-h-screen bg-background flex flex-col relative">
@@ -426,10 +474,10 @@ export const GameMatch = ({
                   />
 
                   {/* Opponent HP & Info */}
-                  <div className="flex flex-col w-full max-w-[280px] md:max-w-[400px]">
-                    <div className="flex items-center gap-3">
+                  <div className="flex flex-col w-full max-w-xl">
+                    <div className="flex items-center gap-4 w-full">
                       <span
-                        className="text-3xl font-bold"
+                        className="text-4xl font-bold"
                         style={{ color: opponentClassData.color }}
                       >
                         {opponentClassData.symbol}
@@ -439,6 +487,7 @@ export const GameMatch = ({
                         max={opponentClassData.initialHP}
                         label={`${t("game.damage.opponent")} (${gameState.opponentClass})`}
                         isOpponent
+                        className="w-full max-w-none"
                       />
                     </div>
                   </div>
@@ -639,7 +688,7 @@ export const GameMatch = ({
 
 
           {/* Player Area */}
-          <div className="w-full max-w-7xl grid grid-cols-[160px_1fr_160px] gap-4 items-end mx-auto">
+          <div className="w-full max-w-7xl grid grid-cols-[160px_1fr_160px] gap-4 items-end mx-auto pb-8 md:pb-12">
             {/* Left: Deck Counter */}
             <div className="flex justify-end pb-2">
                  <DeckCounter count={gameState.playerDeck.length} />
@@ -700,10 +749,10 @@ export const GameMatch = ({
                   </DropdownMenu>
 
                   {/* Player HP & Info */}
-                  <div className="flex flex-col w-full max-w-[280px] md:max-w-[400px]">
-                    <div className="flex items-center gap-3">
+                  <div className="flex flex-col w-full max-w-xl">
+                    <div className="flex items-center gap-4 w-full">
                       <span
-                        className="text-3xl font-bold"
+                        className="text-4xl font-bold"
                         style={{ color: playerClassData.color }}
                       >
                         {playerClassData.symbol}
@@ -712,6 +761,7 @@ export const GameMatch = ({
                         current={gameState.playerHP}
                         max={playerClassData.initialHP}
                         label={`${t("game.damage.you")} (${gameState.playerClass})`}
+                        className="w-full max-w-none"
                       />
                     </div>
                   </div>
