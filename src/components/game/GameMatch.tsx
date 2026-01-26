@@ -455,33 +455,6 @@ export const GameMatch = ({
         {/* Game Area */}
         <div className="flex-1 flex flex-col items-center justify-between p-4 md:p-8 gap-4 md:gap-8 overflow-hidden relative">
           
-          {/* Top Center - Round & Timer Info (Centered as requested) */}
-          <div className="w-full flex flex-col items-center text-center gap-1 z-10 select-none">
-              <h1 className="text-4xl md:text-5xl font-bold text-primary glow-gold font-cinzel leading-none mb-1">
-                {t("game.round")} {gameState.round}/{gameState.maxRounds || 7}
-              </h1>
-              <div className="flex items-center gap-4 text-muted-foreground font-cinzel">
-                <p className="text-xl tracking-widest">
-                  {gameState.phase === "reveal" && t("game.phase.reveal")}
-                  {gameState.phase === "damage" && t("game.phase.damage")}
-                  {gameState.phase === "end" && (
-                    gameState.winner === "p1" ? t("game.phase.victory") :
-                    gameState.winner === "p2" ? t("game.phase.defeat") : t("game.phase.draw")
-                  )}
-                  {gameState.phase === "placement" && t("game.phase.placement")}
-                  {gameState.phase === "waiting" && t("game.phase.waiting")}
-                </p>
-                {isOnline && gameState.phase === "placement" && (
-                  <div className="w-px h-4 bg-primary/30" />
-                )}
-                {isOnline && gameState.phase === "placement" && (
-                  <p className="text-xl">
-                    <span className="font-semibold text-foreground tabular-nums">{gameState.timeLeft}s</span>
-                  </p>
-                )}
-              </div>
-          </div>
-
           {/* Opponent Area */}
           <div className="w-full max-w-7xl grid grid-cols-[160px_1fr_160px] gap-4 items-start mx-auto">
              {/* Left: Deck Counter */}
@@ -612,6 +585,29 @@ export const GameMatch = ({
                     : t("game.action.next")}
                 </Button>
             )}
+          </div>
+
+          {/* Right Side - Round Info Panel (Far Right, Center Y) */}
+          <div className="absolute right-8 top-1/2 -translate-y-1/2 flex flex-col items-end text-right gap-2 z-0 pointer-events-none select-none opacity-80 hover:opacity-100 transition-opacity">
+              <h1 className="text-6xl font-bold text-primary glow-gold mb-2 font-cinzel leading-none">
+                {t("game.round")} {gameState.round}/{gameState.maxRounds || 7}
+              </h1>
+              <div className="flex flex-col items-end text-right">
+                <p className="text-2xl text-muted-foreground tracking-widest font-cinzel">
+                  {gameState.phase === "reveal" && t("game.phase.reveal")}
+                  {gameState.phase === "damage" && t("game.phase.damage")}
+                  {gameState.phase === "end" && (
+                    gameState.winner === "p1" ? t("game.phase.victory") :
+                    gameState.winner === "p2" ? t("game.phase.defeat") : t("game.phase.draw")
+                  )}
+                </p>
+                {isOnline && gameState.phase === "placement" && (
+                  <p className="text-lg text-muted-foreground mt-2">
+                    Süre: <span className="font-semibold text-foreground tabular-nums text-2xl">{gameState.timeLeft}s</span>
+                  </p>
+                )}
+              </div>
+              <div className="h-px w-32 bg-primary/50 my-2" />
           </div>
 
 
