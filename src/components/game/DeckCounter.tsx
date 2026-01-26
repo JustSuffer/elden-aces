@@ -9,13 +9,13 @@ export function DeckCounter({ count, isOpponent = false }: DeckCounterProps) {
   return (
     <div
       className={cn(
-        "w-20 h-28 rounded-lg border-2 flex flex-col items-center justify-center",
-        "bg-card/50 backdrop-blur-sm",
-        isOpponent ? "border-destructive/50" : "border-primary/50"
+        "w-24 h-36 rounded-xl border-2 flex flex-col items-center justify-center shadow-lg transition-transform hover:scale-105",
+        "bg-card/80 backdrop-blur-md",
+        isOpponent ? "border-destructive/60" : "border-primary/60"
       )}
     >
-      <div className="text-3xl font-bold text-primary">{count}</div>
-      <div className="text-xs text-muted-foreground mt-1">cards</div>
+      <div className="text-4xl font-bold text-primary glow-gold">{count}</div>
+      <div className="text-sm text-muted-foreground mt-1 font-cinzel">cards</div>
     </div>
   );
 }

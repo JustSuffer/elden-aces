@@ -463,33 +463,10 @@ export const GameMatch = ({
             </div>
           </div>
 
-          {/* Center Area - Round & Actions */}
-          <div className="flex flex-col items-center gap-4 md:gap-6">
-            <div className="text-center">
-              <h1 className="text-4xl md:text-5xl font-bold text-primary glow-gold mb-2 font-cinzel">
-                {t("game.round")} {gameState.round}/{gameState.maxRounds || 7}
-              </h1>
-              <p className="text-base md:text-lg text-muted-foreground tracking-wider">
-                {gameState.phase === "placement" && t("game.phase.placement")}
-                {gameState.phase === "reveal" && t("game.phase.reveal")}
-                {gameState.phase === "damage" && t("game.phase.damage")}
-                {gameState.phase === "end" && (
-                  gameState.playerHP > gameState.opponentHP ? t("game.phase.victory") :
-                    gameState.playerHP < gameState.opponentHP ? t("game.phase.defeat") : t("game.phase.draw")
-                )}
-              </p>
-              <p className="text-sm text-muted-foreground mt-1">
-                {t("game.hand", { count: gameState.playerHand.length })}
-              </p>
-              {isOnline && gameState.phase === "placement" && (
-                <p className="text-sm text-muted-foreground mt-1">
-                  Süre: <span className="font-semibold text-foreground tabular-nums">{gameState.timeLeft}s</span>
-                </p>
-              )}
-            </div>
-
+          {/* Center Area - Buttons Only (Info moved to right) */}
+          <div className="flex flex-col items-center justify-center gap-4 z-10">
             {gameState.phase === "placement" && (
-              <div className="flex gap-2 md:gap-4 flex-wrap justify-center">
+              <div className="flex gap-4 items-center">
                 <Button
                   variant="default"
                   size="lg"
@@ -499,9 +476,9 @@ export const GameMatch = ({
                       ? (gameState.playerDiceRolls || 0) <= 0
                       : (gameState.diceUsed || 0) >= 2
                   }
-                  className="gap-2 bg-psi hover:bg-psi/80"
+                  className="gap-2 bg-psi hover:bg-psi/80 min-w-[160px] h-14 text-lg"
                 >
-                  <Dices className="w-5 h-5" />
+                  <Dices className="w-6 h-6" />
                   {gameState.playerClass === "Fateweaver"
                     ? `${t("game.dice.fateweaver")} (${gameState.playerDiceRolls || 0})`
                     : `${t("game.dice.standard")} (${gameState.diceUsed || 0}/2)`
@@ -513,7 +490,7 @@ export const GameMatch = ({
                   size="lg"
                   onClick={handleEndPlacement}
                   disabled={gameState.playerField.filter((c) => c !== null).length < 1}
-                  className="gap-2"
+                  className="min-w-[160px] h-14 text-lg bg-emerald-600 hover:bg-emerald-700"
                 >
                   {t("game.action.finish")}
                 </Button>
@@ -521,35 +498,53 @@ export const GameMatch = ({
             )}
 
             {(gameState.phase === "damage" || gameState.phase === "reveal") && gameState.damageResult && (
-              <div className="bg-card/50 backdrop-blur-sm border border-primary/30 rounded-lg p-4 md:p-6 max-w-2xl">
-                <div className="space-y-3">
-                  <div className="flex justify-between text-lg font-bold">
-                    <span className="text-theta">{t("game.damage.you")}: -{gameState.damageResult.playerDamage} HP</span>
-                    <span className="text-omega">{t("game.damage.opponent")}: -{gameState.damageResult.opponentDamage} HP</span>
-                  </div>
-                  {gameState.damageResult.details.map((detail, i) => (
-                    <p key={i} className="text-sm text-muted-foreground">{detail}</p>
-                  ))}
-                </div>
-                <Button
+               <Button
                   variant="default"
                   size="lg"
                   onClick={handleNextRound}
-                  disabled={
-                    isOnline &&
-                    requestedNextRoundFor === gameState.round &&
-                    gameState.playerHP > 0 &&
-                    gameState.opponentHP > 0 &&
-                    gameState.round < (gameState.maxRounds || 7)
-                  }
-                  className="w-full mt-4"
+                  className="w-full max-w-sm h-14 text-lg animate-pulse"
                 >
                   {gameState.round >= 6 || gameState.playerHP <= 0 || gameState.opponentHP <= 0
                     ? t("game.action.menu")
                     : t("game.action.next")}
                 </Button>
-              </div>
             )}
+          </div>
+
+          {/* Right Side - Round Info Panel (Moved from Center) */}
+          <div className="absolute right-8 top-1/2 -translate-y-1/2 flex flex-col items-end text-right gap-2 z-0 pointer-events-none select-none opacity-80 hover:opacity-100 transition-opacity">
+              <h1 className="text-6xl font-bold text-primary glow-gold mb-2 font-cinzel leading-none">
+                {t("game.round")} {gameState.round}/{gameState.maxRounds || 7}
+              </h1>
+              <p className="text-2xl text-muted-foreground tracking-widest font-cinzel">
+                {gameState.phase === "placement" && t("game.phase.placement")}
+                {gameState.phase === "reveal" && t("game.phase.reveal")}
+                {gameState.phase === "damage" && t("game.phase.damage")}
+                {gameState.phase === "end" && (
+                  gameState.winner === "p1" ? t("game.phase.victory") :
+                  gameState.winner === "p2" ? t("game.phase.defeat") : t("game.phase.draw")
+                )}
+              </p>
+              <div className="h-px w-32 bg-primary/50 my-2" />
+              <p className="text-xl text-muted-foreground">
+                {t("game.hand", { count: gameState.playerHand.length })}
+              </p>
+              {isOnline && gameState.phase === "placement" && (
+                <p className="text-lg text-muted-foreground">
+                  Süre: <span className="font-semibold text-foreground tabular-nums text-2xl">{gameState.timeLeft}s</span>
+                </p>
+              )}
+              
+              {/* Win/Loss Damage Info when applicable */}
+              {(gameState.phase === "damage" || gameState.phase === "reveal") && gameState.damageResult && (
+                 <div className="bg-black/60 p-4 rounded-lg border border-primary/20 backdrop-blur-md mt-4 animate-in slide-in-from-right fade-in">
+                    <div className="flex flex-col gap-1 items-end">
+                      <span className="text-xl font-bold text-theta">{t("game.damage.you")}: -{gameState.damageResult.playerDamage} HP</span>
+                      <span className="text-xl font-bold text-omega">{t("game.damage.opponent")}: -{gameState.damageResult.opponentDamage} HP</span>
+                    </div>
+                 </div>
+              )}
+          </div>
 
             {gameState.phase === "end" && (
               <div className="flex flex-col items-center gap-4 z-50">
@@ -623,7 +618,7 @@ export const GameMatch = ({
                 </Button>
               </div>
             )}
-          </div>
+
 
           {/* Player Area */}
           <div className="w-full max-w-6xl flex items-end gap-4">
