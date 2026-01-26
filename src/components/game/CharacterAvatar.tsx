@@ -83,9 +83,15 @@ export const CharacterAvatar = ({
       {/* Chat Bubble Position */}
       <div className={cn(
         "absolute z-[60] w-64 pointer-events-none transition-all duration-300",
-        isPlayer ? "left-full bottom-full ml-2 mb-2 origin-bottom-left" : "right-full top-full mr-2 mt-2 origin-top-right"
+        isPlayer 
+          ? "left-1/2 -translate-x-1/2 bottom-full mb-4 origin-bottom" 
+          : "left-1/2 -translate-x-1/2 top-full mt-4 origin-top"
       )}>
-        <ChatBubble message={chatMessage} isVisible={!!chatMessage} />
+        <ChatBubble 
+          message={chatMessage} 
+          isVisible={!!chatMessage} 
+          arrowPosition={isPlayer ? "bottom" : "top"} 
+        />
       </div>
     </div>
   );

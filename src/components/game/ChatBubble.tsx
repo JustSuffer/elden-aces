@@ -4,9 +4,10 @@ import { useEffect, useState } from "react";
 interface ChatBubbleProps {
   message: string | null | undefined;
   isVisible: boolean;
+  arrowPosition?: "top" | "bottom";
 }
 
-export const ChatBubble = ({ message, isVisible }: ChatBubbleProps) => {
+export const ChatBubble = ({ message, isVisible, arrowPosition = "bottom" }: ChatBubbleProps) => {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
@@ -31,7 +32,12 @@ export const ChatBubble = ({ message, isVisible }: ChatBubbleProps) => {
       </p>
       
       {/* Arrow */}
-      <div className="absolute w-3 h-3 bg-black/90 border-r border-b border-[#C5A059] transform rotate-45 -bottom-1.5 left-4" />
+      <div className={cn(
+        "absolute w-3 h-3 bg-black/90 transform rotate-45 left-1/2 -translate-x-1/2",
+        arrowPosition === "bottom" 
+          ? "-bottom-1.5 border-r border-b border-[#C5A059]" 
+          : "-top-1.5 border-l border-t border-[#C5A059]"
+      )} />
     </div>
   );
 };
