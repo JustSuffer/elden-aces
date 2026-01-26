@@ -627,6 +627,11 @@ export function resolveGameRound(
   let victim = p1Total < p2Total ? "p1" : (p1Total > p2Total ? "p2" : "draw");
   let attacker = victim === "p1" ? "p2" : (victim === "p2" ? "p1" : "draw");
 
+  logs.push(`Base Power: P1 (${p1Total}) vs P2 (${p2Total})`);
+  if (damage > 0) {
+    logs.push(`   -> ${damage} Numeric Damage to ${victim === "p1" ? "YOU" : "OPPONENT"}`);
+  }
+
   // Determine actual victim handling Reflection (Delta/Twisted)
   let finalVictim = victim;
 
@@ -676,8 +681,14 @@ export function resolveGameRound(
   const p1True = calculateClassSynergyTrueDamage(p1Cards, p1Class);
   const p2True = calculateClassSynergyTrueDamage(p2Cards, p2Class);
 
-  if (p1True > 0) logs.push(`P1 Synergy: ${p1True} True Damage`);
-  if (p2True > 0) logs.push(`P2 Synergy: ${p2True} True Damage`);
+  if (p1True > 0) {
+    logs.push("");
+    logs.push(`P1 Synergy: ${p1True} True Damage (Class matching cards)`);
+  }
+  if (p2True > 0) {
+    logs.push("");
+    logs.push(`P2 Synergy: ${p2True} True Damage (Class matching cards)`);
+  }
 
   // --- STEP 5: Class Ability Trigger ---
   // --- STEP 5: Class Ability Trigger ---
