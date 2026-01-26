@@ -95,7 +95,6 @@ export const GameMatch = ({
   useEffect(() => {
     // Only sync if we have valid opponent moves (array with actual cards or nulls, not undefined)
     if (isOnline && opponentMoves !== undefined && Array.isArray(opponentMoves) && gameState.phase === "waiting") {
-      console.log("[GameMatch] Opponent moves received, syncing:", opponentMoves);
       syncOnlineRound(opponentMoves);
     }
   }, [isOnline, opponentMoves, gameState.phase, syncOnlineRound]);
@@ -395,8 +394,8 @@ export const GameMatch = ({
 
     const sendMessage = (key: ChatKey) => {
       const msg = language === 'tr' ? chatData[key].tr : chatData[key].en;
-      setOpponentMessage(msg);
-      setTimeout(() => setOpponentMessage(null), 4000);
+      sendOpponentMessage(msg);
+      setTimeout(() => sendOpponentMessage(null), 4000);
     };
 
     // Game Start Greeting
