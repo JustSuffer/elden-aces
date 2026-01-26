@@ -788,8 +788,6 @@ export const GameMatch = ({
                 </DroppableSlot>
               )}
             </div>
-          </div>
-        </div>
 
         {/* VFX Layer */}
         <VfxLayer effects={vfxEffects} />
