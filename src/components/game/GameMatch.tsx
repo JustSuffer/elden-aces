@@ -10,6 +10,7 @@ import { KnifeBar } from "@/components/game/KnifeBar";
 import { Button } from "@/components/ui/button";
 import { useGameState } from "@/hooks/useGameState";
 import { useNavigate } from "react-router-dom";
+import { cn } from "@/lib/utils";
 
 import { toast } from "sonner";
 import { DndContext, DragEndEvent } from "@dnd-kit/core";
@@ -59,6 +60,21 @@ export const GameMatch = ({
 }: GameMatchProps) => {
   const navigate = useNavigate();
   const { t, language } = useLanguage();
+  
+  // Mobile Landscape Detection
+  const [isMobileLandscape, setIsMobileLandscape] = useState(false);
+  useEffect(() => {
+    const checkLandscape = () => {
+       const isLandscape = window.matchMedia("(orientation: landscape)").matches;
+       const isMobileHeight = window.matchMedia("(max-height: 500px)").matches; // Typical mobile landscape height
+       setIsMobileLandscape(isLandscape && isMobileHeight);
+    };
+    
+    checkLandscape();
+    window.addEventListener("resize", checkLandscape);
+    return () => window.removeEventListener("resize", checkLandscape);
+  }, []);
+
   const [vfxEffects, setVfxEffects] = useState<VfxEffect[]>([]);
   const [showHourglass, setShowHourglass] = useState(false);
   const [showWinConAnimation, setShowWinConAnimation] = useState(false);
@@ -433,7 +449,10 @@ export const GameMatch = ({
 
   return (
     <DndContext onDragEnd={handleDragEnd}>
-      <div className="min-h-screen bg-background flex flex-col relative acoria-scrollbar">
+      <div className={cn(
+        "min-h-screen bg-background flex flex-col relative acoria-scrollbar transition-all duration-300",
+        isMobileLandscape && "mobile-landscape-scale"
+      )}>
         <ClassInfoPanel className={gameState.playerClass} />
         <SpecialCardInfoPanel />
         {/* Header */}
@@ -790,6 +809,7 @@ export const GameMatch = ({
                         id={`card-${i}`}
                         disabled={!canPlaceCards}
                         onTap={() => handleTapToPlace(i)}
+                        dragEnabled={!isMobileLandscape}
                       />
                     ))}
                   </div>
