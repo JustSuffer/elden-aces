@@ -498,7 +498,7 @@ export const GameMatch = ({
             <div />
           </div>
               {/* Opponent Field with Knife Bar */}
-              <div className="flex items-center gap-4">
+              <div className="flex items-center justify-center relative w-full">
                 <div className="grid grid-cols-5 gap-2 md:gap-4 justify-items-center">
                   {gameState.opponentField.map((card, i) => (
                     <GameCard
@@ -510,20 +510,20 @@ export const GameMatch = ({
                     />
                   ))}
                 </div>
-                {/* Opponent Knife Bar - Right side of field */}
+                {/* Opponent Knife Bar - Right side of field, absolute to keep field centered */}
                 {isMimicVsMimic && (
                   <KnifeBar
                     count={gameState.mimicCounter.p2}
                     isOpponent
-                    className="ml-4"
+                    className="absolute left-[calc(50%+180px)] md:left-[calc(50%+280px)]"
                   />
                 )}
               </div>
 
           {/* Center Area - Buttons, Damage Info, and Round Header */}
           <div className="flex flex-col items-center justify-center gap-4 z-10 relative w-full px-8">
-            {/* Round Info - Positioned far right but sharing same Y-axis as buttons */}
-            <div className="absolute right-8 bottom-0 flex flex-col items-end text-right gap-0 pointer-events-none select-none opacity-80 hover:opacity-100 transition-opacity translate-y-[-20%]">
+            {/* Round Info - Positioned far right but sharing same Y-axis context as buttons (Lifted Higher) */}
+            <div className="absolute right-8 bottom-0 flex flex-col items-end text-right gap-0 pointer-events-none select-none opacity-80 hover:opacity-100 transition-opacity translate-y-[-80%]">
                 <h1 className="text-5xl md:text-6xl font-bold text-primary glow-gold font-cinzel leading-none mb-1">
                   {t("game.round")} {gameState.round}/{gameState.maxRounds || 7}
                 </h1>
@@ -696,7 +696,7 @@ export const GameMatch = ({
             {/* Center: Field & Avatar */}
             <div className="flex flex-col items-center gap-4 justify-self-center w-full">
               {/* Player Field - Droppable Slots with Knife Bar */}
-              <div className="flex items-center gap-4">
+              <div className="flex items-center justify-center relative w-full">
                 <div className="grid grid-cols-5 gap-2 md:gap-4 mb-4 justify-items-center">
                   {gameState.playerField.map((card, i) => (
                     <div key={i} data-slot={i}>
@@ -708,11 +708,11 @@ export const GameMatch = ({
                     </div>
                   ))}
                 </div>
-                {/* Player Knife Bar - Right side of field */}
+                {/* Player Knife Bar - Right side of field, absolute to keep field centered */}
                 {isMimicVsMimic && (
                   <KnifeBar
                     count={gameState.mimicCounter.p1}
-                    className="ml-4"
+                    className="absolute left-[calc(50%+180px)] md:left-[calc(50%+280px)] mb-4"
                   />
                 )}
               </div>
