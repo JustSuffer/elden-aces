@@ -254,6 +254,7 @@ export const translations = {
     // Game - Status & Actions
     "game.round": "Round",
     "game.phase.placement": "Select and place your cards",
+    "game.phase.waiting": "Waiting for opponent...",
     "game.phase.reveal": "Cards are revealing!",
     "game.phase.damage": "Round complete!",
     "game.phase.victory": "Victory!",
@@ -551,6 +552,7 @@ export const translations = {
     // Game - Status & Actions
     "game.round": "Round",
     "game.phase.placement": "Kartlarını seç ve oyna",
+    "game.phase.waiting": "Rakip bekleniyor...",
     "game.phase.reveal": "Kartlar açılıyor!",
     "game.phase.damage": "Round tamamlandı!",
     "game.phase.victory": "Zafer!",
