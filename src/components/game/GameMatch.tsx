@@ -543,11 +543,12 @@ export const GameMatch = ({
           <div className="flex flex-col items-center justify-center gap-4 z-10 relative w-full px-8">
             {/* Round Info - Lowered further to align perfectly with bottom section context */}
             {/* Round Info - Reduced size significantly (approx 75% smaller visually) */}
+            {/* Round Info - Increased size ~50% from previous small version */}
             <div className="absolute right-8 bottom-0 flex flex-col items-end text-right gap-0 pointer-events-none select-none opacity-80 hover:opacity-100 transition-opacity translate-y-[15%]">
-                <h1 className="text-xl md:text-2xl font-bold text-primary glow-gold font-cinzel leading-none mb-1">
+                <h1 className="text-3xl md:text-5xl font-bold text-primary glow-gold font-cinzel leading-none mb-1">
                   {t("game.round")} {gameState.round}/{gameState.maxRounds || 7}
                 </h1>
-                <p className="text-[10px] md:text-xs text-muted-foreground tracking-widest font-cinzel">
+                <p className="text-sm md:text-base text-muted-foreground tracking-widest font-cinzel">
                   {gameState.phase === "reveal" && t("game.phase.reveal")}
                   {gameState.phase === "damage" && t("game.phase.damage")}
                   {gameState.phase === "end" && (
@@ -566,16 +567,17 @@ export const GameMatch = ({
             </div>
 
             {/* Damage Info - Integrated into center flow between fields */}
+            {/* Damage Info - Integrated into center flow between fields - Reduced size ~25% */}
             {(gameState.phase === "damage" || gameState.phase === "reveal") && gameState.damageResult && (
-                <div className="w-full max-w-[500px] text-center pointer-events-none z-50 mb-4">
-                    <div className="bg-black/80 p-4 rounded-xl border border-primary/30 backdrop-blur-xl animate-in slide-in-from-bottom-10 fade-in duration-500 shadow-[0_0_30px_rgba(0,0,0,0.5)]">
-                        <div className="flex justify-center gap-6 text-xl font-bold mb-3 border-b border-primary/20 pb-2">
-                            <span className="text-theta shadow-black drop-shadow-md">-{gameState.damageResult.playerDamage} <span className="text-sm">YOU</span></span>
-                            <span className="text-omega shadow-black drop-shadow-md">-{gameState.damageResult.opponentDamage} <span className="text-sm">OPP</span></span>
+                <div className="w-full max-w-[380px] text-center pointer-events-none z-50 mb-4">
+                    <div className="bg-black/80 p-2.5 rounded-xl border border-primary/30 backdrop-blur-xl animate-in slide-in-from-bottom-10 fade-in duration-500 shadow-[0_0_20px_rgba(0,0,0,0.5)]">
+                        <div className="flex justify-center gap-4 text-base font-bold mb-1.5 border-b border-primary/20 pb-1">
+                            <span className="text-theta shadow-black drop-shadow-md">-{gameState.damageResult.playerDamage} <span className="text-[10px]">YOU</span></span>
+                            <span className="text-omega shadow-black drop-shadow-md">-{gameState.damageResult.opponentDamage} <span className="text-[10px]">OPP</span></span>
                         </div>
-                        <div className="space-y-1.5">
+                        <div className="space-y-0.5">
                           {gameState.damageResult.details.map((detail, i) => (
-                              <p key={i} className="text-sm text-amber-100/90 font-medium animate-in fade-in slide-in-from-bottom-4 whitespace-normal" style={{ animationDelay: `${i * 100}ms` }}>
+                              <p key={i} className="text-[10px] md:text-xs text-amber-100/90 font-medium animate-in fade-in slide-in-from-bottom-4 whitespace-normal" style={{ animationDelay: `${i * 100}ms` }}>
                                 {detail}
                               </p>
                           ))}
