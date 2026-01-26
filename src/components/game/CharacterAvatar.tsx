@@ -9,7 +9,9 @@ interface CharacterAvatarProps {
   onClick?: () => void;
   chatMessage?: string | null;
   characterName: string;
-  sizeClass?: string; // New prop for custom sizing
+  sizeClass?: string; 
+  hideName?: boolean;
+  classNameOverride?: string;
 }
 
 export const CharacterAvatar = ({ 
@@ -18,7 +20,9 @@ export const CharacterAvatar = ({
   onClick, 
   chatMessage,
   characterName,
-  sizeClass = "w-24 h-24 md:w-32 md:h-32"
+  sizeClass = "w-24 h-24 md:w-32 md:h-32",
+  hideName = false,
+  classNameOverride
 }: CharacterAvatarProps) => {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -51,7 +55,7 @@ export const CharacterAvatar = ({
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Name Tag - Always on Left side, Only on Hover */}
-      {characterName && (
+      {characterName && !hideName && (
         <div className={cn(
           "absolute top-1/2 -translate-y-1/2 mr-4 px-4 py-2 bg-black/90 border border-gold/50 rounded-lg text-sm font-cinzel text-gold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-50 shadow-[0_0_15px_rgba(197,160,89,0.3)]",
           "right-full" 
@@ -63,7 +67,8 @@ export const CharacterAvatar = ({
       {/* Frame */}
       <div className={cn(
         "relative rounded-full border-4 border-[#C5A059] shadow-[0_0_15px_rgba(197,160,89,0.5)] overflow-hidden bg-black/50",
-        sizeClass
+        sizeClass,
+        classNameOverride
       )}>
         <img 
           src={getAvatarPath(className)} 

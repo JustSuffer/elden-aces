@@ -8,7 +8,7 @@ export const translations = {
     "menu.playOnline": "Play Online",
     "menu.playBot": "Play vs Bot",
     "menu.profile": "Profile",
-    "menu.library": "Card Library",
+    "menu.library": "Library",
     "menu.deckBuilder": "Deck Builder",
     "menu.settings": "Settings",
     "menu.team": "Credits",
@@ -314,7 +314,7 @@ export const translations = {
     "profile.toast.logoutSuccess": "Logged out successfully",
 
     // Library
-    "library.title": "Card Library",
+    "library.title": "Library",
     "library.special": "Special Cards",
     "library.classes": "Class Cards",
     "library.deckComp": "Deck Composition (30 Cards)",
@@ -326,7 +326,7 @@ export const translations = {
     "menu.playOnline": "Çevrimiçi Oyna",
     "menu.playBot": "Bot ile Oyna",
     "menu.profile": "Profil",
-    "menu.library": "Kart Kütüphanesi",
+    "menu.library": "Kütüphane",
     "menu.deckBuilder": "Deste Oluşturucu",
     "menu.settings": "Ayarlar",
     "menu.team": "Ekip",
@@ -634,7 +634,7 @@ export const translations = {
     "victory.back": "Menüye Dön",
 
     // Library
-    "library.title": "Kart Kütüphanesi",
+    "library.title": "Kütüphane",
     "library.special": "Özel Kartlar",
     "library.classes": "Sınıf Kartları",
     "library.deckComp": "Deste Yapısı (30 Kart)",
