@@ -520,7 +520,7 @@ export const GameMatch = ({
               </div>
 
           {/* Center Area - Buttons and Damage Info (Left) */}
-          <div className="flex flex-col items-center justify-center gap-4 z-10 relative ml-32">
+          <div className="flex flex-col items-center justify-center gap-4 z-10 relative">
             {/* Damage Info - Appearing to the left of the buttons */}
             {(gameState.phase === "damage" || gameState.phase === "reveal") && gameState.damageResult && (
                 <div className="absolute right-full mr-6 top-1/2 -translate-y-1/2 w-max max-w-[450px] text-right pointer-events-none">
@@ -686,12 +686,10 @@ export const GameMatch = ({
             )}
 
 
-          {/* Player Area */}
-          <div className="w-full max-w-7xl grid grid-cols-[160px_1fr_160px] gap-4 items-end mx-auto pb-8 md:pb-12">
-            {/* Left: Deck Counter */}
-            <div className="flex justify-end pb-2">
-                 <DeckCounter count={gameState.playerDeck.length} />
-            </div>
+          {/* Player Area - Field and Avatar Only (Deck moved to Hand row) */}
+          <div className="w-full max-w-7xl grid grid-cols-[160px_1fr_160px] gap-4 items-end mx-auto pb-4">
+            {/* Left: Spacer */}
+            <div />
 
             {/* Center: Field & Avatar */}
             <div className="flex flex-col items-center gap-4 justify-self-center w-full">
@@ -771,10 +769,18 @@ export const GameMatch = ({
             <div />
           </div>
 
-              {/* Player Hand - Draggable Cards */}
+          {/* Player Hand Row - Symmetrical with Opponent Top Row */}
+          <div className="w-full max-w-7xl grid grid-cols-[160px_1fr_160px] gap-4 items-end mx-auto pb-20 md:pb-32">
+            {/* Left: Player Deck Counter - Aligned with Hand */}
+            <div className="flex justify-end pb-2 pr-6">
+              <DeckCounter count={gameState.playerDeck.length} />
+            </div>
+
+            {/* Center: Hand Row */}
+            <div className="flex justify-center w-full">
               {gameState.phase === "placement" && (
                 <DroppableSlot id="hand-dropzone" isPlaceholder className="w-full" card={null}>
-                  <div className="flex gap-2 md:gap-3 mt-8 md:mt-16 flex-wrap justify-center">
+                  <div className="flex gap-2 md:gap-3 flex-wrap justify-center">
                     {gameState.playerHand.map((card, i) => (
                       <DraggableCard
                         key={card.id}
@@ -788,6 +794,11 @@ export const GameMatch = ({
                 </DroppableSlot>
               )}
             </div>
+
+            {/* Right: Spacer */}
+            <div />
+          </div>
+        </div>
 
         {/* VFX Layer */}
         <VfxLayer effects={vfxEffects} />
