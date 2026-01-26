@@ -542,11 +542,12 @@ export const GameMatch = ({
           {/* Center Area - Buttons, Damage Info, and Round Header */}
           <div className="flex flex-col items-center justify-center gap-4 z-10 relative w-full px-8">
             {/* Round Info - Lowered further to align perfectly with bottom section context */}
+            {/* Round Info - Reduced size significantly (approx 75% smaller visually) */}
             <div className="absolute right-8 bottom-0 flex flex-col items-end text-right gap-0 pointer-events-none select-none opacity-80 hover:opacity-100 transition-opacity translate-y-[15%]">
-                <h1 className="text-5xl md:text-6xl font-bold text-primary glow-gold font-cinzel leading-none mb-1">
+                <h1 className="text-xl md:text-2xl font-bold text-primary glow-gold font-cinzel leading-none mb-1">
                   {t("game.round")} {gameState.round}/{gameState.maxRounds || 7}
                 </h1>
-                <p className="text-xl md:text-2xl text-muted-foreground tracking-widest font-cinzel">
+                <p className="text-[10px] md:text-xs text-muted-foreground tracking-widest font-cinzel">
                   {gameState.phase === "reveal" && t("game.phase.reveal")}
                   {gameState.phase === "damage" && t("game.phase.damage")}
                   {gameState.phase === "end" && (
@@ -799,7 +800,7 @@ export const GameMatch = ({
 
             {/* Center: Hand Row */}
             <div className="flex justify-center w-full">
-              {gameState.phase === "placement" && (
+              {(gameState.phase === "placement" || gameState.phase === "reveal" || gameState.phase === "damage") && (
                 <DroppableSlot id="hand-dropzone" isPlaceholder className="w-full" card={null}>
                   <div className="flex gap-2 md:gap-3 flex-wrap justify-center">
                     {gameState.playerHand.map((card, i) => (
@@ -807,9 +808,9 @@ export const GameMatch = ({
                         key={card.id}
                         card={card}
                         id={`card-${i}`}
-                        disabled={!canPlaceCards}
+                        disabled={!canPlaceCards || gameState.phase !== "placement"}
                         onTap={() => handleTapToPlace(i)}
-                        dragEnabled={!isMobileLandscape}
+                        dragEnabled={!isMobileLandscape && gameState.phase === "placement"}
                       />
                     ))}
                   </div>

@@ -208,6 +208,80 @@ export const translations = {
     "classes.mimic.logic": "Anything you can do, I can do better.",
     "classes.mimic.mechanic": "Copycat: Copies opponent deck.",
     "classes.mimic.strategy": "Beat them with their own weapons.",
+    
+    // Class UI Specific
+    "ui.abilityScale": "Ability Scale",
+    "ui.winCondition": "Win Condition",
+    "ui.loseCondition": "Lose Condition",
+    "ui.passive": "Passive",
+
+    "classes.vitalist.scale.1": "0 HP",
+    "classes.vitalist.scale.2": "+4 HP",
+    "classes.vitalist.scale.3": "+6 HP",
+    "classes.vitalist.scale.4": "+8 HP",
+    "classes.vitalist.scale.5": "+15 HP",
+
+    "classes.slayer.scale.1": "0 Dmg",
+    "classes.slayer.scale.2": "3 Dmg",
+    "classes.slayer.scale.3": "5 Dmg",
+    "classes.slayer.scale.4": "8 Dmg",
+    "classes.slayer.scale.5": "12 Dmg",
+    "classes.slayer.loseCondition": "If 12 Dmg & Self HP > Opp HP.",
+
+    "classes.fateweaver.scale.1": "-",
+    "classes.fateweaver.scale.2": "+2 Dice Roll",
+    "classes.fateweaver.scale.3": "+3 Dice Roll",
+    "classes.fateweaver.scale.4": "+5 Dice Roll",
+    "classes.fateweaver.scale.5": "+6 Rolls + 1 Gamma (γ)",
+
+    "classes.oracle.scale.1": "0 Dmg/Draw",
+    "classes.oracle.scale.2": "2 Self-Dmg / 2 Draw",
+    "classes.oracle.scale.3": "5 Self-Dmg / 5 Draw",
+    "classes.oracle.scale.4": "8 Self-Dmg / 8 Draw",
+    "classes.oracle.scale.5": "10 Self-Dmg / 10 Draw",
+
+    "classes.chronokeeper.scale.1": "-",
+    "classes.chronokeeper.scale.2": "0 Sil",
+    "classes.chronokeeper.scale.3": "1 Rnd Sil",
+    "classes.chronokeeper.scale.4": "2 Rnd Sil",
+    "classes.chronokeeper.scale.5": "3 Rnd Sil",
+
+    "classes.cryomancer.scale.1": "-",
+    "classes.cryomancer.scale.2": "2 Freeze",
+    "classes.cryomancer.scale.3": "3 Freeze",
+    "classes.cryomancer.scale.4": "4 Freeze",
+    "classes.cryomancer.scale.5": "Freeze ALL",
+
+    "classes.decay.scale.1": "-",
+    "classes.decay.scale.2": "2 Burn",
+    "classes.decay.scale.3": "4 Burn",
+    "classes.decay.scale.4": "5 Burn",
+    "classes.decay.scale.5": "8 Burn + NoDeath",
+    "classes.decay.loseCondition": "Die if opponent has cards at R5.",
+
+    "classes.siren.scale.1": "-",
+    "classes.siren.scale.2": "2 Steal",
+    "classes.siren.scale.3": "3 Steal",
+    "classes.siren.scale.4": "4 Steal",
+    "classes.siren.scale.5": "5 Steal",
+
+    "classes.augmentor.scale.1": "-",
+    "classes.augmentor.scale.2": "+1 Value (All)",
+    "classes.augmentor.scale.3": "+2 Value (All)",
+    "classes.augmentor.scale.4": "+3 Value (All)",
+    "classes.augmentor.scale.5": "+6 Value / 20 Dmg",
+
+    "classes.vessel.scale.1": "-",
+    "classes.vessel.scale.2": "+2 Sigma (Σ)",
+    "classes.vessel.scale.3": "+3 Delta (Δ)",
+    "classes.vessel.scale.4": "+2Σ & +2Δ",
+    "classes.vessel.scale.5": "+2Σ, +3Δ & +1γ",
+
+    "classes.mimic.scale.1": "-",
+    "classes.mimic.scale.2": "Copy 1 Card",
+    "classes.mimic.scale.3": "Copy 2 Cards",
+    "classes.mimic.scale.4": "Copy 3 Cards",
+    "classes.mimic.scale.5": "Copy 4 Cards",
 
     // Special Card Extra
     "howToPlay.cards.die.name": "The Die (Π)",
@@ -531,6 +605,80 @@ export const translations = {
     "classes.mimic.logic": "Sen neysen ben daha iyisiyim.",
     "classes.mimic.mechanic": "Copycat: Rakibini kopyalar.",
     "classes.mimic.strategy": "Kendi silahıyla vur.",
+
+    // Class UI Specific
+    "ui.abilityScale": "Yetenek Ölçeği",
+    "ui.winCondition": "Kazanma Koşulu",
+    "ui.loseCondition": "Kaybetme Koşulu",
+    "ui.passive": "Pasif",
+
+    "classes.vitalist.scale.1": "0 Can",
+    "classes.vitalist.scale.2": "+4 Can",
+    "classes.vitalist.scale.3": "+6 Can",
+    "classes.vitalist.scale.4": "+8 Can",
+    "classes.vitalist.scale.5": "+15 Can",
+
+    "classes.slayer.scale.1": "0 Hsr",
+    "classes.slayer.scale.2": "3 Hsr",
+    "classes.slayer.scale.3": "5 Hsr",
+    "classes.slayer.scale.4": "8 Hsr",
+    "classes.slayer.scale.5": "12 Hsr",
+    "classes.slayer.loseCondition": "Eğer 12 Hsr vurup Can > Rakip ise.",
+
+    "classes.fateweaver.scale.1": "-",
+    "classes.fateweaver.scale.2": "+2 Zar Hakkı",
+    "classes.fateweaver.scale.3": "+3 Zar Hakkı",
+    "classes.fateweaver.scale.4": "+5 Zar Hakkı",
+    "classes.fateweaver.scale.5": "+6 Hak + 1 Gamma (γ)",
+
+    "classes.oracle.scale.1": "0 Hsr/Çek",
+    "classes.oracle.scale.2": "2 Kendi Hsr / 2 Çek",
+    "classes.oracle.scale.3": "5 Kendi Hsr / 5 Çek",
+    "classes.oracle.scale.4": "8 Kendi Hsr / 8 Çek",
+    "classes.oracle.scale.5": "10 Kendi Hsr / 10 Çek",
+
+    "classes.chronokeeper.scale.1": "-",
+    "classes.chronokeeper.scale.2": "0 Sil",
+    "classes.chronokeeper.scale.3": "1 Tur Sil",
+    "classes.chronokeeper.scale.4": "2 Tur Sil",
+    "classes.chronokeeper.scale.5": "3 Tur Sil",
+
+    "classes.cryomancer.scale.1": "-",
+    "classes.cryomancer.scale.2": "2 Dondur",
+    "classes.cryomancer.scale.3": "3 Dondur",
+    "classes.cryomancer.scale.4": "4 Dondur",
+    "classes.cryomancer.scale.5": "TÜMÜNÜ Dondur",
+
+    "classes.decay.scale.1": "-",
+    "classes.decay.scale.2": "2 Yak",
+    "classes.decay.scale.3": "4 Yak",
+    "classes.decay.scale.4": "5 Yak",
+    "classes.decay.scale.5": "8 Yak + ÖlümYok",
+    "classes.decay.loseCondition": "R5'te rakibin kartı varsa ölürsün.",
+
+    "classes.siren.scale.1": "-",
+    "classes.siren.scale.2": "2 Çal",
+    "classes.siren.scale.3": "3 Çal",
+    "classes.siren.scale.4": "4 Çal",
+    "classes.siren.scale.5": "5 Çal",
+
+    "classes.augmentor.scale.1": "-",
+    "classes.augmentor.scale.2": "+1 Değer (Tüm)",
+    "classes.augmentor.scale.3": "+2 Değer (Tüm)",
+    "classes.augmentor.scale.4": "+3 Değer (Tüm)",
+    "classes.augmentor.scale.5": "+6 Değer / 20 Hsr",
+
+    "classes.vessel.scale.1": "-",
+    "classes.vessel.scale.2": "+2 Sigma (Σ)",
+    "classes.vessel.scale.3": "+3 Delta (Δ)",
+    "classes.vessel.scale.4": "+2Σ & +2Δ",
+    "classes.vessel.scale.5": "+2Σ, +3Δ & +1γ",
+
+    "classes.mimic.scale.1": "-",
+    "classes.mimic.scale.2": "1 Kart Kopyala",
+    "classes.mimic.scale.3": "2 Kart Kopyala",
+    "classes.mimic.scale.4": "3 Kart Kopyala",
+    "classes.mimic.scale.5": "4 Kart Kopyala",
 
     // Special Card Extra
     "howToPlay.cards.die.name": "Zar (Π)",

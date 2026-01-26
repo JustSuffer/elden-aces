@@ -4,8 +4,11 @@ import { Info, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
+import { useLanguage } from "@/hooks/useLanguage";
+
 export const SpecialCardInfoPanel = () => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const { t } = useLanguage();
 
   return (
     <div 
@@ -22,19 +25,21 @@ export const SpecialCardInfoPanel = () => {
           <div className="flex items-center gap-2 mb-4 border-b border-primary/20 pb-2">
             <Sparkles className="w-5 h-5 text-amber-400" />
             <h3 className="font-bold text-primary text-base font-cinzel leading-tight">
-              Özel Kartlar
+              {t("library.special")}
             </h3>
           </div>
 
           <div className="space-y-4">
-             {Object.values(SPECIAL_CARDS_DATA).map((card) => (
+             {Object.entries(SPECIAL_CARDS_DATA).map(([type, card]) => (
                  <div key={card.symbol} className="bg-muted/30 rounded-lg p-3 border border-border hover:border-primary/30 transition-colors">
                      <div className="flex items-center gap-2 mb-1">
                          <span className="text-xl font-bold text-amber-400" >{card.symbol}</span>
-                         <span className="font-bold text-foreground">{card.name}</span>
+                         <span className="font-bold text-foreground">
+                            {t(`howToPlay.cards.${type}.name` as any)}
+                         </span>
                      </div>
                      <p className="text-[10px] text-muted-foreground leading-relaxed">
-                         {card.description}
+                         {t(`howToPlay.cards.${type}.desc` as any)}
                      </p>
                  </div>
              ))}

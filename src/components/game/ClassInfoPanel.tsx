@@ -8,9 +8,13 @@ interface ClassInfoPanelProps {
   className: ClassName;
 }
 
+import { useLanguage } from "@/hooks/useLanguage";
+import { useMemo } from "react";
+
 export const ClassInfoPanel = ({ className }: ClassInfoPanelProps) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const data = MASTER_CLASSES[className];
+  const { t } = useLanguage();
 
   if (!data) return null;
 
@@ -44,7 +48,7 @@ export const ClassInfoPanel = ({ className }: ClassInfoPanelProps) => {
           <div className="mb-4">
             <h4 className="font-bold text-muted-foreground mb-2 flex items-center gap-1 text-[10px] uppercase">
               <Info className="w-3 h-3" />
-              Yetenek Ölçeği
+              {t("ui.abilityScale")}
             </h4>
             <div className="space-y-1.5">
               {data.abilityScales.map((scale) => (
@@ -53,7 +57,7 @@ export const ClassInfoPanel = ({ className }: ClassInfoPanelProps) => {
                     {scale.count}
                   </div>
                   <div className="text-muted-foreground group-hover:text-foreground transition-colors leading-tight">
-                    {scale.effectDescription}
+                    {t(`classes.${className.toLowerCase()}.scale.${scale.count}` as any)}
                   </div>
                 </div>
               ))}
@@ -64,10 +68,10 @@ export const ClassInfoPanel = ({ className }: ClassInfoPanelProps) => {
           <div className="mb-3">
             <h4 className="font-bold text-muted-foreground mb-1 flex items-center gap-1 text-[10px] uppercase">
               <Trophy className="w-3 h-3 text-yellow-500" />
-              Kazanma Koşulu
+              {t("ui.winCondition")}
             </h4>
             <p className="text-yellow-500/90 leading-tight bg-yellow-500/5 p-2 rounded border border-yellow-500/10">
-              {data.winCondition}
+              {t(`classes.${className.toLowerCase()}.winCon` as any)}
             </p>
           </div>
 
@@ -76,17 +80,17 @@ export const ClassInfoPanel = ({ className }: ClassInfoPanelProps) => {
             <div className="mb-3">
               <h4 className="font-bold text-muted-foreground mb-1 flex items-center gap-1 text-[10px] uppercase">
                 <ShieldAlert className="w-3 h-3 text-destructive" />
-                Kaybetme Koşulu
+                {t("ui.loseCondition")}
               </h4>
               <p className="text-destructive/90 leading-tight bg-destructive/10 p-2 rounded border border-destructive/20">
-                {data.loseCondition}
+                {t(`classes.${className.toLowerCase()}.loseCondition` as any)}
               </p>
             </div>
           )}
 
            {/* Passive (Optional description) */}
            <div className="mt-2 text-[10px] text-muted-foreground italic border-t border-white/5 pt-2">
-             {data.passiveDescription}
+             {t(`classes.${className.toLowerCase()}.passive` as any)}
            </div>
 
         </div>
