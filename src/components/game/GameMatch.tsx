@@ -408,10 +408,11 @@ export const GameMatch = ({
         {/* Game Area */}
         <div className="flex-1 flex flex-col items-center justify-between p-4 md:p-8 gap-4 md:gap-8">
           {/* Opponent Area */}
-          <div className="w-full max-w-6xl flex items-start gap-4">
-            <DeckCounter count={isOnline && opponentDeckCount !== undefined ? opponentDeckCount : gameState.opponentDeck.length} isOpponent />
+          <div className="w-full max-w-6xl flex items-start justify-center gap-4">
             <div className="flex-1 flex flex-col items-center gap-4">
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-6">
+                  <DeckCounter count={isOnline && opponentDeckCount !== undefined ? opponentDeckCount : gameState.opponentDeck.length} isOpponent />
+                  
                   {/* Opponent Avatar */}
                   <CharacterAvatar 
                     className={gameState.opponentClass} 
@@ -421,7 +422,7 @@ export const GameMatch = ({
                   />
 
                   {/* Opponent HP & Info */}
-                  <div className="flex flex-col w-full max-w-[200px] md:max-w-[300px]">
+                  <div className="flex flex-col w-full max-w-[280px] md:max-w-[400px]">
                     <div className="flex items-center gap-3">
                       <span
                         className="text-3xl font-bold"
@@ -631,8 +632,7 @@ export const GameMatch = ({
 
 
           {/* Player Area */}
-          <div className="w-full max-w-6xl flex items-end gap-4">
-            <DeckCounter count={gameState.playerDeck.length} />
+          <div className="w-full max-w-6xl flex items-end justify-center gap-4">
             <div className="flex-1 flex flex-col items-center gap-4">
               {/* Player Field - Droppable Slots with Knife Bar */}
               <div className="flex items-center gap-4">
@@ -656,7 +656,9 @@ export const GameMatch = ({
                 )}
               </div>
 
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-6">
+                  <DeckCounter count={gameState.playerDeck.length} />
+                  
                   {/* Player Avatar with Chat Menu */}
                   <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -687,7 +689,7 @@ export const GameMatch = ({
                   </DropdownMenu>
 
                   {/* Player HP & Info */}
-                  <div className="flex flex-col w-full max-w-[200px] md:max-w-[300px]">
+                  <div className="flex flex-col w-full max-w-[280px] md:max-w-[400px]">
                     <div className="flex items-center gap-3">
                       <span
                         className="text-3xl font-bold"
