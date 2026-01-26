@@ -6,6 +6,8 @@ import { SavedDeck } from "@/types/deck";
 import { ClassName } from "@/types/game";
 import { MASTER_CLASSES } from "@/data/gameData";
 import { cn } from "@/lib/utils";
+import { CharacterAvatar } from "./CharacterAvatar";
+import { useLanguage } from "@/hooks/useLanguage";
 
 const ALL_CLASSES: ClassName[] = [
   "Vitalist", "Slayer", "Fateweaver", "Oracle", "Chronokeeper",
@@ -18,6 +20,7 @@ interface DeckSelectionScreenProps {
 
 export const DeckSelectionScreen = ({ onStartGame }: DeckSelectionScreenProps) => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [savedDecks, setSavedDecks] = useState<SavedDeck[]>([]);
   const [selectedDeck, setSelectedDeck] = useState<SavedDeck | null>(null);
   const [opponentClass, setOpponentClass] = useState<ClassName | null>(null);
@@ -124,12 +127,13 @@ export const DeckSelectionScreen = ({ onStartGame }: DeckSelectionScreenProps) =
                   )}
                 >
                   <div className="flex items-center gap-4">
-                    <div 
-                      className="text-4xl font-bold"
-                      style={{ color: classData.color }}
-                    >
-                      {classData.symbol}
-                    </div>
+                    <CharacterAvatar 
+                      className={deck.mainClass} 
+                      isPlayer={true} 
+                      characterName={classData.heroName || deck.mainClass}
+                      sizeClass="w-14 h-14"
+                      hideName={true}
+                    />
                     <div className="flex-1">
                       <h3 className="font-bold text-foreground text-lg">{deck.name}</h3>
                       <p className="text-sm text-muted-foreground">
@@ -179,7 +183,7 @@ export const DeckSelectionScreen = ({ onStartGame }: DeckSelectionScreenProps) =
         <div className="flex-1 bg-card/50 backdrop-blur-sm border border-destructive/30 rounded-lg p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-destructive glow-gold font-cinzel">
-              Rakip (Bot)
+              {t("game.opponent")} (Bot)
             </h2>
             <Button variant="outline" size="sm" onClick={handleRandomizeOpponent}>
               <Shuffle className="w-4 h-4 mr-2" />
@@ -188,12 +192,14 @@ export const DeckSelectionScreen = ({ onStartGame }: DeckSelectionScreenProps) =
           </div>
 
           {opponentClass && (
-            <div className="flex flex-col items-center justify-center py-8">
-              <div 
-                className="text-8xl font-bold mb-4"
-                style={{ color: MASTER_CLASSES[opponentClass].color }}
-              >
-                {MASTER_CLASSES[opponentClass].symbol}
+            <div className="flex flex-col items-center justify-center py-4">
+              <div className="mb-4">
+                <CharacterAvatar 
+                  className={opponentClass} 
+                  isPlayer={false} 
+                  characterName={MASTER_CLASSES[opponentClass].heroName || opponentClass}
+                  sizeClass="w-32 h-32 md:w-40 md:h-40"
+                />
               </div>
               <h3 className="text-3xl font-bold text-foreground mb-2 font-cinzel">
                 {opponentClass}
@@ -239,7 +245,15 @@ export const DeckSelectionScreen = ({ onStartGame }: DeckSelectionScreenProps) =
                                 : "bg-background/30 border-border/50 hover:bg-destructive/10 hover:border-destructive/50"
                             )}
                         >
-                            <span className="text-xl font-bold" style={{ color: MASTER_CLASSES[cls].color }}>
+                            <span className="text-xl font-bold flex items-center gap-2" style={{ color: MASTER_CLASSES[cls].color }}>
+                                <img 
+                                  src={`/assets/avatars/${cls.toLowerCase()}.jpg`}
+                                  alt={cls}
+                                  className="w-8 h-8 rounded-full border border-current object-cover shadow-sm"
+                                  onError={(e) => {
+                                    (e.target as HTMLImageElement).src = "/assets/avatars/vitalist.jpg";
+                                  }}
+                                />
                                 {MASTER_CLASSES[cls].symbol}
                             </span>
                              <span className="text-[10px] font-bold text-muted-foreground mt-1 truncate w-full text-center">

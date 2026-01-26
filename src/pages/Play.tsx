@@ -9,6 +9,8 @@ import { SavedDeck } from "@/types/deck";
 import { MASTER_CLASSES, shuffleDeck } from "@/data/gameData";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
+import { CharacterAvatar } from "@/components/game/CharacterAvatar";
+import { useLanguage } from "@/hooks/useLanguage";
 
 type MatchmakingStatus = "idle" | "searching" | "found" | "connecting";
 
@@ -29,6 +31,7 @@ const normalizeClassName = (c: string) =>
 const Play = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [savedDecks, setSavedDecks] = useState<SavedDeck[]>([]);
   const [selectedDeck, setSelectedDeck] = useState<SavedDeck | null>(null);
   const [matchmakingStatus, setMatchmakingStatus] = useState<MatchmakingStatus>("idle");
@@ -373,11 +376,13 @@ const Play = () => {
                 <div className="flex items-center justify-center gap-8 my-8">
                   {/* Player */}
                   <div className="text-center">
-                    <div 
-                      className="text-5xl font-bold mb-2"
-                      style={{ color: MASTER_CLASSES[selectedDeck?.mainClass || "Vitalist"].color }}
-                    >
-                      {MASTER_CLASSES[selectedDeck?.mainClass || "Vitalist"].symbol}
+                    <div className="mb-2 flex justify-center">
+                      <CharacterAvatar 
+                        className={selectedDeck?.mainClass as any || "Vitalist"} 
+                        isPlayer={true} 
+                        characterName={MASTER_CLASSES[selectedDeck?.mainClass as any || "Vitalist"].heroName || "Sen"}
+                        sizeClass="w-24 h-24"
+                      />
                     </div>
                     <p className="text-lg font-bold text-foreground">Sen</p>
                     <p className="text-sm text-muted-foreground">{selectedDeck?.mainClass}</p>
@@ -387,11 +392,13 @@ const Play = () => {
                   
                   {/* Opponent */}
                   <div className="text-center">
-                    <div 
-                      className="text-5xl font-bold mb-2"
-                      style={{ color: MASTER_CLASSES[opponentInfo.mainClass as keyof typeof MASTER_CLASSES]?.color || "#fff" }}
-                    >
-                      {MASTER_CLASSES[opponentInfo.mainClass as keyof typeof MASTER_CLASSES]?.symbol || "?"}
+                    <div className="mb-2 flex justify-center">
+                      <CharacterAvatar 
+                        className={opponentInfo.mainClass as any || "Slayer"} 
+                        isPlayer={false} 
+                        characterName={opponentInfo.username}
+                        sizeClass="w-24 h-24"
+                      />
                     </div>
                     <p className="text-lg font-bold text-foreground">{opponentInfo.username}</p>
                     <p className="text-sm text-muted-foreground">{opponentInfo.mainClass}</p>
@@ -437,12 +444,13 @@ const Play = () => {
                   )}
                 >
                   <div className="flex items-center gap-4">
-                    <div 
-                      className="text-4xl font-bold"
-                      style={{ color: classData.color }}
-                    >
-                      {classData.symbol}
-                    </div>
+                    <CharacterAvatar 
+                      className={deck.mainClass} 
+                      isPlayer={true} 
+                      characterName={classData.heroName || deck.mainClass}
+                      sizeClass="w-14 h-14"
+                      hideName={true}
+                    />
                     <div className="flex-1">
                       <h3 className="font-bold text-foreground text-lg">{deck.name}</h3>
                       <p className="text-sm text-muted-foreground">
