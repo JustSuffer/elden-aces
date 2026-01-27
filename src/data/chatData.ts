@@ -7,13 +7,13 @@ interface ChatMessage {
   en: string;
 }
 
-export const CHAT_OPTIONS: Record<ChatKey, { label: string }> = {
-  GREETING: { label: "Merhaba!" },
-  GOOD_GAME: { label: "İyi Oyundu!" },
-  LUCKY: { label: "Şanslısın..." },
-  MISTAKE: { label: "Hata Yaptın!" },
-  MY_TURN: { label: "Sıra Bende." },
-  THINKING: { label: "Düşünüyorum..." },
+export const CHAT_OPTIONS: Record<ChatKey, { tr: string, en: string }> = {
+  GREETING: { tr: "Merhaba!", en: "Hello!" },
+  GOOD_GAME: { tr: "İyi Oyundu!", en: "Good Game!" },
+  LUCKY: { tr: "Şanslısın...", en: "Lucky..." },
+  MISTAKE: { tr: "Hata Yaptın!", en: "You Made a Mistake!" },
+  MY_TURN: { tr: "Sıra Bende.", en: "My Turn." },
+  THINKING: { tr: "Düşünüyorum...", en: "Thinking..." },
 };
 
 export const CHARACTER_CHAT: Record<ClassName, Record<ChatKey, ChatMessage>> = {

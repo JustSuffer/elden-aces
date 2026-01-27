@@ -753,7 +753,7 @@ export const GameMatch = ({
                         </div>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent className="bg-black/90 border-gold/50 text-gold font-cinzel">
-                        {(Object.entries(CHAT_OPTIONS) as [ChatKey, { label: string }][]).map(([key, option]) => (
+                        {(Object.entries(CHAT_OPTIONS) as [ChatKey, { tr: string, en: string }][]).map(([key, option]) => (
                           <DropdownMenuItem 
                             key={key} 
                             onClick={() => {
@@ -763,7 +763,7 @@ export const GameMatch = ({
                             }}
                             className="focus:bg-gold/20 focus:text-gold cursor-pointer"
                           >
-                            {option.label}
+                            {language === 'tr' ? option.tr : option.en}
                           </DropdownMenuItem>
                         ))}
                       </DropdownMenuContent>
