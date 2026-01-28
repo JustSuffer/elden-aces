@@ -12,9 +12,10 @@ interface GameCardProps {
   className?: string;
   faceDown?: boolean;
   showEyeIcon?: boolean;
+  backImage?: string;
 }
 
-export function GameCard({ card, onClick, isPlaceholder = false, className, faceDown = false, showEyeIcon = false }: GameCardProps) {
+export function GameCard({ card, onClick, isPlaceholder = false, className, faceDown = false, showEyeIcon = false, backImage }: GameCardProps) {
   const [showDetails, setShowDetails] = useState(false);
 
   if (isPlaceholder) {
@@ -72,8 +73,14 @@ export function GameCard({ card, onClick, isPlaceholder = false, className, face
           )}
         >
         {faceDown ? (
-          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800">
-            <div className="text-4xl opacity-30 animate-pulse">ΦΩ</div>
+          <div className="absolute inset-0 flex items-center justify-center bg-black">
+             {backImage ? (
+               <img src={`/assets/decks/${backImage}.jpg`} className="w-full h-full object-cover opacity-80" alt="Card Back" />
+             ) : (
+                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800">
+                  <div className="text-4xl opacity-30 animate-pulse">ΦΩ</div>
+                </div>
+             )}
           </div>
         ) : (
           <div className="relative h-full flex flex-col items-center justify-between p-2">

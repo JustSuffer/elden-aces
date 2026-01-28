@@ -10,16 +10,17 @@ import {
 interface DeckCounterProps {
   count: number;
   isOpponent?: boolean;
-  className?: string;
+  className?: string; // If provided, uses class default image
+  customImage?: string; // If provided, takes precedence
 }
 
-export function DeckCounter({ count, isOpponent = false, className }: DeckCounterProps) {
+export function DeckCounter({ count, isOpponent = false, className, customImage }: DeckCounterProps) {
   const [imageError, setImageError] = React.useState(false);
 
-  // Normalize class name for file path (e.g. "Vitalist" -> "Vitalist.jpg")
-  // We keep the case matching the file system or standard convention.
-  // Assuming files are named exactly as ClassName (e.g., "Vitalist.jpg")
-  const imagePath = className ? `/assets/decks/${className}.jpg` : null;
+  // Determine image source
+  const imagePath = customImage 
+      ? `/assets/decks/${customImage}.jpg` 
+      : (className ? `/assets/decks/${className}.jpg` : null);
 
   return (
     <TooltipProvider>

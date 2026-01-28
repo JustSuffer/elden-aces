@@ -52,6 +52,7 @@ const DeckBuilder = () => {
   const [mainClass, setMainClass] = useState<ClassName | null>(null);
   const [isHeroSelected, setIsHeroSelected] = useState(false); // Step 2 state
   const [secondaryClasses, setSecondaryClasses] = useState<ClassName[]>([]);
+  const [cardBack, setCardBack] = useState<string>("Slayer"); // Default
   const [savedDecks, setSavedDecks] = useState<SavedDeck[]>([]);
   const [editingDeckId, setEditingDeckId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -94,6 +95,7 @@ const DeckBuilder = () => {
 
   const handleMainClassSelect = (className: ClassName) => {
     setMainClass(className);
+    setCardBack(className); // Default to main class card back
     setSecondaryClasses([]);
     setIsHeroSelected(false); // Reset hero selection if main class changes
     
@@ -130,6 +132,7 @@ const DeckBuilder = () => {
     setIsHeroSelected(false);
     setSecondaryClasses([]);
     setDeckName("");
+    setCardBack("Slayer");
     setEditingDeckId(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
     toast.success("Deste oluşturucu sıfırlandı!");
@@ -157,6 +160,7 @@ const DeckBuilder = () => {
       name: deckName.trim(),
       mainClass,
       secondaryClasses,
+      cardBack, // Save selected card back
       cards: customDeck,
       createdAt: new Date().toISOString(),
     };
@@ -183,6 +187,7 @@ const DeckBuilder = () => {
     setMainClass(deck.mainClass);
     setIsHeroSelected(true); // Auto-select hero for edit
     setSecondaryClasses(deck.secondaryClasses);
+    setCardBack(deck.cardBack || deck.mainClass); // Load CB or default
     toast.info(`"${deck.name}" düzenleniyor...`);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -424,6 +429,50 @@ const DeckBuilder = () => {
           </section>
         )}
 
+        {/* Step 4: Card Back Selection */}
+        {mainClass && isHeroSelected && secondaryClasses.length === (mainClass === "Vessel" ? 4 : 3) && (
+          <section className="bg-card/50 backdrop-blur-sm border border-primary/30 rounded-lg p-6 animate-in slide-in-from-bottom duration-500 delay-200">
+             <h2 className="text-2xl font-bold text-primary glow-gold mb-4 font-cinzel">
+               4. KART ARKASI SEÇ
+             </h2>
+             <p className="text-muted-foreground mb-4">
+               Destenizde kullanılacak kart arkası görünümünü seçin.
+             </p>
+             
+             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                {ALL_CLASSES.map(cls => (
+                   <button
+                     key={cls}
+                     onClick={() => setCardBack(cls)}
+                     className={cn(
+                       "relative group rounded-lg overflow-hidden border-2 transition-all duration-300 aspect-[2/3]",
+                       cardBack === cls 
+                         ? "border-primary shadow-[0_0_20px_rgba(197,160,89,0.5)] scale-105" 
+                         : "border-transparent hover:border-primary/50 opacity-70 hover:opacity-100 hover:scale-[1.02]"
+                     )}
+                   >
+                      <img 
+                        src={`/assets/decks/${cls}.jpg`} 
+                        alt={cls} 
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-all" />
+                      
+                      {cardBack === cls && (
+                        <div className="absolute top-2 right-2 bg-primary text-black rounded-full p-1 animate-in zoom-in">
+                           <Check className="w-3 h-3" />
+                        </div>
+                      )}
+                      
+                      <div className="absolute bottom-0 inset-x-0 bg-black/80 p-2 text-center text-xs font-bold text-gold uppercase tracking-wider">
+                         {cls}
+                      </div>
+                   </button>
+                ))}
+             </div>
+          </section>
+        )}
+
         {/* Deck Preview & Save */}
         {isComplete && (
           <div ref={saveSectionRef} className="space-y-8 animate-in fade-in duration-700">
@@ -455,7 +504,7 @@ const DeckBuilder = () => {
             </section>
 
              {/* Preview Details */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in zoom-in duration-500">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 animate-in fade-in zoom-in duration-500">
                {/* Main Class Summary */}
                <section className="bg-black/40 border border-primary/30 p-4 rounded-lg text-center flex flex-col items-center justify-center gap-2 group hover:border-primary transition-colors">
                   <div className="text-3xl font-bold transition-transform group-hover:scale-110" style={{ color: MASTER_CLASSES[mainClass].color }}>
@@ -479,6 +528,19 @@ const DeckBuilder = () => {
                   </h3>
                   <div className="text-sm text-yellow-500/80 font-mono tracking-wider">
                     6 Adet (Twisted, Deflate, Delta, Sigma)
+                  </div>
+               </section>
+               
+               {/* Card Back Summary */}
+               <section className="bg-black/40 border border-primary/30 p-4 rounded-lg text-center flex flex-col items-center justify-center gap-2 group hover:border-primary transition-colors">
+                  <h3 className="text-lg font-bold font-cinzel text-foreground mb-1">
+                    Seçilen Kart Arkası
+                  </h3>
+                  <div className="w-16 h-24 rounded border border-gold/50 overflow-hidden">
+                     <img src={`/assets/decks/${cardBack || "Default"}.jpg`} className="w-full h-full object-cover" />
+                  </div>
+                  <div className="text-sm text-yellow-500/80 font-mono tracking-wider mt-1">
+                    {cardBack}
                   </div>
                </section>
             </div>

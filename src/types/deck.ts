@@ -6,6 +6,7 @@ export interface SavedDeck {
   mainClass: ClassName;
   secondaryClasses: ClassName[];
   cards: Card[];
+  cardBack?: string; // e.g. "Slayer", "Vessel", "Default"
   createdAt: string;
 }
 

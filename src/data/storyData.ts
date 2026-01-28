@@ -32,7 +32,48 @@ export interface Region {
   unlockCondition?: string; // e.g. "complete_region_loreas"
 }
 
-export const STORY_REGIONS: Region[] = [
+// Helpers to generate levels
+const CLASSES: ClassName[] = [
+    "Vitalist", "Slayer", "Fateweaver", "Oracle", "Chronokeeper",
+    "Cryomancer", "Decay", "Siren", "Augmentor", "Vessel", "Mimic"
+];
+
+function getRandomClass(except?: ClassName): ClassName {
+    const pool = CLASSES.filter(c => c !== except);
+    return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function generatePatrols(regionId: string, regionClass: ClassName, count: number, startIdx: number): StoryLevel[] {
+    const levels: StoryLevel[] = [];
+    
+    const titles = ["Nöbetçi", "Savaşçı", "Gezgin", "Koruyucu", "Avcı", "Casus", "Büyücü", "Haydut"];
+    const names = ["İsimsiz", "Karanlık", "Vahşi", "Kayıp", "Eski", "Genç", "Yorgun", "Hırslı"];
+    
+    for (let i = 0; i < count; i++) {
+        const id = `${regionId}_gen_${startIdx + i}`;
+        const isHard = i > count / 2;
+        const opponentClass = Math.random() > 0.3 ? regionClass : getRandomClass(regionClass);
+        const name = `${names[Math.floor(Math.random() * names.length)]} ${titles[Math.floor(Math.random() * titles.length)]}`;
+        
+        levels.push({
+            id,
+            name: `Devriye ${startIdx + i}`,
+            opponentName: name,
+            opponentClass,
+            difficulty: isHard ? "hard" : "medium",
+            description: "Bölgede devriye gezen bir düşman.",
+            dialogue: {
+                intro: "Burada ne işin var yabancı?",
+                win: "Güçlüymüşsün...",
+                lose: "Burası bizim bölgemiz."
+            }
+        });
+    }
+    return levels;
+}
+
+// Base regions with some custom levels
+const RAW_REGIONS: Region[] = [
   {
     id: "loreas",
     name: "LOREAS",
@@ -55,22 +96,10 @@ export const STORY_REGIONS: Region[] = [
           lose: "Buz heykellerim arasına katılacaksın.",
         },
       },
-      {
-        id: "loreas_2",
-        name: "Kar Kurdu",
-        opponentName: "Vahşi Avcı",
-        opponentClass: "Slayer",
-        difficulty: "medium",
-        description: "Tundrada avlanan tehlikeli bir paralı asker.",
-        dialogue: {
-          intro: "Taze et kokusu alıyorum...",
-          win: "Av... avcıyı... yendi...",
-          lose: "Karda iz bırakmadan yok olacaksın.",
-        },
-      },
+      // Levels 2-19 generated below
       {
         id: "loreas_boss",
-        name: "Buz Kraliçesi",
+        name: "Buz Kraliçesi (BOSS)",
         opponentName: "Cryomancer Lideri",
         opponentClass: "Cryomancer",
         difficulty: "boss",
@@ -106,22 +135,10 @@ export const STORY_REGIONS: Region[] = [
           lose: "Kaderinden kaçamazsın.",
         },
       },
-       {
-        id: "nyxia_2",
-        name: "Yasak Büyücü",
-        opponentName: "Karanlık Çırak",
-        opponentClass: "Decay",
-        difficulty: "hard",
-        description: "Yasaklanmış büyüleri kullanan sürgün edilmiş bir büyücü.",
-        dialogue: {
-          intro: "Gücün karanlık tarafını göreceksin.",
-          win: "Karanlık... beni yuttu...",
-          lose: "Çürüyüp gideceksin.",
-        },
-      },
+       // Levels 2-19 generated below
       {
         id: "nyxia_boss",
-        name: "Yüce Kahin",
+        name: "Yüce Kahin (BOSS)",
         opponentName: "Oracle",
         opponentClass: "Oracle",
         difficulty: "boss",
@@ -157,22 +174,10 @@ export const STORY_REGIONS: Region[] = [
           lose: "Karanlık defedildi.",
         },
       },
-      {
-        id: "yorea_2",
-        name: "Fanatik",
-        opponentName: "Sapkın Avcısı",
-        opponentClass: "Slayer",
-        difficulty: "hard",
-        description: "Düzenin düşmanlarını acımasızca temizleyen bir infazcı.",
-        dialogue: {
-          intro: "Günahlarının bedelini ödeyeceksin.",
-          win: "Hata... yapmışım...",
-          lose: "Arındırıldın.",
-        },
-      },
+      // Levels 2-19 generated below
       {
         id: "yorea_boss",
-        name: "Baş Rahip",
+        name: "Baş Rahip (BOSS)",
         opponentName: "Vessel",
         opponentClass: "Vessel",
         difficulty: "boss",
@@ -208,22 +213,10 @@ export const STORY_REGIONS: Region[] = [
           lose: "Zayıflara yer yok!",
         },
       },
-      {
-        id: "typhon_2",
-        name: "Paralı Asker",
-        opponentName: "Kayıp Ruh",
-        opponentClass: "Fateweaver",
-        difficulty: "medium",
-        description: "Para için savaşan, kaderine küsmüş bir asker.",
-        dialogue: {
-          intro: "Altın için her şeyi yaparım.",
-          win: "Bu para... değmezmiş...",
-          lose: "Ödememi aldım.",
-        },
-      },
+      // Levels 2-19 generated below
       {
         id: "typhon_boss",
-        name: "Savaş Lordu",
+        name: "Savaş Lordu (BOSS)",
         opponentName: "Slayer",
         opponentClass: "Slayer",
         difficulty: "boss",
@@ -259,22 +252,10 @@ export const STORY_REGIONS: Region[] = [
           lose: "Yan ve yok ol.",
         },
       },
-      {
-        id: "tartarus_2",
-        name: "Cehennem Tazısı",
-        opponentName: "Ateş Ruhu",
-        opponentClass: "Slayer",
-        difficulty: "hard",
-        description: "Lav nehirlerinden çıkmış vahşi bir canavar.",
-        dialogue: {
-          intro: "GRRRR! (Alevler püskürtüyor)",
-          win: "(Kül olup dağılıyor)",
-          lose: "(Seni paramparça ediyor)",
-        },
-      },
+      // Levels 2-19 generated below
       {
         id: "tartarus_boss",
-        name: "Yıkım Getiren",
+        name: "Yıkım Getiren (BOSS)",
         opponentName: "Decay",
         opponentClass: "Decay",
         difficulty: "boss",
@@ -310,35 +291,10 @@ export const STORY_REGIONS: Region[] = [
           lose: "Kasa her zaman kazanır.",
         },
       },
+      // Levels 2-19 generated below
       {
-        id: "revin_2",
-        name: "Tüccar",
-        opponentName: "Zengin Tüccar",
-        opponentClass: "Augmentor",
-        difficulty: "medium",
-        description: "Teknoloji ve büyü ticareti yapan kurnaz bir satıcı.",
-        dialogue: {
-          intro: "Her şeyin bir fiyatı vardır.",
-          win: "İflas ettim...",
-          lose: "Seni ucuza kapattım.",
-        },
-      },
-      {
-        id: "revin_3",
-        name: "Taklitçi",
-        opponentName: "Gizli Mimic",
-        opponentClass: "Mimic",
-        difficulty: "hard",
-        description: "Normal bir sandık gibi görünen tehlikeli bir yaratık.",
-        dialogue: {
-          intro: "Sürpriz!",
-          win: "Gerçek yüzümü... gördün...",
-          lose: "Ne olduğumu asla bilemeyeceksin.",
-        },
-      },
-       {
         id: "revin_boss",
-        name: "Kader Oyuncusu",
+        name: "Kader Oyuncusu (BOSS)",
         opponentName: "Fateweaver",
         opponentClass: "Fateweaver",
         difficulty: "boss",
@@ -374,22 +330,10 @@ export const STORY_REGIONS: Region[] = [
           lose: "Tehdit ortadan kaldırıldı.",
         },
       },
-      {
-         id: "talos_2",
-         name: "Mucit",
-         opponentName: "Çılgın Cüce",
-         opponentClass: "Vessel",
-         difficulty: "hard",
-         description: "Kutsal enerjiyi makinelerle birleştirmeye çalışan bir dahi.",
-         dialogue: {
-           intro: "Deneyime gönüllü olduğun için teşekkürler!",
-           win: "Hesaplamalarım... yanlıştı...",
-           lose: "Mükemmel bir denek oldun.",
-         },
-       },
+      // Levels 2-19 generated below
       {
         id: "talos_boss",
-        name: "Baş Mühendis",
+        name: "Baş Mühendis (BOSS)",
         opponentName: "Augmentor",
         opponentClass: "Augmentor",
         difficulty: "boss",
@@ -425,22 +369,10 @@ export const STORY_REGIONS: Region[] = [
            lose: "Ormanın gübresi olacaksın.",
          },
        },
-       {
-        id: "ogia_2",
-        name: "Siren'in Şarkısı",
-        opponentName: "Siren",
-        opponentClass: "Siren",
-        difficulty: "hard",
-        description: "Kıyı şeridinde denizcileri bekleyen tehlikeli güzel.",
-        dialogue: {
-          intro: "Sesime kulak ver...",
-          win: "Şarkım... sustu...",
-          lose: "Derinliklere gel.",
-        },
-      },
+       // Levels 2-19 generated below
       {
         id: "ogia_boss",
-        name: "Doğa Ana",
+        name: "Doğa Ana (BOSS)",
         opponentName: "Vitalist",
         opponentClass: "Vitalist",
         difficulty: "boss",
@@ -476,26 +408,14 @@ export const STORY_REGIONS: Region[] = [
            lose: "Varla yok arası.",
          },
        },
-       {
-         id: "aeon_2",
-         name: "Zaman Hırsızı",
-         opponentName: "Kaçak Chrono",
-         opponentClass: "Chronokeeper",
-         difficulty: "hard",
-         description: "Zamanı manipüle ederek suç işleyen bir hain.",
-         dialogue: {
-           intro: "Senin zamanını çalacağım.",
-           win: "Zamanım... bitti...",
-           lose: "Boşa harcanmış bir ömür.",
-         },
-       },
+       // Levels 2-19 generated below
       {
         id: "aeon_boss",
-        name: "Zaman Bekçisi",
+        name: "Zaman Bekçisi (BOSS)",
         opponentName: "Chronokeeper",
         opponentClass: "Chronokeeper",
         difficulty: "boss",
-        description: "Zamanın akışını kontrol eden kadim varlık.",
+        description: "Zamanı manipüle ederek suç işleyen bir hain.",
         dialogue: {
           intro: "Zaman senin için doldu.",
           win: "Zaman... durdu...",
@@ -506,3 +426,28 @@ export const STORY_REGIONS: Region[] = [
     ],
   },
 ];
+
+// Enrich with procedural levels
+export const STORY_REGIONS = RAW_REGIONS.map(region => {
+    // We already have level 1 (idx 0) and the Boss (last idx)
+    // We want 20 levels total. So we need to insert 18 procedural levels between 1st and Boss.
+    // The boss is currently at index 1 in the array above.
+    const firstLevel = region.levels[0];
+    const bossLevel = region.levels[region.levels.length - 1]; // Should be level 20 in the end
+    
+    const patrols = generatePatrols(region.id, region.className || "Slayer", 18, 2);
+    
+    // Assign IDs correctly
+    // Level 1: id already set
+    // Levels 2-19: patrols
+    // Level 20: boss
+    
+    // Fix IDs of boss
+    bossLevel.id = `${region.id}_20`; // Level 20
+    bossLevel.name = `20. ${bossLevel.name.replace(" (BOSS)", "")}`; // Remove temp label
+    
+    return {
+        ...region,
+        levels: [firstLevel, ...patrols, bossLevel]
+    };
+});

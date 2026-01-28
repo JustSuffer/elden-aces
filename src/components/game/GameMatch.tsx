@@ -718,8 +718,15 @@ export const GameMatch = ({
 
           {/* Player Area - Field and Avatar Only (Deck moved to Hand row) */}
           <div className="w-full max-w-7xl grid grid-cols-[160px_1fr_160px] gap-4 items-end mx-auto pb-4">
-            {/* Left: Spacer */}
-            <div />
+            {/* Left: Player Deck Counter */}
+            <div className="flex justify-end pt-2 pr-6">
+                <DeckCounter 
+                  count={gameState.playerDeck.length} 
+                  isOpponent={false}
+                  customImage={playerDeck.cardBack || playerDeck.mainClass} // Use selected Card Back or fallback to Main Class
+                  className={gameState.playerClass} // Fallback logic embedded in DeckCounter but good to pass
+                />
+            </div>
 
             {/* Center: Field & Avatar */}
             <div className="flex flex-col items-center gap-4 justify-self-center w-full">
