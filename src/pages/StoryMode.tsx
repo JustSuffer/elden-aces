@@ -33,7 +33,7 @@ export default function StoryMode() {
         <img 
           src="/assets/world_map.jpg" 
           alt="World Map" 
-          className="w-full h-full object-cover opacity-80 hover:scale-105 transition-transform duration-[20s] ease-linear"
+          className="w-full h-full object-contain md:object-cover md:scale-[1.1] opacity-80 hover:scale-[1.15] transition-transform duration-[20s] ease-linear"
         />
         <div className="absolute inset-0 bg-black/40" /> {/* Overlay for readability */}
       </div>

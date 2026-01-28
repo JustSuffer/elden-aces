@@ -56,6 +56,19 @@ export const STORY_REGIONS: Region[] = [
         },
       },
       {
+        id: "loreas_2",
+        name: "Kar Kurdu",
+        opponentName: "Vahşi Avcı",
+        opponentClass: "Slayer",
+        difficulty: "medium",
+        description: "Tundrada avlanan tehlikeli bir paralı asker.",
+        dialogue: {
+          intro: "Taze et kokusu alıyorum...",
+          win: "Av... avcıyı... yendi...",
+          lose: "Karda iz bırakmadan yok olacaksın.",
+        },
+      },
+      {
         id: "loreas_boss",
         name: "Buz Kraliçesi",
         opponentName: "Cryomancer Lideri",
@@ -91,6 +104,19 @@ export const STORY_REGIONS: Region[] = [
           intro: "Geleceğini görüyorum... ve orada zafer yok.",
           win: "Kehanet... yanıldı mı?",
           lose: "Kaderinden kaçamazsın.",
+        },
+      },
+       {
+        id: "nyxia_2",
+        name: "Yasak Büyücü",
+        opponentName: "Karanlık Çırak",
+        opponentClass: "Decay",
+        difficulty: "hard",
+        description: "Yasaklanmış büyüleri kullanan sürgün edilmiş bir büyücü.",
+        dialogue: {
+          intro: "Gücün karanlık tarafını göreceksin.",
+          win: "Karanlık... beni yuttu...",
+          lose: "Çürüyüp gideceksin.",
         },
       },
       {
@@ -132,6 +158,19 @@ export const STORY_REGIONS: Region[] = [
         },
       },
       {
+        id: "yorea_2",
+        name: "Fanatik",
+        opponentName: "Sapkın Avcısı",
+        opponentClass: "Slayer",
+        difficulty: "hard",
+        description: "Düzenin düşmanlarını acımasızca temizleyen bir infazcı.",
+        dialogue: {
+          intro: "Günahlarının bedelini ödeyeceksin.",
+          win: "Hata... yapmışım...",
+          lose: "Arındırıldın.",
+        },
+      },
+      {
         id: "yorea_boss",
         name: "Baş Rahip",
         opponentName: "Vessel",
@@ -170,6 +209,19 @@ export const STORY_REGIONS: Region[] = [
         },
       },
       {
+        id: "typhon_2",
+        name: "Paralı Asker",
+        opponentName: "Kayıp Ruh",
+        opponentClass: "Fateweaver",
+        difficulty: "medium",
+        description: "Para için savaşan, kaderine küsmüş bir asker.",
+        dialogue: {
+          intro: "Altın için her şeyi yaparım.",
+          win: "Bu para... değmezmiş...",
+          lose: "Ödememi aldım.",
+        },
+      },
+      {
         id: "typhon_boss",
         name: "Savaş Lordu",
         opponentName: "Slayer",
@@ -205,6 +257,19 @@ export const STORY_REGIONS: Region[] = [
           intro: "Her şey küle dönecek.",
           win: "Söndüm...",
           lose: "Yan ve yok ol.",
+        },
+      },
+      {
+        id: "tartarus_2",
+        name: "Cehennem Tazısı",
+        opponentName: "Ateş Ruhu",
+        opponentClass: "Slayer",
+        difficulty: "hard",
+        description: "Lav nehirlerinden çıkmış vahşi bir canavar.",
+        dialogue: {
+          intro: "GRRRR! (Alevler püskürtüyor)",
+          win: "(Kül olup dağılıyor)",
+          lose: "(Seni paramparça ediyor)",
         },
       },
       {
@@ -247,6 +312,19 @@ export const STORY_REGIONS: Region[] = [
       },
       {
         id: "revin_2",
+        name: "Tüccar",
+        opponentName: "Zengin Tüccar",
+        opponentClass: "Augmentor",
+        difficulty: "medium",
+        description: "Teknoloji ve büyü ticareti yapan kurnaz bir satıcı.",
+        dialogue: {
+          intro: "Her şeyin bir fiyatı vardır.",
+          win: "İflas ettim...",
+          lose: "Seni ucuza kapattım.",
+        },
+      },
+      {
+        id: "revin_3",
         name: "Taklitçi",
         opponentName: "Gizli Mimic",
         opponentClass: "Mimic",
@@ -284,6 +362,32 @@ export const STORY_REGIONS: Region[] = [
       "Bilim ve teknolojinin doğayla birleştiği yer. Adanın her yerinden buharlar tütüyor. Devasa çarklar, pirinç borular ve saat kulesi benzeri yapılar var. Dağların zirvelerinde Valkürlerin iniş pistleri, yer altında ise Cücelerin devasa atölyeleri var.",
     levels: [
       {
+        id: "talos_1",
+        name: "Otomat",
+        opponentName: "MK-1 Muhafız",
+        opponentClass: "Augmentor",
+        difficulty: "medium",
+        description: "Fabrika çıkışlı, duygusuz bir savaş makinesi.",
+        dialogue: {
+          intro: "Hedef kilitlendi. İmha prosedürü başlatılıyor.",
+          win: "Güç... seviyesi... kritik...",
+          lose: "Tehdit ortadan kaldırıldı.",
+        },
+      },
+      {
+         id: "talos_2",
+         name: "Mucit",
+         opponentName: "Çılgın Cüce",
+         opponentClass: "Vessel",
+         difficulty: "hard",
+         description: "Kutsal enerjiyi makinelerle birleştirmeye çalışan bir dahi.",
+         dialogue: {
+           intro: "Deneyime gönüllü olduğun için teşekkürler!",
+           win: "Hesaplamalarım... yanlıştı...",
+           lose: "Mükemmel bir denek oldun.",
+         },
+       },
+      {
         id: "talos_boss",
         name: "Baş Mühendis",
         opponentName: "Augmentor",
@@ -309,7 +413,20 @@ export const STORY_REGIONS: Region[] = [
       "Doğanın en saf ve en güçlü hali. Cennet gibi, huzurlu, mitolojik ve büyüleyici. İki zıt ama uyumlu biyom bir arada.",
     levels: [
        {
-        id: "ogia_1",
+         id: "ogia_1",
+         name: "Orman Bekçisi",
+         opponentName: "Kök Muhafız",
+         opponentClass: "Vitalist",
+         difficulty: "medium",
+         description: "Ağaçlarla bütünleşmiş bir doğa koruyucusu.",
+         dialogue: {
+           intro: "Orman yabancıları sevmez.",
+           win: "Toprak... beni çağırıyor...",
+           lose: "Ormanın gübresi olacaksın.",
+         },
+       },
+       {
+        id: "ogia_2",
         name: "Siren'in Şarkısı",
         opponentName: "Siren",
         opponentClass: "Siren",
@@ -346,6 +463,32 @@ export const STORY_REGIONS: Region[] = [
     longDescription:
       "Dünyanın dengesini koruyan, zaman ve mekanın ötesindeki varlıkların (Rix, Chronokeeper) merkezleri. Gizemli, erişilmez ve zamansız.",
     levels: [
+      {
+         id: "aeon_1",
+         name: "Gölge",
+         opponentName: "Hiçlik Gezgini",
+         opponentClass: "Mimic",
+         difficulty: "hard",
+         description: "Zamanın çatlaklarında yaşayan bir gölge.",
+         dialogue: {
+           intro: "Ben yokum... ama senin sonunum.",
+           win: "Hiçliğe... dönüyorum...",
+           lose: "Varla yok arası.",
+         },
+       },
+       {
+         id: "aeon_2",
+         name: "Zaman Hırsızı",
+         opponentName: "Kaçak Chrono",
+         opponentClass: "Chronokeeper",
+         difficulty: "hard",
+         description: "Zamanı manipüle ederek suç işleyen bir hain.",
+         dialogue: {
+           intro: "Senin zamanını çalacağım.",
+           win: "Zamanım... bitti...",
+           lose: "Boşa harcanmış bir ömür.",
+         },
+       },
       {
         id: "aeon_boss",
         name: "Zaman Bekçisi",
