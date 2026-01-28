@@ -29,13 +29,55 @@ export default function StoryMode() {
   return (
     <div className="min-h-screen bg-black text-gold font-cinzel relative overflow-hidden">
       {/* Background Map */}
-      <div className="absolute inset-0 z-0">
-        <img 
-          src="/assets/world_map.jpg" 
-          alt="World Map" 
-          className="w-full h-full object-contain md:object-cover md:scale-[1.1] opacity-80 hover:scale-[1.15] transition-transform duration-[20s] ease-linear"
-        />
-        <div className="absolute inset-0 bg-black/40" /> {/* Overlay for readability */}
+      <div className="absolute inset-0 z-0 flex items-center justify-center bg-black">
+        <div className="relative w-full h-full max-w-[1920px] max-h-[1080px] aspect-video">
+           <img 
+             src="/assets/world_map.jpg" 
+             alt="World Map" 
+             className="w-full h-full object-contain"
+           />
+           <div className="absolute inset-0 bg-black/40 pointer-events-none" /> {/* Overlay */}
+           
+           {/* Map Pins Container - Absolute relative to the image container */}
+           <div className="absolute inset-0">
+               {STORY_REGIONS.map((region) => {
+                 const isUnlocked = isRegionUnlocked(region.id);
+                 return (
+                   <div
+                     key={region.id}
+                     className="absolute pointer-events-auto group cursor-pointer"
+                     style={{ left: `${region.coordinates.x}%`, top: `${region.coordinates.y}%` }}
+                     onClick={() => setSelectedRegion(region)}
+                   >
+                     {/* Pin Icon */}
+                     <div className={cn(
+                       "relative -translate-x-1/2 -translate-y-1/2 p-2 md:p-3 rounded-full border-2 transition-all duration-300",
+                       "flex items-center justify-center w-8 h-8 md:w-16 md:h-16 shadow-[0_0_20px_rgba(0,0,0,0.8)]",
+                       isUnlocked 
+                         ? "bg-black/80 border-gold text-gold hover:scale-110 hover:bg-gold/20 hover:shadow-[0_0_30px_rgba(197,160,89,0.6)]" 
+                         : "bg-gray-900/90 border-gray-600 text-gray-500 cursor-not-allowed grayscale"
+                     )}>
+                        {isUnlocked ? <MapPin className="scale-75 md:scale-125" /> : <Lock className="scale-75 md:scale-100" />}
+                        
+                        {/* Ripple Effect for Unlocked */}
+                        {isUnlocked && (
+                          <div className="absolute inset-0 rounded-full border border-gold opacity-0 animate-[ping_2s_ease-in-out_infinite]" />
+                        )}
+                     </div>
+    
+                     {/* Region Label Tooltip */}
+                     <div className={cn(
+                       "absolute top-full left-1/2 -translate-x-1/2 mt-2 px-3 py-1 rounded bg-black/90 border border-gold/30 text-center whitespace-nowrap transition-all duration-300 z-20",
+                       "opacity-0 md:group-hover:opacity-100 translate-y-2 md:group-hover:translate-y-0 hidden md:block" // Hidden on mobile to avoid clutter
+                     )}>
+                       <p className="text-gold font-bold text-lg">{region.name}</p>
+                       <p className="text-xs text-gold/60">{isUnlocked ? "Bölgeyi Keşfet" : "Kilitli"}</p>
+                     </div>
+                   </div>
+                 );
+               })}
+           </div>
+        </div>
       </div>
 
       {/* Header */}
@@ -59,48 +101,7 @@ export default function StoryMode() {
         <div className="w-[100px]" /> {/* Spacer */}
       </div>
 
-      {/* Map Pins Layer */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        {/* We need a container that matches the map aspect ratio or use percentages */}
-        <div className="relative w-full h-full">
-          {STORY_REGIONS.map((region) => {
-            const isUnlocked = isRegionUnlocked(region.id);
-            return (
-              <div
-                key={region.id}
-                className="absolute pointer-events-auto group cursor-pointer"
-                style={{ left: `${region.coordinates.x}%`, top: `${region.coordinates.y}%` }}
-                onClick={() => setSelectedRegion(region)}
-              >
-                {/* Pin Icon */}
-                <div className={cn(
-                  "relative -translate-x-1/2 -translate-y-1/2 p-3 rounded-full border-2 transition-all duration-300",
-                  "flex items-center justify-center w-12 h-12 md:w-16 md:h-16 shadow-[0_0_20px_rgba(0,0,0,0.8)]",
-                  isUnlocked 
-                    ? "bg-black/80 border-gold text-gold hover:scale-110 hover:bg-gold/20 hover:shadow-[0_0_30px_rgba(197,160,89,0.6)]" 
-                    : "bg-gray-900/90 border-gray-600 text-gray-500 cursor-not-allowed grayscale"
-                )}>
-                   {isUnlocked ? <MapPin className="scale-125" /> : <Lock />}
-                   
-                   {/* Ripple Effect for Unlocked */}
-                   {isUnlocked && (
-                     <div className="absolute inset-0 rounded-full border border-gold opacity-0 animate-[ping_2s_ease-in-out_infinite]" />
-                   )}
-                </div>
-
-                {/* Region Label Tooltip (Always Visible on PC, or Hover) */}
-                <div className={cn(
-                  "absolute top-full left-1/2 -translate-x-1/2 mt-2 px-3 py-1 rounded bg-black/90 border border-gold/30 text-center whitespace-nowrap transition-all duration-300",
-                  "opacity-0 md:group-hover:opacity-100 translate-y-2 md:group-hover:translate-y-0"
-                )}>
-                  <p className="text-gold font-bold text-lg">{region.name}</p>
-                  <p className="text-xs text-gold/60">{isUnlocked ? "Bölgeyi Keşfet" : "Kilitli"}</p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+      {/* Map Pins Layer - Moved inside the Responsive Container above */}
 
       {/* Region Detail Modal */}
       <Dialog open={!!selectedRegion} onOpenChange={(open) => !open && setSelectedRegion(null)}>
