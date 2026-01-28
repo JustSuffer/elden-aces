@@ -20,6 +20,8 @@ import DeckBuilder from "./pages/DeckBuilder";
 import Tutorial from "./pages/Tutorial";
 import Leaderboard from "./pages/Leaderboard";
 import NotFound from "./pages/NotFound";
+import StoryMode from "./pages/StoryMode";
+import StoryGame from "./pages/StoryGame";
 
 const queryClient = new QueryClient();
 
@@ -45,6 +47,8 @@ const App = () => (
             <Route path="/deck-builder" element={<ProtectedRoute><DeckBuilder /></ProtectedRoute>} />
             <Route path="/tutorial" element={<ProtectedRoute><Tutorial /></ProtectedRoute>} />
             <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
+            <Route path="/story-mode" element={<ProtectedRoute><StoryMode /></ProtectedRoute>} />
+            <Route path="/story-game/:regionId/:levelId" element={<ProtectedRoute><StoryGame /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -2,7 +2,7 @@ import { MenuButton } from "@/components/ui/menu-button";
 import logo from "@/assets/acoria-logo.png";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { LogOut, Trophy, X, Monitor } from "lucide-react";
+import { LogOut, Trophy, X, Monitor, MapPin } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useEffect, useState } from "react";
@@ -115,6 +115,16 @@ const Menu = () => {
             animate="show"
             className="flex flex-col space-y-4 w-full max-w-lg"
         >
+          <motion.div variants={itemVariants}>
+             <MenuButton 
+               onClick={() => navigate("/story-mode")} 
+               variant="primary" 
+               className="w-full h-16 text-xl tracking-widest shadow-lg shadow-purple-900/40 bg-gradient-to-r from-purple-950 to-indigo-950 border-purple-500/50 text-purple-200 mb-4 hover:shadow-purple-500/20 hover:scale-[1.02] transition-all"
+             >
+               <MapPin className="mr-2 h-6 w-6 animate-pulse" />
+               STORY MODE
+             </MenuButton>
+          </motion.div>
           <motion.div variants={itemVariants}>
              <MenuButton onClick={() => navigate("/play")} variant="primary" className="w-full h-16 text-xl tracking-widest shadow-lg shadow-primary/20">
                {t("menu.playOnline")}

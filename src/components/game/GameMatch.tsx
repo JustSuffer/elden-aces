@@ -45,6 +45,7 @@ interface GameMatchProps {
   opponentDeckCount?: number; // Real-time opponent deck count for online mode
   onMovesReady?: (moves: (Card | null)[]) => Promise<void>;
   onRoundChange?: (newRound: number) => Promise<void>;
+  onGameEnd?: (result: "win" | "lose") => void;
 }
 
 export const GameMatch = ({
@@ -57,6 +58,7 @@ export const GameMatch = ({
   opponentDeckCount,
   onMovesReady,
   onRoundChange,
+  onGameEnd,
 }: GameMatchProps) => {
   const navigate = useNavigate();
   const { t, language } = useLanguage();
