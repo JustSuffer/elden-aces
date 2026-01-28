@@ -478,7 +478,11 @@ export const GameMatch = ({
           <div className="w-full max-w-7xl grid grid-cols-[160px_1fr_160px] gap-4 items-start mx-auto">
              {/* Left: Deck Counter */}
             <div className="flex justify-end pt-2 pr-6">
-                <DeckCounter count={isOnline && opponentDeckCount !== undefined ? opponentDeckCount : gameState.opponentDeck.length} isOpponent />
+                <DeckCounter 
+                  count={isOnline && opponentDeckCount !== undefined ? opponentDeckCount : gameState.opponentDeck.length} 
+                  isOpponent 
+                  className={gameState.opponentClass}
+                />
             </div>
 
             {/* Center: Avatar & HP */}
@@ -797,7 +801,7 @@ export const GameMatch = ({
           <div className="w-full max-w-7xl grid grid-cols-[160px_1fr_160px] gap-4 items-end mx-auto pb-20 md:pb-32">
             {/* Left: Player Deck Counter - Aligned with Hand */}
             <div className="flex justify-end pb-2 pr-6">
-              <DeckCounter count={gameState.playerDeck.length} />
+              <DeckCounter count={gameState.playerDeck.length} className={gameState.playerClass} />
             </div>
 
             {/* Center: Hand Row */}
