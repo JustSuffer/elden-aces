@@ -11,12 +11,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { Layers } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function StoryGame() {
   const { regionId, levelId } = useParams();
   const navigate = useNavigate();
   const { completeLevel } = useStoryProgress();
   const { language } = useLanguage(); // Get language
+  const { user } = useAuth();
 
   const [level, setLevel] = useState<StoryLevel | null>(null);
   const [showIntro, setShowIntro] = useState(true);
@@ -78,10 +81,41 @@ export default function StoryGame() {
     setShowIntro(false);
   };
 
-  const handleGameEnd = (result: "win" | "lose") => {
+
+
+
+
+  const getNextLevelId = () => {
+    if (!regionId || !levelId) return null;
+    const region = STORY_REGIONS.find(r => r.id === regionId);
+    if (!region) return null;
+
+    const currentIndex = region.levels.findIndex(l => l.id === levelId);
+    if (currentIndex === -1 || currentIndex === region.levels.length - 1) return null;
+
+    return region.levels[currentIndex + 1].id;
+  };
+
+  const handleGameEnd = async (result: "win" | "lose") => {
     setShowOutro(result);
     if (result === "win" && level) {
       completeLevel(level.id);
+    }
+
+    // Save Bot Match Stats
+    if (user && playerDeck && level) {
+      const { error } = await supabase.from("bot_match_stats").insert({
+        user_id: user.id,
+        player_class: playerDeck.mainClass,
+        player_deck_name: playerDeck.name,
+        opponent_class: level.opponentClass,
+        opponent_name: getLoc(level.opponentName),
+        result: result,
+      });
+
+      if (error) {
+        console.error("Error saving match stats:", error);
+      }
     }
   };
 
@@ -180,10 +214,23 @@ export default function StoryGame() {
             </div>
           )}
 
-          <DialogFooter className="sm:justify-center">
-            <Button className="w-full bg-gold text-black hover:bg-yellow-400 font-bold" onClick={() => navigate("/story-mode")}>
+          <DialogFooter className="sm:justify-center gap-2 flex-col sm:flex-row">
+            <Button variant="outline" className="w-full sm:w-auto border-gold/30 hover:bg-gold/10 text-gold" onClick={() => navigate("/story-mode")}>
               {language === "tr" ? "Haritaya Dön" : "Return to Map"}
             </Button>
+
+            {showOutro === "win" && getNextLevelId() && (
+              <Button
+                className="w-full sm:w-auto bg-green-600 text-white hover:bg-green-700 font-bold"
+                onClick={() => {
+                  setShowOutro(null);
+                  setShowIntro(true); // Reset for next level
+                  navigate(`/story-game/${regionId}/${getNextLevelId()}`);
+                }}
+              >
+                {language === "tr" ? "Sonraki Seviye" : "Next Level"}
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
