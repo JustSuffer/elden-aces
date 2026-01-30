@@ -27,7 +27,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { CharacterAvatar } from "@/components/game/CharacterAvatar";
 import { useChat } from "@/hooks/useChat";
 import { CHAT_OPTIONS, CHARACTER_CHAT, ChatKey } from "@/data/chatData";
-import { 
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -62,16 +62,16 @@ export const GameMatch = ({
 }: GameMatchProps) => {
   const navigate = useNavigate();
   const { t, language } = useLanguage();
-  
+
   // Mobile Landscape Detection
   const [isMobileLandscape, setIsMobileLandscape] = useState(false);
   useEffect(() => {
     const checkLandscape = () => {
-       const isLandscape = window.matchMedia("(orientation: landscape)").matches;
-       const isMobileHeight = window.matchMedia("(max-height: 500px)").matches; // Typical mobile landscape height
-       setIsMobileLandscape(isLandscape && isMobileHeight);
+      const isLandscape = window.matchMedia("(orientation: landscape)").matches;
+      const isMobileHeight = window.matchMedia("(max-height: 500px)").matches; // Typical mobile landscape height
+      setIsMobileLandscape(isLandscape && isMobileHeight);
     };
-    
+
     checkLandscape();
     window.addEventListener("resize", checkLandscape);
     return () => window.removeEventListener("resize", checkLandscape);
@@ -418,32 +418,32 @@ export const GameMatch = ({
 
     // Game Start Greeting
     if (gameState.round === 1 && gameState.phase === "placement" && prevRoundRef.current === 1) {
-        // Simple check to ensure it only runs once at start
-        // We might need a stricter check or a 'hasGreeted' state, but effect dependency on phase helps.
-        // Actually, let's use a timeout on mount or just check strict equality
-        const timer = setTimeout(() => sendMessage("GREETING"), 1000);
-        return () => clearTimeout(timer);
+      // Simple check to ensure it only runs once at start
+      // We might need a stricter check or a 'hasGreeted' state, but effect dependency on phase helps.
+      // Actually, let's use a timeout on mount or just check strict equality
+      const timer = setTimeout(() => sendMessage("GREETING"), 1000);
+      return () => clearTimeout(timer);
     }
 
     // Reaction to Round Result (End of Damage Phase)
     if (gameState.phase === "damage" && gameState.damageResult) {
-       const timer = setTimeout(() => {
-           const diff = gameState.damageResult!.opponentDamage - gameState.damageResult!.playerDamage; // Did opponent take more damage?
-           // If opponent took more damage (diff > 0), they are losing this round -> MISTAKE / LUCKY
-           // If opponent took less damage (diff < 0), they won this round -> GOOD_GAME / THINKING
-           
-           if (diff > 0) {
-               // Bot lost this round
-               sendMessage(Math.random() > 0.5 ? "MISTAKE" : "LUCKY");
-           } else if (diff < 0) {
-               // Bot won this round
-               sendMessage(Math.random() > 0.5 ? "GOOD_GAME" : "THINKING");
-           } else {
-               // Draw
-               sendMessage("THINKING");
-           }
-       }, 1500);
-       return () => clearTimeout(timer);
+      const timer = setTimeout(() => {
+        const diff = gameState.damageResult!.opponentDamage - gameState.damageResult!.playerDamage; // Did opponent take more damage?
+        // If opponent took more damage (diff > 0), they are losing this round -> MISTAKE / LUCKY
+        // If opponent took less damage (diff < 0), they won this round -> GOOD_GAME / THINKING
+
+        if (diff > 0) {
+          // Bot lost this round
+          sendMessage(Math.random() > 0.5 ? "MISTAKE" : "LUCKY");
+        } else if (diff < 0) {
+          // Bot won this round
+          sendMessage(Math.random() > 0.5 ? "GOOD_GAME" : "THINKING");
+        } else {
+          // Draw
+          sendMessage("THINKING");
+        }
+      }, 1500);
+      return () => clearTimeout(timer);
     }
 
     prevRoundRef.current = gameState.round;
@@ -475,75 +475,75 @@ export const GameMatch = ({
 
         {/* Game Area */}
         <div className="flex-1 flex flex-col items-center justify-between p-4 md:p-8 gap-4 md:gap-8 overflow-hidden relative">
-          
+
           {/* Opponent Area */}
           <div className="w-full max-w-7xl grid grid-cols-[160px_1fr_160px] gap-4 items-start mx-auto">
-             {/* Left: Deck Counter */}
+            {/* Left: Deck Counter */}
             <div className="flex justify-end pt-2 pr-6">
-                <DeckCounter 
-                  count={isOnline && opponentDeckCount !== undefined ? opponentDeckCount : gameState.opponentDeck.length} 
-                  isOpponent 
-                  className={gameState.opponentClass}
-                />
+              <DeckCounter
+                count={isOnline && opponentDeckCount !== undefined ? opponentDeckCount : gameState.opponentDeck.length}
+                isOpponent
+                className={gameState.opponentClass}
+              />
             </div>
 
             {/* Center: Avatar & HP */}
             <div className="flex flex-col items-center gap-4 justify-self-center w-full">
-                <div className="flex items-center gap-6">
-                  {/* Opponent Avatar */}
-                  <CharacterAvatar 
-                    className={gameState.opponentClass} 
-                    isPlayer={false} 
-                    chatMessage={opponentMessage}
-                    characterName={MASTER_CLASSES[gameState.opponentClass].heroName || gameState.opponentClass}
-                  />
+              <div className="flex items-center gap-6">
+                {/* Opponent Avatar */}
+                <CharacterAvatar
+                  className={gameState.opponentClass}
+                  isPlayer={false}
+                  chatMessage={opponentMessage}
+                  characterName={MASTER_CLASSES[gameState.opponentClass].heroName || gameState.opponentClass}
+                />
 
-                  {/* Opponent HP & Info */}
-                  <div className="flex flex-col w-full max-w-xl">
-                    <div className="flex items-center gap-4 w-full">
-                      <span
-                        className="text-4xl font-bold"
-                        style={{ color: opponentClassData.color }}
-                      >
-                        {opponentClassData.symbol}
-                      </span>
-                      <HPBar
-                        current={gameState.opponentHP}
-                        max={opponentClassData.initialHP}
-                        label={`${t("game.damage.opponent")} (${gameState.opponentClass})`}
-                        isOpponent
-                        className="w-full max-w-none"
-                      />
-                    </div>
+                {/* Opponent HP & Info */}
+                <div className="flex flex-col w-full max-w-xl">
+                  <div className="flex items-center gap-4 w-full">
+                    <span
+                      className="text-4xl font-bold"
+                      style={{ color: opponentClassData.color }}
+                    >
+                      {opponentClassData.symbol}
+                    </span>
+                    <HPBar
+                      current={gameState.opponentHP}
+                      max={opponentClassData.initialHP}
+                      label={`${t("game.damage.opponent")} (${gameState.opponentClass})`}
+                      isOpponent
+                      className="w-full max-w-none"
+                    />
                   </div>
                 </div>
+              </div>
             </div>
 
             {/* Right: Spacer */}
             <div />
           </div>
-              {/* Opponent Field with Knife Bar */}
-              <div className="flex items-center justify-center relative w-full">
-                <div className="grid grid-cols-5 gap-2 md:gap-4 justify-items-center">
-                  {gameState.opponentField.map((card, i) => (
-                    <GameCard
-                      key={i}
-                      card={card}
-                      isPlaceholder={!card}
-                      faceDown={gameState.phase === "placement"}
-                      showEyeIcon={!!(card && gameState.phase !== "placement")}
-                    />
-                  ))}
-                </div>
-                {/* Opponent Knife Bar - Right side of field, absolute to keep field centered */}
-                {isMimicVsMimic && (
-                  <KnifeBar
-                    count={gameState.mimicCounter.p2}
-                    isOpponent
-                    className="absolute left-[calc(50%+180px)] md:left-[calc(50%+280px)]"
-                  />
-                )}
-              </div>
+          {/* Opponent Field with Knife Bar */}
+          <div className="flex items-center justify-center relative w-full">
+            <div className="grid grid-cols-5 gap-2 md:gap-4 justify-items-center">
+              {gameState.opponentField.map((card, i) => (
+                <GameCard
+                  key={i}
+                  card={card}
+                  isPlaceholder={!card}
+                  faceDown={gameState.phase === "placement"}
+                  showEyeIcon={!!(card && gameState.phase !== "placement")}
+                />
+              ))}
+            </div>
+            {/* Opponent Knife Bar - Right side of field, absolute to keep field centered */}
+            {isMimicVsMimic && (
+              <KnifeBar
+                count={gameState.mimicCounter.p2}
+                isOpponent
+                className="absolute left-[calc(50%+180px)] md:left-[calc(50%+280px)]"
+              />
+            )}
+          </div>
 
           {/* Center Area - Buttons, Damage Info, and Round Header */}
           <div className="flex flex-col items-center justify-center gap-4 z-10 relative w-full px-8">
@@ -551,45 +551,45 @@ export const GameMatch = ({
             {/* Round Info - Reduced size significantly (approx 75% smaller visually) */}
             {/* Round Info - Increased size ~50% from previous small version */}
             <div className="absolute right-8 bottom-0 flex flex-col items-end text-right gap-0 pointer-events-none select-none opacity-80 hover:opacity-100 transition-opacity translate-y-[15%]">
-                <h1 className="text-3xl md:text-5xl font-bold text-primary glow-gold font-cinzel leading-none mb-1">
-                  {t("game.round")} {gameState.round}/{gameState.maxRounds || 7}
-                </h1>
-                <p className="text-sm md:text-base text-muted-foreground tracking-widest font-cinzel">
-                  {gameState.phase === "reveal" && t("game.phase.reveal")}
-                  {gameState.phase === "damage" && t("game.phase.damage")}
-                  {gameState.phase === "end" && (
-                    gameState.winner === "p1" ? t("game.phase.victory") :
+              <h1 className="text-3xl md:text-5xl font-bold text-primary glow-gold font-cinzel leading-none mb-1">
+                {t("game.round")} {gameState.round}/{gameState.maxRounds || 7}
+              </h1>
+              <p className="text-sm md:text-base text-muted-foreground tracking-widest font-cinzel">
+                {gameState.phase === "reveal" && t("game.phase.reveal")}
+                {gameState.phase === "damage" && t("game.phase.damage")}
+                {gameState.phase === "end" && (
+                  gameState.winner === "p1" ? t("game.phase.victory") :
                     gameState.winner === "p2" ? t("game.phase.defeat") : t("game.phase.draw")
-                  )}
-                  {gameState.phase === "placement" && t("game.phase.placement")}
-                  {gameState.phase === "waiting" && t("game.phase.waiting")}
-                </p>
-                {isOnline && gameState.phase === "placement" && (
-                  <p className="text-lg md:text-xl text-primary font-bold mt-1 animate-pulse">
-                    {t("game.timer", { seconds: gameState.timeLeft })}: {gameState.timeLeft}s
-                  </p>
                 )}
-                <div className="h-px w-32 bg-primary/20 mt-1" />
+                {gameState.phase === "placement" && t("game.phase.placement")}
+                {gameState.phase === "waiting" && t("game.phase.waiting")}
+              </p>
+              {isOnline && gameState.phase === "placement" && (
+                <p className="text-lg md:text-xl text-primary font-bold mt-1 animate-pulse">
+                  {t("game.timer", { seconds: gameState.timeLeft })}: {gameState.timeLeft}s
+                </p>
+              )}
+              <div className="h-px w-32 bg-primary/20 mt-1" />
             </div>
 
             {/* Damage Info - Integrated into center flow between fields */}
             {/* Damage Info - Integrated into center flow between fields - Reduced size ~25% */}
             {(gameState.phase === "damage" || gameState.phase === "reveal") && gameState.damageResult && (
-                <div className="w-full max-w-[380px] text-center pointer-events-none z-50 mb-4">
-                    <div className="bg-black/80 p-2.5 rounded-xl border border-primary/30 backdrop-blur-xl animate-in slide-in-from-bottom-10 fade-in duration-500 shadow-[0_0_20px_rgba(0,0,0,0.5)]">
-                        <div className="flex justify-center gap-4 text-base font-bold mb-1.5 border-b border-primary/20 pb-1">
-                            <span className="text-theta shadow-black drop-shadow-md">-{gameState.damageResult.playerDamage} <span className="text-[10px]">YOU</span></span>
-                            <span className="text-omega shadow-black drop-shadow-md">-{gameState.damageResult.opponentDamage} <span className="text-[10px]">OPP</span></span>
-                        </div>
-                        <div className="space-y-0.5">
-                          {gameState.damageResult.details.map((detail, i) => (
-                              <p key={i} className="text-[10px] md:text-xs text-amber-100/90 font-medium animate-in fade-in slide-in-from-bottom-4 whitespace-normal" style={{ animationDelay: `${i * 100}ms` }}>
-                                {detail}
-                              </p>
-                          ))}
-                        </div>
-                    </div>
+              <div className="w-full max-w-[380px] text-center pointer-events-none z-50 mb-4">
+                <div className="bg-black/80 p-2.5 rounded-xl border border-primary/30 backdrop-blur-xl animate-in slide-in-from-bottom-10 fade-in duration-500 shadow-[0_0_20px_rgba(0,0,0,0.5)]">
+                  <div className="flex justify-center gap-4 text-base font-bold mb-1.5 border-b border-primary/20 pb-1">
+                    <span className="text-theta shadow-black drop-shadow-md">-{gameState.damageResult.playerDamage} <span className="text-[10px]">YOU</span></span>
+                    <span className="text-omega shadow-black drop-shadow-md">-{gameState.damageResult.opponentDamage} <span className="text-[10px]">OPP</span></span>
+                  </div>
+                  <div className="space-y-0.5">
+                    {gameState.damageResult.details.map((detail, i) => (
+                      <p key={i} className="text-[10px] md:text-xs text-amber-100/90 font-medium animate-in fade-in slide-in-from-bottom-4 whitespace-normal" style={{ animationDelay: `${i * 100}ms` }}>
+                        {detail}
+                      </p>
+                    ))}
+                  </div>
                 </div>
+              </div>
             )}
 
             {gameState.phase === "placement" && (
@@ -625,16 +625,16 @@ export const GameMatch = ({
             )}
 
             {(gameState.phase === "damage" || gameState.phase === "reveal") && gameState.damageResult && (
-               <Button
-                  variant="default"
-                  size="default"
-                  onClick={handleNextRound}
-                  className="w-full max-w-xs h-10 animate-pulse bg-primary/80 hover:bg-primary"
-                >
-                  {gameState.round >= 6 || gameState.playerHP <= 0 || gameState.opponentHP <= 0
-                    ? t("game.action.menu")
-                    : t("game.action.next")}
-                </Button>
+              <Button
+                variant="default"
+                size="default"
+                onClick={handleNextRound}
+                className="w-full max-w-xs h-10 animate-pulse bg-primary/80 hover:bg-primary"
+              >
+                {gameState.round >= 6 || gameState.playerHP <= 0 || gameState.opponentHP <= 0
+                  ? t("game.action.menu")
+                  : t("game.action.next")}
+              </Button>
             )}
           </div>
 
@@ -642,90 +642,85 @@ export const GameMatch = ({
 
 
 
-            {gameState.phase === "end" && (
-              <div className="flex flex-col items-center gap-4 z-50">
-                {/* Visual Victory Effects */}
-                {gameState.winner === "p1" && gameState.playerClass === "Vitalist" && (
-                  <div className="absolute inset-0 pointer-events-none overflow-hidden flex flex-col items-center justify-center">
-                    {Array.from({ length: 30 }).map((_, i) => (
-                      <div key={i}
-                        className="absolute text-5xl opacity-0 animate-[ping_3s_ease-in-out_infinite]"
-                        style={{
-                          left: `${Math.random() * 100}%`,
-                          top: `${Math.random() * 100}%`,
-                          animationDelay: `${Math.random() * 2}s`,
-                          color: "#22c55e"
-                        }}
-                      >
-                        🍃
-                      </div>
-                    ))}
-                    <div className="text-6xl font-bold text-green-500 animate-bounce mt-20 drop-shadow-[0_0_20px_rgba(34,197,94,0.8)]">🌿 {t("game.anim.natureVictory")} 🌿</div>
-                  </div>
-                )}
-
-                {gameState.winner === "p1" && gameState.playerClass === "Decay" && (
-                  <div className="absolute inset-0 pointer-events-none overflow-hidden flex flex-col items-center justify-center bg-orange-900/10">
-                    {Array.from({ length: 30 }).map((_, i) => (
-                      <div key={i}
-                        className="absolute text-6xl opacity-70 animate-[pulse_1s_ease-in-out_infinite]"
-                        style={{
-                          left: `${Math.random() * 100}%`,
-                          top: `${Math.random() * 100}%`,
-                          animationDelay: `${Math.random() * 1}s`,
-                          color: "#fdba74"
-                        }}
-                      >
-                        🔥
-                      </div>
-                    ))}
-                    <div className="text-6xl font-bold text-orange-500 animate-pulse drop-shadow-[0_0_30px_rgba(249,115,22,1)] z-50">
-                      🔥 {t("game.anim.victoryBurned")} 🔥
+          {gameState.phase === "end" && (
+            <div className="flex flex-col items-center gap-4 z-50">
+              {/* Visual Victory Effects */}
+              {gameState.winner === "p1" && gameState.playerClass === "Vitalist" && (
+                <div className="absolute inset-0 pointer-events-none overflow-hidden flex flex-col items-center justify-center">
+                  {Array.from({ length: 30 }).map((_, i) => (
+                    <div key={i}
+                      className="absolute text-5xl opacity-0 animate-[ping_3s_ease-in-out_infinite]"
+                      style={{
+                        left: `${Math.random() * 100}%`,
+                        top: `${Math.random() * 100}%`,
+                        animationDelay: `${Math.random() * 2}s`,
+                        color: "#22c55e"
+                      }}
+                    >
+                      🍃
                     </div>
-                  </div>
-                )}
+                  ))}
+                  <div className="text-6xl font-bold text-green-500 animate-bounce mt-20 drop-shadow-[0_0_20px_rgba(34,197,94,0.8)]">🌿 {t("game.anim.natureVictory")} 🌿</div>
+                </div>
+              )}
 
-                {gameState.winner === "p1" && gameState.playerClass === "Slayer" && (
-                  <div className="absolute inset-0 pointer-events-none overflow-hidden flex flex-col items-center justify-center bg-red-950/30">
-                    {Array.from({ length: 40 }).map((_, i) => (
-                      <div key={i}
-                        className="absolute text-5xl opacity-80 animate-[ping_4s_ease-in-out_infinite]"
-                        style={{
-                          left: `${Math.random() * 100}%`,
-                          top: `${Math.random() * 100}%`,
-                          animationDelay: `${Math.random() * 2}s`,
-                          color: "#ef4444",
-                          transform: `scale(${Math.random() + 0.5})`
-                        }}
-                      >
-                        🩸
-                      </div>
-                    ))}
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_#450a0a_100%)] opacity-60 animate-pulse"></div>
-                    <div className="text-7xl font-cinzel font-black text-red-600 animate-bounce mt-10 drop-shadow-[0_0_50px_rgba(220,38,38,1)] z-50 tracking-widest uppercase">
-                      🩸 {t("game.anim.massacre")} 🩸
+              {gameState.winner === "p1" && gameState.playerClass === "Decay" && (
+                <div className="absolute inset-0 pointer-events-none overflow-hidden flex flex-col items-center justify-center bg-orange-900/10">
+                  {Array.from({ length: 30 }).map((_, i) => (
+                    <div key={i}
+                      className="absolute text-6xl opacity-70 animate-[pulse_1s_ease-in-out_infinite]"
+                      style={{
+                        left: `${Math.random() * 100}%`,
+                        top: `${Math.random() * 100}%`,
+                        animationDelay: `${Math.random() * 1}s`,
+                        color: "#fdba74"
+                      }}
+                    >
+                      🔥
                     </div>
-                    <div className="text-2xl text-red-400 font-bold mt-4 animate-pulse">{t("game.anim.oneHit")}</div>
+                  ))}
+                  <div className="text-6xl font-bold text-orange-500 animate-pulse drop-shadow-[0_0_30px_rgba(249,115,22,1)] z-50">
+                    🔥 {t("game.anim.victoryBurned")} 🔥
                   </div>
-                )}
+                </div>
+              )}
 
-                <Button variant="default" size="lg" onClick={() => navigate("/")} className="gap-2 relative z-50 mt-10">
-                  {t("game.action.menu")}
-                </Button>
-              </div>
-            )}
+              {gameState.winner === "p1" && gameState.playerClass === "Slayer" && (
+                <div className="absolute inset-0 pointer-events-none overflow-hidden flex flex-col items-center justify-center bg-red-950/30">
+                  {Array.from({ length: 40 }).map((_, i) => (
+                    <div key={i}
+                      className="absolute text-5xl opacity-80 animate-[ping_4s_ease-in-out_infinite]"
+                      style={{
+                        left: `${Math.random() * 100}%`,
+                        top: `${Math.random() * 100}%`,
+                        animationDelay: `${Math.random() * 2}s`,
+                        color: "#ef4444",
+                        transform: `scale(${Math.random() + 0.5})`
+                      }}
+                    >
+                      🩸
+                    </div>
+                  ))}
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_#450a0a_100%)] opacity-60 animate-pulse"></div>
+                  <div className="text-7xl font-cinzel font-black text-red-600 animate-bounce mt-10 drop-shadow-[0_0_50px_rgba(220,38,38,1)] z-50 tracking-widest uppercase">
+                    🩸 {t("game.anim.massacre")} 🩸
+                  </div>
+                  <div className="text-2xl text-red-400 font-bold mt-4 animate-pulse">{t("game.anim.oneHit")}</div>
+                </div>
+              )}
+
+              <Button variant="default" size="lg" onClick={() => navigate("/")} className="gap-2 relative z-50 mt-10">
+                {t("game.action.menu")}
+              </Button>
+            </div>
+          )}
 
 
           {/* Player Area - Field and Avatar Only (Deck moved to Hand row) */}
           <div className="w-full max-w-7xl grid grid-cols-[160px_1fr_160px] gap-4 items-end mx-auto pb-4">
-            {/* Left: Player Deck Counter */}
+            {/* Left: Player Deck Counter - Moved to Hand Row */}
             <div className="flex justify-end pt-2 pr-6">
-                <DeckCounter 
-                  count={gameState.playerDeck.length} 
-                  isOpponent={false}
-                  customImage={playerDeck.cardBack || playerDeck.mainClass} // Use selected Card Back or fallback to Main Class
-                  className={gameState.playerClass} // Fallback logic embedded in DeckCounter but good to pass
-                />
+
             </div>
 
             {/* Center: Field & Avatar */}
@@ -752,54 +747,54 @@ export const GameMatch = ({
                 )}
               </div>
 
-                <div className="flex items-center gap-6">
-                  {/* Player Avatar with Chat Menu */}
-                  <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <div className="outline-none">
-                          <CharacterAvatar 
-                            className={gameState.playerClass} 
-                            isPlayer={true} 
-                            chatMessage={playerMessage}
-                            characterName={MASTER_CLASSES[gameState.playerClass].heroName || gameState.playerClass}
-                          />
-                        </div>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent className="bg-black/90 border-gold/50 text-gold font-cinzel">
-                        {(Object.entries(CHAT_OPTIONS) as [ChatKey, { tr: string, en: string }][]).map(([key, option]) => (
-                          <DropdownMenuItem 
-                            key={key} 
-                            onClick={() => {
-                              const msgData = CHARACTER_CHAT[gameState.playerClass][key];
-                              const msg = language === 'tr' ? msgData.tr : msgData.en;
-                              sendPlayerMessage(msg);
-                            }}
-                            className="focus:bg-gold/20 focus:text-gold cursor-pointer"
-                          >
-                            {language === 'tr' ? option.tr : option.en}
-                          </DropdownMenuItem>
-                        ))}
-                      </DropdownMenuContent>
-                  </DropdownMenu>
-
-                  {/* Player HP & Info */}
-                  <div className="flex flex-col w-full max-w-xl">
-                    <div className="flex items-center gap-4 w-full">
-                      <span
-                        className="text-4xl font-bold"
-                        style={{ color: playerClassData.color }}
-                      >
-                        {playerClassData.symbol}
-                      </span>
-                      <HPBar
-                        current={gameState.playerHP}
-                        max={playerClassData.initialHP}
-                        label={`${t("game.damage.you")} (${gameState.playerClass})`}
-                        className="w-full max-w-none"
+              <div className="flex items-center gap-6">
+                {/* Player Avatar with Chat Menu */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <div className="outline-none">
+                      <CharacterAvatar
+                        className={gameState.playerClass}
+                        isPlayer={true}
+                        chatMessage={playerMessage}
+                        characterName={MASTER_CLASSES[gameState.playerClass].heroName || gameState.playerClass}
                       />
                     </div>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="bg-black/90 border-gold/50 text-gold font-cinzel">
+                    {(Object.entries(CHAT_OPTIONS) as [ChatKey, { tr: string, en: string }][]).map(([key, option]) => (
+                      <DropdownMenuItem
+                        key={key}
+                        onClick={() => {
+                          const msgData = CHARACTER_CHAT[gameState.playerClass][key];
+                          const msg = language === 'tr' ? msgData.tr : msgData.en;
+                          sendPlayerMessage(msg);
+                        }}
+                        className="focus:bg-gold/20 focus:text-gold cursor-pointer"
+                      >
+                        {language === 'tr' ? option.tr : option.en}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                {/* Player HP & Info */}
+                <div className="flex flex-col w-full max-w-xl">
+                  <div className="flex items-center gap-4 w-full">
+                    <span
+                      className="text-4xl font-bold"
+                      style={{ color: playerClassData.color }}
+                    >
+                      {playerClassData.symbol}
+                    </span>
+                    <HPBar
+                      current={gameState.playerHP}
+                      max={playerClassData.initialHP}
+                      label={`${t("game.damage.you")} (${gameState.playerClass})`}
+                      className="w-full max-w-none"
+                    />
                   </div>
                 </div>
+              </div>
             </div>
 
             {/* Right: Spacer */}
@@ -810,7 +805,11 @@ export const GameMatch = ({
           <div className="w-full max-w-7xl grid grid-cols-[160px_1fr_160px] gap-4 items-end mx-auto pb-20 md:pb-32">
             {/* Left: Player Deck Counter - Aligned with Hand */}
             <div className="flex justify-end pb-2 pr-6">
-              <DeckCounter count={gameState.playerDeck.length} className={gameState.playerClass} />
+              <DeckCounter
+                count={gameState.playerDeck.length}
+                className={gameState.playerClass}
+                customImage={playerDeck.cardBack || playerDeck.mainClass}
+              />
             </div>
 
             {/* Center: Hand Row */}
