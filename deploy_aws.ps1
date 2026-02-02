@@ -5,20 +5,39 @@ $RemotePath = "~/elden-aces"
 
 # Script to run on server
 $ScriptBlock = @"
-echo "--- STARTING DEPLOYMENT ---"
-echo "Target: $RemotePath"
+echo "--- DEBUGGING MODE ---"
+echo "User: $(whoami)"
+echo "Home: $HOME"
+echo "Listing directories in Home:"
+ls -F $HOME
 
-# 1. Klasöre git
-if [ -d "$RemotePath" ]; then
-    cd "$RemotePath"
-elif [ -d "~/acoria/elden-aces" ]; then
-    cd ~/acoria/elden-aces
+if [ -d "$HOME/acoria" ]; then
+    echo "Listing directories in acoria/:"
+    ls -F $HOME/acoria
+fi
+
+echo "--- ATTEMPTING DEPLOYMENT ---"
+
+# Try to find the folder dynamically
+if [ -d "$HOME/elden-aces" ]; then
+    PROJECT_DIR="$HOME/elden-aces"
+elif [ -d "$HOME/acoria/elden-aces" ]; then
+    PROJECT_DIR="$HOME/acoria/elden-aces"
+elif [ -d "/var/www/elden-aces" ]; then
+    PROJECT_DIR="/var/www/elden-aces"
 else
-    echo "ERROR: Could not find project directory!"
+    # Try one deeper search
+    PROJECT_DIR=$(find $HOME -maxdepth 2 -type d -name "elden-aces" | head -n 1)
+fi
+
+if [ -z "$PROJECT_DIR" ]; then
+    echo "ERROR: Could not find 'elden-aces' folder!"
+    echo "Please tell the developer what folders you see in the list above."
     exit 1
 fi
 
-echo "Current Directory: $(pwd)"
+echo "Found Project at: $PROJECT_DIR"
+cd "$PROJECT_DIR"
 
 # 2. Son kodları çek
 echo "Pulling latest code..."
@@ -47,7 +66,6 @@ $LinuxScript = $ScriptBlock -replace "`r", ""
 Write-Host "Connecting to $User@$ServerIP..." -ForegroundColor Cyan
 
 # Pipe the script directly to bash on the remote server
-# This avoids all quoting issues
 $LinuxScript | ssh -i $KeyPath -o StrictHostKeyChecking=no $User@$ServerIP "bash -s"
 
 Read-Host -Prompt "Press Enter to exit"
