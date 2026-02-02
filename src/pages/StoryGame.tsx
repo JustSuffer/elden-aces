@@ -104,13 +104,16 @@ export default function StoryGame() {
 
     // Save Bot Match Stats
     if (user && playerDeck && level) {
-      const { error } = await supabase.from("bot_match_stats").insert({
+      const { error } = await (supabase.from("bot_match_stats" as any) as any).insert({
         user_id: user.id,
         player_class: playerDeck.mainClass,
-        player_deck_name: playerDeck.name,
+        deck_used_name: playerDeck.name,
         opponent_class: level.opponentClass,
         opponent_name: getLoc(level.opponentName),
         result: result,
+        player_final_hp: 0,
+        opponent_final_hp: 0,
+        divine_coins_earned: result === "win" ? 10 : 0,
       });
 
       if (error) {

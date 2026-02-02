@@ -14,12 +14,104 @@ export type Database = {
   }
   public: {
     Tables: {
+      bot_match_stats: {
+        Row: {
+          created_at: string
+          deck_used_name: string | null
+          divine_coins_earned: number
+          id: string
+          opponent_class: string
+          opponent_final_hp: number
+          opponent_name: string
+          player_class: string
+          player_final_hp: number
+          result: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          deck_used_name?: string | null
+          divine_coins_earned?: number
+          id?: string
+          opponent_class: string
+          opponent_final_hp?: number
+          opponent_name?: string
+          player_class: string
+          player_final_hp?: number
+          result: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          deck_used_name?: string | null
+          divine_coins_earned?: number
+          id?: string
+          opponent_class?: string
+          opponent_final_hp?: number
+          opponent_name?: string
+          player_class?: string
+          player_final_hp?: number
+          result?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      friend_requests: {
+        Row: {
+          created_at: string
+          id: string
+          receiver_id: string
+          sender_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          receiver_id: string
+          sender_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          receiver_id?: string
+          sender_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      friendships: {
+        Row: {
+          created_at: string
+          id: string
+          user1_id: string
+          user2_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          user1_id: string
+          user2_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          user1_id?: string
+          user2_id?: string
+        }
+        Relationships: []
+      }
       game_stats: {
         Row: {
           created_at: string
           elo_rating: number
           id: string
           losses: number
+          lp: number
+          rank_tier: string
           total_games: number
           updated_at: string
           user_id: string
@@ -30,6 +122,8 @@ export type Database = {
           elo_rating?: number
           id?: string
           losses?: number
+          lp?: number
+          rank_tier?: string
           total_games?: number
           updated_at?: string
           user_id: string
@@ -40,6 +134,8 @@ export type Database = {
           elo_rating?: number
           id?: string
           losses?: number
+          lp?: number
+          rank_tier?: string
           total_games?: number
           updated_at?: string
           user_id?: string
@@ -229,10 +325,47 @@ export type Database = {
         }
         Relationships: []
       }
+      private_match_invites: {
+        Row: {
+          created_at: string
+          id: string
+          match_id: string | null
+          receiver_deck_id: string | null
+          receiver_id: string
+          sender_deck_id: string | null
+          sender_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          match_id?: string | null
+          receiver_deck_id?: string | null
+          receiver_id: string
+          sender_deck_id?: string | null
+          sender_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          match_id?: string | null
+          receiver_deck_id?: string | null
+          receiver_id?: string
+          sender_deck_id?: string | null
+          sender_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
           created_at: string
+          divine_coins: number
           id: string
           updated_at: string
           user_id: string
@@ -241,6 +374,7 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           created_at?: string
+          divine_coins?: number
           id?: string
           updated_at?: string
           user_id: string
@@ -249,6 +383,7 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           created_at?: string
+          divine_coins?: number
           id?: string
           updated_at?: string
           user_id?: string
@@ -283,6 +418,57 @@ export type Database = {
           opponent_id?: string
           requester_id?: string
           status?: string
+        }
+        Relationships: []
+      }
+      user_decks: {
+        Row: {
+          created_at: string
+          deck_data: Json
+          filler_classes: string[]
+          id: string
+          main_class: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          deck_data?: Json
+          filler_classes?: string[]
+          id?: string
+          main_class: string
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          deck_data?: Json
+          filler_classes?: string[]
+          id?: string
+          main_class?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_presence: {
+        Row: {
+          last_seen: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          last_seen?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          last_seen?: string
+          status?: string
+          user_id?: string
         }
         Relationships: []
       }

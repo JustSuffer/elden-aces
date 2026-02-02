@@ -22,6 +22,7 @@ import Leaderboard from "./pages/Leaderboard";
 import NotFound from "./pages/NotFound";
 import StoryMode from "./pages/StoryMode";
 import StoryGame from "./pages/StoryGame";
+import Friends from "./pages/Friends";
 
 const queryClient = new QueryClient();
 
@@ -49,6 +50,8 @@ const App = () => (
             <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
             <Route path="/story-mode" element={<ProtectedRoute><StoryMode /></ProtectedRoute>} />
             <Route path="/story-game/:regionId/:levelId" element={<ProtectedRoute><StoryGame /></ProtectedRoute>} />
+            <Route path="/friends" element={<ProtectedRoute><Friends /></ProtectedRoute>} />
+            <Route path="/private-lobby/:inviteId" element={<ProtectedRoute><Friends /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

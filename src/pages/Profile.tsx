@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, User, Mail, Trophy, LogOut, History, TrendingUp, Swords, Edit2 } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { ArrowLeft, User, Mail, Trophy, LogOut, History, TrendingUp, Swords, Edit2, Coins, Shield } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,10 +14,12 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { MatchHistory } from "@/components/profile/MatchHistory";
 import { MASTER_CLASSES } from "@/data/gameData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { getRankTier, getTierProgress, getLpToNextTier } from "@/utils/lpCalculator";
 
 interface Profile {
   username: string;
   avatar_url: string | null;
+  divine_coins: number;
 }
 
 interface GameStats {
@@ -24,6 +27,8 @@ interface GameStats {
   losses: number;
   total_games: number;
   elo_rating: number;
+  lp: number;
+  rank_tier: string;
 }
 
 interface ClassStat {
@@ -57,9 +62,9 @@ const Profile = () => {
 
     const { data, error } = await supabase
       .from("profiles")
-      .select("username, avatar_url")
+      .select("username, avatar_url, divine_coins")
       .eq("user_id", user.id)
-      .maybeSingle();
+      .maybeSingle() as any;
 
     if (error) {
       console.error("Error fetching profile:", error);
@@ -78,9 +83,9 @@ const Profile = () => {
 
     const { data, error } = await supabase
       .from("game_stats")
-      .select("wins, losses, total_games, elo_rating")
+      .select("wins, losses, total_games, elo_rating, lp, rank_tier")
       .eq("user_id", user.id)
-      .maybeSingle();
+      .maybeSingle() as any;
 
     if (error) {
       console.error("Error fetching stats:", error);
@@ -96,7 +101,7 @@ const Profile = () => {
     if (!user) return;
 
     const { data, error } = await supabase
-      .from("bot_match_stats")
+      .from("bot_match_stats" as any)
       .select("player_class, result")
       .eq("user_id", user.id);
 
@@ -106,7 +111,7 @@ const Profile = () => {
     }
 
     const aggregated: Record<string, ClassStat> = {};
-    data?.forEach(match => {
+    (data as any[])?.forEach((match: any) => {
       const cls = match.player_class;
       if (!aggregated[cls]) aggregated[cls] = { wins: 0, losses: 0, total: 0 };
 
@@ -270,6 +275,37 @@ const Profile = () => {
             </TabsList>
 
             <TabsContent value="stats">
+              {/* LP / Rank Section */}
+              <div className="mb-6 p-4 rounded-lg border border-primary/30 bg-primary/5">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <Shield className="w-8 h-8 text-primary" />
+                    <div>
+                      <div className="text-2xl font-bold text-primary">
+                        {getRankTier(stats?.lp || 0)}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {stats?.lp || 0} LP
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Coins className="w-6 h-6 text-amber-500" />
+                    <div className="text-right">
+                      <div className="text-xl font-bold text-amber-500">
+                        {profile?.divine_coins || 0}
+                      </div>
+                      <div className="text-xs text-muted-foreground">Divine Coins</div>
+                    </div>
+                  </div>
+                </div>
+                <Progress value={getTierProgress(stats?.lp || 0)} className="h-2" />
+                <p className="text-xs text-muted-foreground mt-2 text-center">
+                  Sonraki rütbeye {getLpToNextTier(stats?.lp || 0)} LP kaldı
+                </p>
+              </div>
+
+              {/* Standard Stats */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="bg-background/50 p-4 rounded-lg text-center">
                   <div className="text-3xl font-bold text-primary">{stats?.elo_rating || 1000}</div>
