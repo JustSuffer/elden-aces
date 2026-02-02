@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { GameCard } from "@/components/game/GameCard";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Save, RotateCcw, Check, Trash2, Edit2 } from "lucide-react";
+import { ArrowLeft, Save, RotateCcw, Check, Trash2, Edit2, Cloud, Loader2 } from "lucide-react";
 import { useState, useMemo, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { ClassName, Card, SpecialCardType } from "@/types/game";
@@ -11,6 +11,7 @@ import { MASTER_CLASSES, SPECIAL_CARDS_DATA } from "@/data/gameData";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { CharacterAvatar } from "@/components/game/CharacterAvatar";
+import { useCloudDecks } from "@/hooks/useCloudDecks";
 
 const ALL_CLASSES: ClassName[] = [
   "Vitalist", "Slayer", "Fateweaver", "Oracle", "Chronokeeper",
@@ -47,28 +48,19 @@ function generateSpecialCards(): Card[] {
 const DeckBuilder = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { decks: savedDecks, isLoading, isSyncing, saveDeck: cloudSaveDeck, deleteDeck: cloudDeleteDeck } = useCloudDecks();
   
   const [deckName, setDeckName] = useState("");
   const [mainClass, setMainClass] = useState<ClassName | null>(null);
-  const [isHeroSelected, setIsHeroSelected] = useState(false); // Step 2 state
+  const [isHeroSelected, setIsHeroSelected] = useState(false);
   const [secondaryClasses, setSecondaryClasses] = useState<ClassName[]>([]);
-  const [cardBack, setCardBack] = useState<string>("Slayer"); // Default
-  const [savedDecks, setSavedDecks] = useState<SavedDeck[]>([]);
+  const [cardBack, setCardBack] = useState<string>("Slayer");
   const [editingDeckId, setEditingDeckId] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
 
   // Refs for auto-scroll
   const heroSectionRef = useRef<HTMLDivElement>(null);
   const secondarySectionRef = useRef<HTMLDivElement>(null);
   const saveSectionRef = useRef<HTMLDivElement>(null);
-
-  // Load saved decks on mount
-  useEffect(() => {
-    const stored = localStorage.getItem("acoria-saved-decks");
-    if (stored) {
-      setSavedDecks(JSON.parse(stored));
-    }
-  }, []);
 
   const availableSecondary = useMemo(() => 
     ALL_CLASSES.filter(c => c !== mainClass),
@@ -138,7 +130,7 @@ const DeckBuilder = () => {
     toast.success("Deste oluşturucu sıfırlandı!");
   };
 
-  const handleSaveDeck = () => {
+  const handleSaveDeck = async () => {
     const requiredCount = mainClass === "Vessel" ? 4 : 3;
     if (!mainClass || !isHeroSelected || secondaryClasses.length !== requiredCount) {
       toast.error(`Lütfen tüm adımları tamamlayın!`);
@@ -160,43 +152,30 @@ const DeckBuilder = () => {
       name: deckName.trim(),
       mainClass,
       secondaryClasses,
-      cardBack, // Save selected card back
+      cardBack,
       cards: customDeck,
       createdAt: new Date().toISOString(),
     };
 
-    let updatedDecks: SavedDeck[];
-    if (editingDeckId) {
-      updatedDecks = savedDecks.map(d => d.id === editingDeckId ? newDeck : d);
-      toast.success("Deste güncellendi!");
-    } else {
-      updatedDecks = [...savedDecks, newDeck];
-      toast.success("Deste kaydedildi!");
+    const success = await cloudSaveDeck(newDeck, !!editingDeckId);
+    if (success) {
+      handleResetDeck();
     }
-
-    setSavedDecks(updatedDecks);
-    localStorage.setItem("acoria-saved-decks", JSON.stringify(updatedDecks));
-    
-    // Reset form
-    handleResetDeck();
   };
 
   const handleEditDeck = (deck: SavedDeck) => {
     setEditingDeckId(deck.id);
     setDeckName(deck.name);
     setMainClass(deck.mainClass);
-    setIsHeroSelected(true); // Auto-select hero for edit
+    setIsHeroSelected(true);
     setSecondaryClasses(deck.secondaryClasses);
-    setCardBack(deck.cardBack || deck.mainClass); // Load CB or default
+    setCardBack(deck.cardBack || deck.mainClass);
     toast.info(`"${deck.name}" düzenleniyor...`);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleDeleteDeck = (deckId: string) => {
-    const updatedDecks = savedDecks.filter(d => d.id !== deckId);
-    setSavedDecks(updatedDecks);
-    localStorage.setItem("acoria-saved-decks", JSON.stringify(updatedDecks));
-    toast.success("Deste silindi!");
+  const handleDeleteDeck = async (deckId: string) => {
+    await cloudDeleteDeck(deckId);
   };
 
   const isComplete = mainClass && isHeroSelected && secondaryClasses.length === (mainClass === "Vessel" ? 4 : 3);
@@ -211,7 +190,21 @@ const DeckBuilder = () => {
           <ArrowLeft className="w-4 h-4" />
           Menü
         </Button>
-        <div className="text-xl font-bold text-primary glow-gold font-cinzel">Deste Oluşturucu</div>
+        <div className="flex items-center gap-3">
+          <div className="text-xl font-bold text-primary glow-gold font-cinzel">Deste Oluşturucu</div>
+          {isSyncing && (
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <Loader2 className="w-3 h-3 animate-spin" />
+              Syncing...
+            </div>
+          )}
+          {user && !isSyncing && (
+            <div className="flex items-center gap-1 text-xs text-green-500">
+              <Cloud className="w-3 h-3" />
+              Cloud
+            </div>
+          )}
+        </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={handleResetDeck} className="gap-2">
             <RotateCcw className="w-4 h-4" />
