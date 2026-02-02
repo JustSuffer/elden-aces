@@ -2,72 +2,58 @@ $ServerIP = "18.193.138.66"
 $User = "ubuntu"
 $KeyPath = "acoria-key.pem"
 
-# Using Single Quote (@') prevents PowerShell from replacing variables like $HOME
-# This ensures the code runs ONLY on the Linux server
 $LinuxScript = @'
-echo "--- CONNECTED TO REMOTE SERVER ---"
-echo "User: $(whoami)"
-echo "Home: $HOME"
+echo "--- DEPLOYMENT DIAGNOSTICS ---"
+PROJECT_DIR="/home/ubuntu/elden-aces"
 
-# Define possible paths
-PATHS=(
-    "$HOME/elden-aces"
-    "$HOME/acoria/elden-aces"
-    "/var/www/elden-aces"
-)
-
-PROJECT_DIR=""
-
-# Search for the directory
-for path in "${PATHS[@]}"; do
-    if [ -d "$path" ]; then
-        PROJECT_DIR="$path"
-        break
-    fi
-done
-
-if [ -z "$PROJECT_DIR" ]; then
-    echo "Could not find project in standard locations. Searching..."
-    # Safe search in home dir
-    PROJECT_DIR=$(find $HOME -maxdepth 3 -type d -name "elden-aces" | head -n 1)
-fi
-
-if [ -z "$PROJECT_DIR" ]; then
-    echo "ERROR: Could not find 'elden-aces' folder!"
-    echo "Listing $HOME contents:"
-    ls -F "$HOME"
+if [ ! -d "$PROJECT_DIR" ]; then
+    echo "ERROR: Project directory not found at $PROJECT_DIR"
     exit 1
 fi
 
-echo "FOUND PROJECT AT: $PROJECT_DIR"
 cd "$PROJECT_DIR" || exit 1
 
-echo "1. Pulling latest code..."
-git reset --hard
-git pull
-
-echo "2. Rebuilding Application..."
-if [ -f docker-compose.yml ]; then
-    echo "Using Docker Compose..."
-    docker-compose down
-    docker-compose up -d --build
-else
-    echo "Using Standard Docker..."
-    docker build -t acoria-app .
-    docker stop acoria-container || true
-    docker rm acoria-container || true
-    docker run -d -p 80:80 --name acoria-container acoria-app
+echo "1. Attempting to pull latest code..."
+# Try git pull, if it fails, warn the user about credentials
+if ! git pull; then
+    echo "WARNING: git pull failed. This usually means the server needs GitHub credentials or an SSH key."
+    echo "Current remote: $(git remote -v)"
 fi
 
-echo "--- DEPLOYMENT SUCCESSFUL ---"
+echo "2. Cleaning up port 80..."
+# Find what is using port 80 and stop it
+# Check for docker containers first
+EXISTING_CONTAINER=$(docker ps -q --filter "publish=80")
+if [ ! -z "$EXISTING_CONTAINER" ]; then
+    echo "Stopping container(s) using port 80: $EXISTING_CONTAINER"
+    docker stop $EXISTING_CONTAINER
+    docker rm $EXISTING_CONTAINER
+fi
+
+# Check for native Nginx or other processes on port 80
+if sudo lsof -i :80 > /dev/null; then
+    echo "Port 80 is still busy. Attempting to stop native services..."
+    sudo systemctl stop nginx || true
+    sudo fuser -k 80/tcp || true
+fi
+
+echo "3. Rebuilding and Starting Container..."
+docker build -t acoria-app .
+# Final cleanup of any container with the same name before start
+docker stop acoria-container 2>/dev/null || true
+docker rm acoria-container 2>/dev/null || true
+
+if docker run -d -p 80:80 --name acoria-container acoria-app; then
+    echo "--- DEPLOYMENT SUCCESSFUL ---"
+    echo "Site should be live at http://18.193.138.66"
+else
+    echo "ERROR: Failed to start the container."
+fi
 '@
 
-# Remove Carriage Returns just in case
 $LinuxScript = $LinuxScript -replace "`r", ""
 
 Write-Host "Connecting to $User@$ServerIP..." -ForegroundColor Cyan
-
-# Execute
 $LinuxScript | ssh -i $KeyPath -o StrictHostKeyChecking=no $User@$ServerIP "bash -s"
 
 Read-Host -Prompt "Press Enter to exit"
