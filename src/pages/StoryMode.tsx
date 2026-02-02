@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -6,22 +5,6 @@ import {
   Dialog, 
   DialogContent, 
   DialogHeader, 
-  DialogTitle, 
-  DialogDescription,
-  DialogFooter
-} from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { ArrowLeft, Lock, Trophy, Sword, Skull, MapPin } from "lucide-react";
-import { STORY_REGIONS, Region, StoryLevel } from "@/data/storyData";
-import { useStoryProgress } from "@/hooks/useStoryProgress";
-import { cn } from "@/lib/utils";
-
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { 
-  Dialog, 
-  DialogContent, 
   DialogTitle, 
   DialogDescription,
   DialogFooter
