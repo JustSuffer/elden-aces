@@ -38,14 +38,14 @@ export default function GameArena() {
       let reward = 0;
       if (result === "win") {
           reward = 50;
-          toast.success("Zafer! +50 Divine Coin");
+          // toast.success("Zafer! +50 Divine Coin");
       } else {
           if (isSurrender) {
-              toast.info("Teslim oldun. 0 Divine Coin.");
+              // toast.info("Teslim oldun. 0 Divine Coin");
               reward = 0;
           } else {
               reward = 10; 
-              toast.info("Yenilgi. +10 Divine Coin");
+              // toast.info("Yenilgi. +10 Divine Coin");
           }
       }
 

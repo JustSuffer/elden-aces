@@ -656,20 +656,24 @@ const OnlineGame = () => {
         .eq("user_id", opponentId);
 
       // COIN REWARDS
+      let reward = 0;
       if (winnerId === user.id) {
           // You Won
-          const reward = 100;
-          await supabase.rpc("increment_coins", { amount: reward, user_id: user.id });
-          toast.success(`Zafer! +${reward} Divine Coin`);
+          reward = 100;
       } else {
           // You Lost
           if (isSurrender) {
-             toast.error("Teslim oldun. 0 Divine Coin.");
+             reward = 0;
           } else {
-             const reward = 25;
-             await supabase.rpc("increment_coins", { amount: reward, user_id: user.id });
-             toast.info(`Yenilgi. +${reward} Divine Coin`);
+             reward = 25;
           }
+      }
+      
+      if (reward > 0) {
+         // Safe update
+         const { data } = await supabase.from("profiles").select("divine_coins").eq("id", user.id).single();
+         const current = data?.divine_coins || 0;
+         await supabase.from("profiles").update({ divine_coins: current + reward } as any).eq("id", user.id);
       }
     }
   }, [match, user, isPlayer1, gameEnded]);

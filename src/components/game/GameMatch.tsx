@@ -1086,6 +1086,7 @@ export const GameMatch = ({
           damageDetails={gameState.damageResult?.details}
           onReturnToMenu={() => navigate("/")}
           delayMs={0}
+          isOnline={isOnline}
         />
 
         <GameMenuModal 

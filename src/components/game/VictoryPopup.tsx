@@ -13,7 +13,9 @@ interface VictoryPopupProps {
   winReason?: string;
   damageDetails?: string[];
   onReturnToMenu: () => void;
+  onReturnToMenu: () => void;
   delayMs?: number;
+  isOnline?: boolean;
 }
 
 export function VictoryPopup({
@@ -24,10 +26,23 @@ export function VictoryPopup({
   winReason,
   damageDetails,
   onReturnToMenu,
-  delayMs = 0
+  delayMs = 0,
+  isOnline = false
 }: VictoryPopupProps) {
   const { t, language } = useLanguage();
-  const reward = outcome === "win" ? 10 : (outcome === "draw" ? 5 : 2);
+  
+  let reward = 0;
+  if (winReason === "SURRENDER") {
+      reward = 0;
+  } else if (outcome === "win") {
+      reward = isOnline ? 100 : 50;
+  } else if (outcome === "loss") {
+      reward = isOnline ? 25 : 10;
+  } else {
+      // Draw
+      reward = isOnline ? 10 : 5; // Assuming small reward for draw
+  }
+
   const [showPopup, setShowPopup] = useState(false);
   const [showContent, setShowContent] = useState(false);
   const hpDiff = Math.abs(playerHP - opponentHP);
