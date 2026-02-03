@@ -40,27 +40,5 @@ export const TUTORIAL_SCRIPT: TutorialStep[] = [
     allowedAction: "place_card",
     requiredCardId: undefined, // Allow any card
     targetSlotIndex: 2
-  },
-  {
-    id: "placement_done",
-    message: "Mükemmel. Kartın yerleşti. Artık turu bitirebilirsin.",
-    highlightElementId: "end-turn-button",
-    allowedAction: "end_turn"
-  },
-  {
-    id: "combat_watch",
-    message: "Şimdi izle! Kartlar açılacak ve hasar hesaplanacak.",
-    allowedAction: "none",
-    autoAdvanceDelay: 4000
-  },
-  {
-    id: "win_round",
-    message: "Harika! Rakibine hasar verdin. Element avantajını kullanarak daha fazla vurabilirsin.",
-    allowedAction: "none"
-  },
-  {
-    id: "finish",
-    message: "Temelleri öğrendin. Şimdi kendi desteni yapma zamanı!",
-    allowedAction: "none"
   }
 ];

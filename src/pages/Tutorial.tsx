@@ -16,7 +16,7 @@ const Tutorial = () => {
       name: "Eğitim (Cryomancer)",
       mainClass: "Cryomancer",
       secondaryClasses: ["Siren", "Fateweaver", "Vitalist"],
-      cards: createDeck("Cryomancer"), 
+      cards: createDeck("Cryomancer").filter(c => c.name !== "Standard"), 
       createdAt: new Date().toISOString()
   };
 
@@ -25,7 +25,7 @@ const Tutorial = () => {
       name: "Eğitim (Slayer)",
       mainClass: "Slayer",
       secondaryClasses: ["Siren", "Fateweaver", "Vitalist"],
-      cards: createDeck("Slayer"),
+      cards: createDeck("Slayer").filter(c => c.name !== "Standard"),
       createdAt: new Date().toISOString()
   };
   

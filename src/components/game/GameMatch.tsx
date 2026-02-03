@@ -97,16 +97,16 @@ export const GameMatch = ({
   const timeoutHandledRoundRef = useRef<number | null>(null);
 
   // Tutorial State
-  const [tutorialStepIndex, setTutorialStepIndex] = useState(0);
-  const currentTutorialStep = isTutorial ? TUTORIAL_SCRIPT[tutorialStepIndex] : null;
+  const [tutorialActive, setTutorialActive] = useState(isTutorial);
+  const currentTutorialStep = tutorialActive && isTutorial ? TUTORIAL_SCRIPT[tutorialStepIndex] : null;
 
   const handleTutorialNext = () => {
     if (tutorialStepIndex < TUTORIAL_SCRIPT.length - 1) {
       setTutorialStepIndex(prev => prev + 1);
     } else {
-        // End of tutorial
-        navigate("/deck-builder");
-        toast.success("Eğitim Tamamlandı! Artık kendi desteni kurabilirsin.");
+        // End of tutorial SCRIPT only. Let user play.
+        setTutorialActive(false);
+        toast.success("Eğitim Tamamlandı! Şimdi özgürce savaşabilirsin.");
     }
   };
 
