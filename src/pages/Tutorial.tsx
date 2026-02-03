@@ -10,12 +10,22 @@ const Tutorial = () => {
   const navigate = useNavigate();
 
   // Create a proper playable deck for tutorial
-  const tutorialDeck: SavedDeck = {
-      id: "tutorial_deck",
-      name: "Eğitim Destesi",
+  // Create custom decks for tutorial
+  const tutorialPlayerDeck: SavedDeck = {
+      id: "tutorial_player",
+      name: "Eğitim (Cryomancer)",
       mainClass: "Cryomancer",
-      secondaryClasses: [],
-      cards: createDeck("Cryomancer"), // Use helper to get full deck
+      secondaryClasses: ["Siren", "Fateweaver", "Vitalist"],
+      cards: createDeck("Cryomancer"), 
+      createdAt: new Date().toISOString()
+  };
+
+  const tutorialOpponentDeck: SavedDeck = {
+      id: "tutorial_opponent",
+      name: "Eğitim (Slayer)",
+      mainClass: "Slayer",
+      secondaryClasses: ["Siren", "Fateweaver", "Vitalist"],
+      cards: createDeck("Slayer"),
       createdAt: new Date().toISOString()
   };
   
@@ -25,8 +35,9 @@ const Tutorial = () => {
   return (
     <div className="w-full h-screen bg-black overflow-hidden">
         <GameMatch 
-            playerDeck={tutorialDeck}
+            playerDeck={tutorialPlayerDeck}
             opponentClass="Slayer"
+            opponentDeck={tutorialOpponentDeck}
             isTutorial={true}
             onGameEnd={(result) => {
                 if(result === "win") {

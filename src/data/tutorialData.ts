@@ -35,10 +35,10 @@ export const TUTORIAL_SCRIPT: TutorialStep[] = [
   },
   {
     id: "placement_instruction",
-    message: "Şimdi savaş zamanı! 'Buz Mızrağı' kartını ortadaki yuvaya sürükle.",
+    message: "Şimdi savaş zamanı! Elindeki kartlardan birini işaretli yuvaya sürükle.",
     highlightElementId: "card-0", // Assuming first card is the target
     allowedAction: "place_card",
-    requiredCardId: "ice_shard", // Logical ID check
+    requiredCardId: undefined, // Allow any card
     targetSlotIndex: 2
   },
   {

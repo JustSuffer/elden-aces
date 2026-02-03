@@ -50,14 +50,14 @@ export const TutorialOverlay = ({ step, onNext, isVisible }: TutorialOverlayProp
       </div>
 
       {/* Helper Text / Dialog */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-auto">
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <AnimatePresence mode="wait">
           <motion.div
             key={step.id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="bg-stone-900/95 border border-amber-600 p-6 rounded-2xl max-w-md text-center shadow-2xl relative mt-32"
+            className="bg-stone-900/95 border border-amber-600 p-6 rounded-2xl max-w-md text-center shadow-2xl relative mt-32 pointer-events-auto"
           >
             <h3 className="text-amber-500 font-cinzel font-bold text-xl mb-2">EĞİTİM</h3>
             <p className="text-stone-300 text-lg mb-6 leading-relaxed">
