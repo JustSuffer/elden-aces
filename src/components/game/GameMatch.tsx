@@ -1106,7 +1106,7 @@ export const GameMatch = ({
                      onGameEnd("lose", true);
                  }
                  // Do NOT navigate here, let VictoryPopup handle it via onReturnToMenu
-             }, 1500);
+             }, 250);
           }} 
         />
 
