@@ -50,10 +50,25 @@ export default function GameArena() {
       }
 
       if (reward > 0) {
+         console.log(`[GameArena] Attempting to award ${reward} coins to user ${user.id}`);
          // Safe update without RPC assumption
-         const { data } = await supabase.from("profiles").select("divine_coins").eq("id", user.id).single();
+         const { data, error: selectError } = await supabase.from("profiles").select("divine_coins").eq("id", user.id).single();
+         
+         if (selectError) {
+             console.error("[GameArena] Failed to fetch current coins:", selectError);
+             return;
+         }
+
          const current = data?.divine_coins || 0;
-         await supabase.from("profiles").update({ divine_coins: current + reward } as any).eq("id", user.id);
+         const { error: updateError } = await supabase.from("profiles").update({ divine_coins: current + reward } as any).eq("id", user.id);
+         
+         if (updateError) {
+             console.error("[GameArena] Failed to update coins:", updateError);
+         } else {
+             console.log(`[GameArena] Successfully added ${reward} coins. New balance: ${current + reward}`);
+         }
+      } else {
+          console.log(`[GameArena] No reward for this outcome (Reward: ${reward})`);
       }
       
       // Do NOT navigate automatically. Wait for user to click "Return to Menu" on the Defeat screen.
