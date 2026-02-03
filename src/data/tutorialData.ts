@@ -34,11 +34,11 @@ export const TUTORIAL_SCRIPT: TutorialStep[] = [
     allowedAction: "none"
   },
   {
-    id: "placement_instruction",
-    message: "Şimdi savaş zamanı! Elindeki kartlardan birini işaretli yuvaya sürükle.",
-    highlightElementId: "card-0", // Assuming first card is the target
-    allowedAction: "place_card",
-    requiredCardId: undefined, // Allow any card
-    targetSlotIndex: 2
+    id: "finish_instruction",
+    message: "Şimdi savaş zamanı! Kartlarını kullanarak rakibini alt et. Hazır mısın?",
+    highlightElementId: "player-hand", 
+    allowedAction: "none",
+    requiredCardId: undefined, 
+    targetSlotIndex: undefined
   }
 ];

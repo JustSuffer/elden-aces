@@ -1147,7 +1147,8 @@ export const GameMatch = ({
             step={currentTutorialStep} 
             onNext={handleTutorialNext} 
             isVisible={true}
-        />
+            isLastStep={tutorialStepIndex === TUTORIAL_SCRIPT.length - 1}
+         />
       )}
     </DndContext>
   );

@@ -9,6 +9,7 @@ interface TutorialOverlayProps {
   step: TutorialStep;
   onNext: () => void;
   isVisible: boolean;
+  isLastStep?: boolean;
 }
 
 export const TutorialOverlay = ({ step, onNext, isVisible }: TutorialOverlayProps) => {
@@ -66,7 +67,7 @@ export const TutorialOverlay = ({ step, onNext, isVisible }: TutorialOverlayProp
             
             {step.allowedAction === "none" && (
                <Button onClick={onNext} className="bg-amber-700 hover:bg-amber-600">
-                 Devam Et <ArrowRight className="w-4 h-4 ml-2" />
+                 {isLastStep ? "Savaşa Başla" : "Devam Et"} <ArrowRight className="w-4 h-4 ml-2" />
                </Button>
             )}
             
