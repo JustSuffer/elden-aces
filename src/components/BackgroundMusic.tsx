@@ -75,6 +75,31 @@ export function BackgroundMusic() {
     }
   }, [volume, isMuted]);
 
+  // Handle global interaction fallback
+  useEffect(() => {
+    const handleInteraction = () => {
+      if (!isPlaying && !hasInteracted && audioRef.current) {
+        setHasInteracted(true);
+        setIsPlaying(true);
+        const playPromise = audioRef.current.play();
+        if (playPromise !== undefined) {
+          playPromise.catch((e) => {
+            console.error("Fallback play failed:", e);
+            // Don't set isPlaying(false) here to avoid loops, just let it be
+          });
+        }
+      }
+    };
+
+    window.addEventListener("click", handleInteraction);
+    window.addEventListener("keydown", handleInteraction);
+
+    return () => {
+      window.removeEventListener("click", handleInteraction);
+      window.removeEventListener("keydown", handleInteraction);
+    };
+  }, [isPlaying, hasInteracted]);
+
   // Handle play/pause toggle
   useEffect(() => {
     if (!audioRef.current) return;

@@ -102,7 +102,7 @@ export function useCloudDecks() {
       } else {
         const { data, error } = await (supabase
           .from("user_decks" as any) as any)
-          .insert({ ...cloudData, id: deck.id })
+          .insert(cloudData)
           .select()
           .single();
 
