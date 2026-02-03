@@ -674,12 +674,19 @@ const OnlineGame = () => {
     }
   }, [match, user, isPlayer1, gameEnded]);
 
-  const handleConcede = useCallback((result: "win" | "lose") => {
+  // Handle generic game end from GameMatch (Concede OR Normal)
+  const handleMatchEnd = useCallback((result: "win" | "lose", isSurrender: boolean = false) => {
      if (!match || !user) return;
      const opponentId = isPlayer1 ? match.player2_id : match.player1_id;
      
-     // 0 coins for surrender
-     handleGameEnd(result === "win" ? user.id : opponentId, result === "win" ? 40 : 0, result === "win" ? 0 : 40, true);
+     // Determine winner based on result from MY perspective
+     // result="win" -> I won.
+     // result="lose" -> I lost (or conceded).
+     const winnerId = result === "win" ? user.id : opponentId;
+     
+     // For HP, we might want real values, but if not available we use 40/0 or 0/40.
+     // GameMatch doesn't pass HP in onGameEnd yet. We can assume 0 for loser.
+     handleGameEnd(winnerId, result === "win" ? 40 : 0, result === "win" ? 0 : 40, isSurrender);
   }, [match, user, isPlayer1, handleGameEnd]);
 
   // Navigate to new rematch
@@ -830,7 +837,7 @@ const OnlineGame = () => {
           opponentDeckCount={opponentDeckCount}
           onMovesReady={handleMovesReady}
           onRoundChange={handleRoundChange}
-          onGameEnd={handleConcede}
+          onGameEnd={handleMatchEnd}
         />
       ) : gameStarted ? (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm z-40">

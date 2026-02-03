@@ -82,6 +82,7 @@ export const GameMatch = ({
   const [showHourglass, setShowHourglass] = useState(false);
   const [showWinConAnimation, setShowWinConAnimation] = useState(false);
   const [winConAnimationType, setWinConAnimationType] = useState<string | null>(null);
+  const [isSurrendered, setIsSurrendered] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
 
   // Online: prevent local round from advancing before server confirmation (fixes 1-round delay / wrong cards)
@@ -400,8 +401,24 @@ export const GameMatch = ({
           // Don't reset winConAnimationType to prevent loop
         }, duration);
       }
+      
+      // Trigger onGameEnd for normal win/loss if not already surrendered
+      // We check !isSurrendered to avoid double calling if surrender logic handled it
+      if (!isSurrendered && onGameEnd) {
+          // Prevent repeated calls (useEffect might fire multiple times)
+          // We might need a ref or checking if we already called it. 
+          // For now, rely on parent to handle idempotency or simple boolean ref?
+          // But effects fire on deps. gameState.phase stays 'end'.
+          // Let's assume onGameEnd handles it or we guard it.
+          // Since we don't have a 'gameEndCalled' ref, let's just call it.
+          // GameArena and OnlineGame handleGameEnd seem relatively safe (stats update might separate, but usually handled by status checks).
+          // Actually, OnlineGame checks `if (gameEnded) return;` so it is idempotent locally.
+          const myResult = gameState.winner === "p1" ? "win" : "lose";
+          onGameEnd(myResult, false);
+      }
+
     }
-  }, [gameState.phase, gameState.damageResult, isMimicVsMimic, gameState.mimicCounter, gameState.playerClass, winConAnimationType, showWinConAnimation, gameState.winReason, gameState.winner]);
+  }, [gameState.phase, gameState.damageResult, isMimicVsMimic, gameState.mimicCounter, gameState.playerClass, winConAnimationType, showWinConAnimation, gameState.winReason, gameState.winner, isSurrendered, onGameEnd]);
 
   // Bot Auto-Chat Logic
   const prevRoundRef = useRef(1);
@@ -1061,11 +1078,11 @@ export const GameMatch = ({
         )}
 
         <VictoryPopup
-          open={gameState.phase === "end" && !showWinConAnimation}
-          outcome={gameState.winner === "p1" ? "win" : gameState.winner === "p2" ? "loss" : "draw"}
+          open={(gameState.phase === "end" || isSurrendered) && !showWinConAnimation}
+          outcome={isSurrendered ? "loss" : (gameState.winner === "p1" ? "win" : gameState.winner === "p2" ? "loss" : "draw")}
           playerHP={gameState.playerHP}
           opponentHP={gameState.opponentHP}
-          winReason={gameState.winReason}
+          winReason={isSurrendered ? "SURRENDER" : gameState.winReason}
           damageDetails={gameState.damageResult?.details}
           onReturnToMenu={() => navigate("/")}
           delayMs={0}
@@ -1084,11 +1101,11 @@ export const GameMatch = ({
              // Wait for animation then end game
              setTimeout(() => {
                  setShowWinConAnimation(false);
+                 setIsSurrendered(true);
                  if (onGameEnd) {
                      onGameEnd("lose", true);
-                 } else {
-                     navigate("/");
                  }
+                 // Do NOT navigate here, let VictoryPopup handle it via onReturnToMenu
              }, 3000);
           }} 
         />

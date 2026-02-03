@@ -56,9 +56,8 @@ export default function GameArena() {
          await supabase.from("profiles").update({ divine_coins: current + reward } as any).eq("id", user.id);
       }
       
-      // Delay navigation slightly
-      setTimeout(() => navigate("/"), 2000);
-  }, [user, navigate]);
+      // Do NOT navigate automatically. Wait for user to click "Return to Menu" on the Defeat screen.
+  }, [user]);
 
   if (!deck || !opponentClass) return null;
 
