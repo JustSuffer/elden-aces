@@ -1077,11 +1077,19 @@ export const GameMatch = ({
           onResume={() => setShowMenu(false)}
           onConcede={async () => {
              setShowMenu(false);
-             if (onGameEnd) {
-                 onGameEnd("lose");
-             } else {
-                 navigate("/");
-             }
+             // Trigger Death Animation
+             setWinConAnimationType("decay_death");
+             setShowWinConAnimation(true);
+             
+             // Wait for animation then end game
+             setTimeout(() => {
+                 setShowWinConAnimation(false);
+                 if (onGameEnd) {
+                     onGameEnd("lose");
+                 } else {
+                     navigate("/");
+                 }
+             }, 3000);
           }} 
         />
 

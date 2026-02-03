@@ -32,7 +32,7 @@ const itemVariants = {
 const Menu = () => {
   const navigate = useNavigate();
   const { signOut } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [showPopup, setShowPopup] = useState(false);
   const [dontShowAgain, setDontShowAgain] = useState(false);
 
@@ -133,6 +133,15 @@ const Menu = () => {
           <motion.div variants={itemVariants}>
              <MenuButton onClick={() => navigate("/game")} className="w-full h-14 text-lg">
                {t("menu.playBot")}
+             </MenuButton>
+          </motion.div>
+
+          <motion.div variants={itemVariants}>
+             <MenuButton 
+               onClick={() => navigate("/shop")} 
+               className="w-full h-14 text-lg border-amber-600/30 text-amber-500 hover:text-amber-200 hover:bg-amber-900/20"
+             >
+               {language === "tr" ? "MARKET" : "SHOP"}
              </MenuButton>
           </motion.div>
           

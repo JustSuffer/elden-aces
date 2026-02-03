@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/compone
 import { Settings, Maximize, Minimize, Sun, Flag, Play, X } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface GameMenuModalProps {
   open: boolean;
@@ -13,6 +14,23 @@ interface GameMenuModalProps {
 }
 
 export function GameMenuModal({ open, onOpenChange, onConcede, onResume }: GameMenuModalProps) {
+  const { language } = useLanguage();
+  
+  const strings = {
+    title: {tr: "OYUN MENÜSÜ", en: "GAME MENU"},
+    optionsTitle: {tr: "OYUN AYARLARI", en: "GAME OPTIONS"},
+    resume: {tr: "DEVAM ET", en: "RESUME"},
+    settings: {tr: "AYARLAR", en: "OPTIONS"},
+    concede: {tr: "TESLİM OL", en: "CONCEDE"},
+    screenMode: {tr: "EKRAN MODU", en: "SCREEN MODE"},
+    fullscreen: {tr: "TAM EKRAN", en: "FULLSCREEN"},
+    exitFullscreen: {tr: "TAM EKRANDAN ÇIK", en: "EXIT FULLSCREEN"},
+    brightness: {tr: "PARLAKLIK", en: "BRIGHTNESS"},
+    back: {tr: "GERİ DÖN", en: "GO BACK"},
+  };
+
+  const txt = (key: keyof typeof strings) => strings[key][language as "tr" | "en"] || strings[key]["en"];
+
   const [showOptions, setShowOptions] = useState(false);
   const [brightness, setBrightness] = useState([100]);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -55,7 +73,7 @@ export function GameMenuModal({ open, onOpenChange, onConcede, onResume }: GameM
         {/* Header */}
         <div className="bg-stone-950/80 p-4 border-b border-amber-600/30 flex items-center justify-center relative">
           <DialogTitle className="text-2xl font-bold tracking-widest text-transparent bg-clip-text bg-gradient-to-t from-amber-600 to-amber-200">
-             {showOptions ? "OYUN AYARLARI" : "OYUN MENÜSÜ"}
+             {showOptions ? txt("optionsTitle") : txt("title")}
           </DialogTitle>
           <div className="absolute left-0 top-1/2 -translate-y-1/2 h-[1px] w-8 bg-gradient-to-r from-transparent to-amber-600/50" />
           <div className="absolute right-0 top-1/2 -translate-y-1/2 h-[1px] w-8 bg-gradient-to-l from-transparent to-amber-600/50" />
@@ -71,14 +89,14 @@ export function GameMenuModal({ open, onOpenChange, onConcede, onResume }: GameM
              <>
                 <MenuButton 
                   icon={<Play className="w-5 h-5" />} 
-                  label="DEVAM ET" 
+                  label={txt("resume")} 
                   onClick={onResume}
                   variant="primary"
                 />
                 
                 <MenuButton 
                   icon={<Settings className="w-5 h-5" />} 
-                  label="AYARLAR" 
+                  label={txt("settings")} 
                   onClick={() => setShowOptions(true)}
                 />
                 
@@ -86,7 +104,7 @@ export function GameMenuModal({ open, onOpenChange, onConcede, onResume }: GameM
                 
                 <MenuButton 
                   icon={<Flag className="w-5 h-5" />} 
-                  label="TESLİM OL" 
+                  label={txt("concede")} 
                   onClick={onConcede}
                   variant="destructive"
                 />
@@ -97,7 +115,7 @@ export function GameMenuModal({ open, onOpenChange, onConcede, onResume }: GameM
                 
                 {/* Fullscreen Toggle */}
                 <div className="space-y-2">
-                   <label className="text-sm font-bold text-amber-500/80 uppercase tracking-widest pl-1">Ekran Modu</label>
+                   <label className="text-sm font-bold text-amber-500/80 uppercase tracking-widest pl-1">{txt("screenMode")}</label>
                    <Button 
                       variant="outline" 
                       onClick={toggleFullscreen} 
@@ -105,7 +123,7 @@ export function GameMenuModal({ open, onOpenChange, onConcede, onResume }: GameM
                     >
                       <span className="flex items-center gap-3">
                          {isFullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
-                         {isFullscreen ? "Tam Ekrandan Çık" : "Tam Ekran"}
+                         {isFullscreen ? txt("exitFullscreen") : txt("fullscreen")}
                       </span>
                       <div className={cn("w-3 h-3 rounded-full shadow-[0_0_10px_currentColor]", isFullscreen ? "bg-green-500 text-green-500" : "bg-stone-600")} />
                    </Button>
@@ -114,7 +132,7 @@ export function GameMenuModal({ open, onOpenChange, onConcede, onResume }: GameM
                 {/* Brightness Slider */}
                 <div className="space-y-4">
                    <div className="flex justify-between items-end">
-                      <label className="text-sm font-bold text-amber-500/80 uppercase tracking-widest pl-1">Parlaklık</label>
+                      <label className="text-sm font-bold text-amber-500/80 uppercase tracking-widest pl-1">{txt("brightness")}</label>
                       <span className="text-xs font-mono text-amber-500/60">{brightness}%</span>
                    </div>
                    <div className="flex items-center gap-4 bg-black/40 p-3 rounded-lg border border-amber-600/20">
@@ -137,7 +155,7 @@ export function GameMenuModal({ open, onOpenChange, onConcede, onResume }: GameM
                      onClick={() => setShowOptions(false)}
                      className="w-full text-amber-500/60 hover:text-amber-200 hover:bg-transparent -mt-2"
                    >
-                     GERİ DÖN
+                     {txt("back")}
                    </Button>
                 </div>
              </div>

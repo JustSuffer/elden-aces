@@ -24,6 +24,7 @@ import NotFound from "./pages/NotFound";
 import StoryMode from "./pages/StoryMode";
 import StoryGame from "./pages/StoryGame";
 import Friends from "./pages/Friends";
+import Shop from "./pages/Shop";
 
 import { BackgroundMusic } from "./components/BackgroundMusic";
 
@@ -56,6 +57,7 @@ const App = () => (
             <Route path="/story-game/:regionId/:levelId" element={<ProtectedRoute><StoryGame /></ProtectedRoute>} />
             <Route path="/friends" element={<ProtectedRoute><Friends /></ProtectedRoute>} />
             <Route path="/private-lobby/:inviteId" element={<ProtectedRoute><Friends /></ProtectedRoute>} />
+            <Route path="/shop" element={<ProtectedRoute><Shop /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
