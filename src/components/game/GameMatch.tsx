@@ -97,6 +97,7 @@ export const GameMatch = ({
   const timeoutHandledRoundRef = useRef<number | null>(null);
 
   // Tutorial State
+  const [tutorialStepIndex, setTutorialStepIndex] = useState(0);
   const [tutorialActive, setTutorialActive] = useState(isTutorial);
   const currentTutorialStep = tutorialActive && isTutorial ? TUTORIAL_SCRIPT[tutorialStepIndex] : null;
 
