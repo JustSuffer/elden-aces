@@ -21,7 +21,7 @@ const PLAYLIST = [
 ];
 
 export function BackgroundMusic() {
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(false);
   const [volume, setVolume] = useState([0.3]);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
