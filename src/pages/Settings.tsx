@@ -102,69 +102,6 @@ const Settings = () => {
             </CardContent>
           </Card>
 
-          {/* Audio Settings */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Volume2 className="w-5 h-5" />
-                {t("settings.audio")}
-              </CardTitle>
-              <CardDescription>{t("settings.audioDesc")}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="sound-effects">{t("settings.soundEffects")}</Label>
-                <Switch
-                  id="sound-effects"
-                  checked={soundEnabled}
-                  onCheckedChange={setSoundEnabled}
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <Label htmlFor="music">{t("settings.music")}</Label>
-                <Switch
-                  id="music"
-                  checked={musicEnabled}
-                  onCheckedChange={(checked) => {
-                    setMusicEnabled(checked);
-                    if (!checked) {
-                      AudioManager.stopBackgroundMusic();
-                    }
-                  }}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="volume">{t("settings.volume")}: {volume[0]}%</Label>
-                <Slider
-                  id="volume"
-                  value={volume}
-                  onValueChange={handleVolumeChange}
-                  max={100}
-                  step={1}
-                  className="w-full"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="bg-music-upload">{t("settings.uploadMusic")}</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="bg-music-upload"
-                    type="file"
-                    accept="audio/*"
-                    onChange={handleFileUpload}
-                    className="flex-1"
-                  />
-                  <Button variant="outline" size="icon" onClick={() => document.getElementById("bg-music-upload")?.click()}>
-                    <Upload className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
           {/* Visual Settings */}
           <Card>
             <CardHeader>

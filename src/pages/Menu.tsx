@@ -3,6 +3,7 @@ import logo from "@/assets/acoria-logo.png";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { LogOut, Trophy, X, Monitor, Map, Users, Coins } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useEffect, useState } from "react";
@@ -64,7 +65,7 @@ const Menu = () => {
   useEffect(() => {
     if(!user) return;
     const fetchCoins = async () => {
-       const { data } = await import("@/integrations/supabase/client").then(m => m.supabase.from("profiles").select("divine_coins").eq("id", user.id).single());
+       const { data } = await supabase.from("profiles").select("divine_coins").eq("id", user.id).single();
        if(data) setCoins(data.divine_coins || 0);
     };
     fetchCoins();

@@ -494,7 +494,7 @@ export const GameMatch = ({
               console.log("Opening menu...");
               setShowMenu(true);
             }} 
-            className="absolute right-4 top-4 md:top-1/2 md:-translate-y-1/2 hover:bg-primary/20 hover:scale-110 transition-all z-[100] h-12 w-12 rounded-full border border-primary/30 bg-black/40 backdrop-blur-sm shadow-[0_0_15px_rgba(0,0,0,0.5)] cursor-pointer"
+            className="absolute right-4 top-20 hover:bg-primary/20 hover:scale-110 transition-all z-[100] h-12 w-12 rounded-full border border-primary/30 bg-black/40 backdrop-blur-sm shadow-[0_0_15px_rgba(0,0,0,0.5)] cursor-pointer"
           >
             <Settings className="w-8 h-8 text-primary animate-[spin_10s_linear_infinite]" />
           </Button>
