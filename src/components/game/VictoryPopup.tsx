@@ -26,7 +26,7 @@ export function VictoryPopup({
   onReturnToMenu,
   delayMs = 0
 }: VictoryPopupProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const reward = outcome === "win" ? 10 : (outcome === "draw" ? 5 : 2);
   const [showPopup, setShowPopup] = useState(false);
   const [showContent, setShowContent] = useState(false);
@@ -181,11 +181,13 @@ export function VictoryPopup({
                   "0 0 40px rgba(148,163,184,0.6)"
               }}
             >
-              {isVictory ? t("victory.title.win") : (isDraw ? t("victory.title.draw") : t("victory.title.loss"))}
+              {winReason === "SURRENDER" 
+                  ? (language === "tr" ? "TESLİM OLDUN" : "SURRENDERED")
+                  : (isVictory ? t("victory.title.win") : (isDraw ? t("victory.title.draw") : t("victory.title.loss")))}
             </motion.h1>
 
-            {/* Win reason if provided */}
-            {winReason && (
+            {/* Win reason if provided (don't show if it's SURRENDER as it's already in title) */}
+            {winReason && winReason !== "SURRENDER" && (
               <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
