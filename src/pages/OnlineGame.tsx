@@ -670,10 +670,16 @@ const OnlineGame = () => {
       }
       
       if (reward > 0) {
-         // Safe update
-         const { data } = await supabase.from("profiles").select("divine_coins").eq("id", user.id).single();
-         const current = data?.divine_coins || 0;
-         await supabase.from("profiles").update({ divine_coins: current + reward } as any).eq("id", user.id);
+         // Try RPC first (Atomic)
+         const { error: rpcError } = await supabase.rpc("increment_coins" as any, { amount: reward, user_id: user.id });
+         
+         if (rpcError) {
+             console.warn("[OnlineGame] RPC failed, falling back to direct update:", rpcError);
+             // Fallback
+             const { data } = await supabase.from("profiles").select("divine_coins").eq("id", user.id).single();
+             const current = data?.divine_coins || 0;
+             await supabase.from("profiles").update({ divine_coins: current + reward } as any).eq("id", user.id);
+         }
       }
     }
   }, [match, user, isPlayer1, gameEnded]);

@@ -51,21 +51,30 @@ export default function GameArena() {
 
       if (reward > 0) {
          console.log(`[GameArena] Attempting to award ${reward} coins to user ${user.id}`);
-         // Safe update without RPC assumption
-         const { data, error: selectError } = await supabase.from("profiles").select("divine_coins").eq("id", user.id).single();
          
-         if (selectError) {
-             console.error("[GameArena] Failed to fetch current coins:", selectError);
-             return;
-         }
+         // Try RPC first (Atomic & likely safer for RLS)
+         const { error: rpcError } = await supabase.rpc("increment_coins" as any, { amount: reward, user_id: user.id });
 
-         const current = data?.divine_coins || 0;
-         const { error: updateError } = await supabase.from("profiles").update({ divine_coins: current + reward } as any).eq("id", user.id);
-         
-         if (updateError) {
-             console.error("[GameArena] Failed to update coins:", updateError);
+         if (rpcError) {
+             console.warn("[GameArena] RPC increment_coins failed, falling back to direct update:", rpcError);
+             
+             // Fallback: Direct Update
+             const { data, error: selectError } = await supabase.from("profiles").select("divine_coins").eq("id", user.id).single();
+             if (selectError) {
+                 console.error("[GameArena] Failed to fetch current coins for fallback:", selectError);
+             } else {
+                 const current = data?.divine_coins || 0;
+                 const { error: updateError } = await supabase.from("profiles").update({ divine_coins: current + reward } as any).eq("id", user.id);
+                 
+                 if (updateError) {
+                     console.error("[GameArena] Fallback update also failed:", updateError);
+                     toast.error("Ödül eklenemedi (Bağlantı Hatası)");
+                 } else {
+                     console.log(`[GameArena] Fallback direct update success. New balance: ${current + reward}`);
+                 }
+             }
          } else {
-             console.log(`[GameArena] Successfully added ${reward} coins. New balance: ${current + reward}`);
+             console.log(`[GameArena] RPC success. Added ${reward} coins.`);
          }
       } else {
           console.log(`[GameArena] No reward for this outcome (Reward: ${reward})`);
