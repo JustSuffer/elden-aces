@@ -460,11 +460,8 @@ export const GameMatch = ({
         <ClassInfoPanel className={gameState.playerClass} />
         <SpecialCardInfoPanel />
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-border">
-          <Button variant="ghost" onClick={() => setShowMenu(true)} className="gap-2">
-            <Settings className="w-5 h-5 animate-spin-slow" />
-            
-          </Button>
+        {/* Header */}
+        <div className="flex items-center justify-center p-4 border-b border-border relative">
           <div className="text-center">
             <div className="text-xl font-bold text-primary glow-gold font-cinzel">
               <span style={{ color: playerClassData.color }}>{gameState.playerClass}</span>
@@ -472,7 +469,15 @@ export const GameMatch = ({
               <span style={{ color: opponentClassData.color }}>{gameState.opponentClass}</span>
             </div>
           </div>
-          <div className="w-24" />
+          
+          {/* Settings Button */}
+          <Button 
+            variant="ghost" 
+            onClick={() => setShowMenu(true)} 
+            className="absolute right-4 top-4 md:top-1/2 md:-translate-y-1/2 hover:bg-primary/20 hover:scale-110 transition-all z-50 h-12 w-12 rounded-full border border-primary/30 bg-black/40 backdrop-blur-sm"
+          >
+            <Settings className="w-8 h-8 text-primary animate-[spin_10s_linear_infinite]" />
+          </Button>
         </div>
 
         {/* Game Area */}
