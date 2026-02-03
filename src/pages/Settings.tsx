@@ -140,7 +140,7 @@ const Settings = () => {
               <p>{t("settings.copyright")}</p>
             </CardContent>
           </Card>
-          {/* Account Management */}
+          {/* Account Management sdf*/}
           <Card className="border-red-900/30 bg-red-950/10">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-red-500">
