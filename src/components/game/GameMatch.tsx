@@ -47,7 +47,12 @@ interface GameMatchProps {
   onMovesReady?: (moves: (Card | null)[]) => Promise<void>;
   onRoundChange?: (newRound: number) => Promise<void>;
   onGameEnd?: (result: "win" | "lose", isSurrender?: boolean) => void;
+  // Tutorial Props
+  isTutorial?: boolean;
 }
+
+import { TUTORIAL_SCRIPT, TutorialStep } from "@/data/tutorialData";
+import { TutorialOverlay } from "@/components/ui/TutorialOverlay";
 
 export const GameMatch = ({
   playerDeck,
@@ -60,6 +65,7 @@ export const GameMatch = ({
   onMovesReady,
   onRoundChange,
   onGameEnd,
+  isTutorial = false,
 }: GameMatchProps) => {
   const navigate = useNavigate();
   const { t, language } = useLanguage();
@@ -89,6 +95,28 @@ export const GameMatch = ({
   const [requestedNextRoundFor, setRequestedNextRoundFor] = useState<number | null>(null);
 
   const timeoutHandledRoundRef = useRef<number | null>(null);
+
+  // Tutorial State
+  const [tutorialStepIndex, setTutorialStepIndex] = useState(0);
+  const currentTutorialStep = isTutorial ? TUTORIAL_SCRIPT[tutorialStepIndex] : null;
+
+  const handleTutorialNext = () => {
+    if (tutorialStepIndex < TUTORIAL_SCRIPT.length - 1) {
+      setTutorialStepIndex(prev => prev + 1);
+    } else {
+        // End of tutorial
+        navigate("/deck-builder");
+        toast.success("Eğitim Tamamlandı! Artık kendi desteni kurabilirsin.");
+    }
+  };
+
+  // Auto-advance tutorial if needed
+  useEffect(() => {
+      if (currentTutorialStep?.autoAdvanceDelay) {
+          const timer = setTimeout(handleTutorialNext, currentTutorialStep.autoAdvanceDelay);
+          return () => clearTimeout(timer);
+      }
+  }, [currentTutorialStep]);
 
   // Chat System
   const { playerMessage, opponentMessage, sendPlayerMessage, sendOpponentMessage } = useChat();
@@ -1112,6 +1140,14 @@ export const GameMatch = ({
         />
 
       </div>
+      {/* Tutorial Overlay */}
+      {isTutorial && currentTutorialStep && (
+        <TutorialOverlay 
+            step={currentTutorialStep} 
+            onNext={handleTutorialNext} 
+            isVisible={true}
+        />
+      )}
     </DndContext>
   );
 };
