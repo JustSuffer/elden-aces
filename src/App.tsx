@@ -8,6 +8,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Landing from "./pages/Landing";
 import Menu from "./pages/Menu";
 import Game from "./pages/Game";
+import GameArena from "./pages/GameArena";
 import Play from "./pages/Play";
 import OnlineGame from "./pages/OnlineGame";
 import Profile from "./pages/Profile";
@@ -41,6 +42,7 @@ const App = () => (
             <Route path="/menu" element={<ProtectedRoute><Menu /></ProtectedRoute>} />
             <Route path="/play" element={<ProtectedRoute><Play /></ProtectedRoute>} />
             <Route path="/game" element={<ProtectedRoute><Game /></ProtectedRoute>} />
+            <Route path="/gamearena" element={<ProtectedRoute><GameArena /></ProtectedRoute>} />
             <Route path="/online-game/:matchId" element={<ProtectedRoute><OnlineGame /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
