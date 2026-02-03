@@ -93,7 +93,7 @@ export default function Shop() {
         setUnlockedItems(Array.isArray(data.unlocked_items) ? data.unlocked_items : []);
       } else {
         // Fallback for demo if column doesn't exist yet
-        setCoins(15000); // Give some starting cash for testing
+        setCoins(0); 
         setUnlockedItems([]);
       }
     };

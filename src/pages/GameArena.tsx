@@ -1,6 +1,9 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { GameMatch } from "@/components/game/GameMatch";
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 
 export default function GameArena() {
@@ -27,6 +30,36 @@ export default function GameArena() {
     };
   }, []);
 
+  const { user } = useAuth();
+
+  const handleGameEnd = useCallback(async (result: "win" | "lose", isSurrender?: boolean) => {
+      if (!user) return;
+      
+      let reward = 0;
+      if (result === "win") {
+          reward = 50;
+          toast.success("Zafer! +50 Divine Coin");
+      } else {
+          if (isSurrender) {
+              toast.info("Teslim oldun. 0 Divine Coin.");
+              reward = 0;
+          } else {
+              reward = 10; 
+              toast.info("Yenilgi. +10 Divine Coin");
+          }
+      }
+
+      if (reward > 0) {
+         // Safe update without RPC assumption
+         const { data } = await supabase.from("profiles").select("divine_coins").eq("id", user.id).single();
+         const current = data?.divine_coins || 0;
+         await supabase.from("profiles").update({ divine_coins: current + reward } as any).eq("id", user.id);
+      }
+      
+      // Delay navigation slightly
+      setTimeout(() => navigate("/"), 2000);
+  }, [user, navigate]);
+
   if (!deck || !opponentClass) return null;
 
   return (
@@ -34,6 +67,7 @@ export default function GameArena() {
       key={`${deck.id}-${opponentClass}-${Date.now()}`}
       playerDeck={deck}
       opponentClass={opponentClass}
+      onGameEnd={(result, isSurrender) => handleGameEnd(result, isSurrender)} 
     />
   );
 }

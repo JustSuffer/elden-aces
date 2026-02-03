@@ -584,7 +584,7 @@ const OnlineGame = () => {
   }, [match, isPlayer1]);
 
   // Handle game end - update stats and ELO
-  const handleGameEnd = useCallback(async (winnerId: string | null, playerHP: number, opponentHP: number) => {
+  const handleGameEnd = useCallback(async (winnerId: string | null, playerHP: number, opponentHP: number, isSurrender = false) => {
     if (!match || !user || gameEnded) return;
     setGameEnded(true);
 
@@ -654,15 +654,32 @@ const OnlineGame = () => {
         .from("game_stats")
         .update({ elo_rating: newOppElo })
         .eq("user_id", opponentId);
+
+      // COIN REWARDS
+      if (winnerId === user.id) {
+          // You Won
+          const reward = 100;
+          await supabase.rpc("increment_coins", { amount: reward, user_id: user.id });
+          toast.success(`Zafer! +${reward} Divine Coin`);
+      } else {
+          // You Lost
+          if (isSurrender) {
+             toast.error("Teslim oldun. 0 Divine Coin.");
+          } else {
+             const reward = 25;
+             await supabase.rpc("increment_coins", { amount: reward, user_id: user.id });
+             toast.info(`Yenilgi. +${reward} Divine Coin`);
+          }
+      }
     }
   }, [match, user, isPlayer1, gameEnded]);
 
   const handleConcede = useCallback((result: "win" | "lose") => {
      if (!match || !user) return;
      const opponentId = isPlayer1 ? match.player2_id : match.player1_id;
-     // If result is 'lose', opponent wins.
-     const winnerId = result === "win" ? user.id : opponentId;
-     handleGameEnd(winnerId, result === "win" ? 40 : 0, result === "win" ? 0 : 40);
+     
+     // 0 coins for surrender
+     handleGameEnd(result === "win" ? user.id : opponentId, result === "win" ? 40 : 0, result === "win" ? 0 : 40, true);
   }, [match, user, isPlayer1, handleGameEnd]);
 
   // Navigate to new rematch

@@ -46,7 +46,7 @@ interface GameMatchProps {
   opponentDeckCount?: number; // Real-time opponent deck count for online mode
   onMovesReady?: (moves: (Card | null)[]) => Promise<void>;
   onRoundChange?: (newRound: number) => Promise<void>;
-  onGameEnd?: (result: "win" | "lose") => void;
+  onGameEnd?: (result: "win" | "lose", isSurrender?: boolean) => void;
 }
 
 export const GameMatch = ({
@@ -1077,15 +1077,15 @@ export const GameMatch = ({
           onResume={() => setShowMenu(false)}
           onConcede={async () => {
              setShowMenu(false);
-             // Trigger Death Animation
-             setWinConAnimationType("decay_death");
+             // Trigger Surrender Animation
+             setWinConAnimationType("surrender");
              setShowWinConAnimation(true);
              
              // Wait for animation then end game
              setTimeout(() => {
                  setShowWinConAnimation(false);
                  if (onGameEnd) {
-                     onGameEnd("lose");
+                     onGameEnd("lose", true);
                  } else {
                      navigate("/");
                  }

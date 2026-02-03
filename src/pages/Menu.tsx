@@ -2,7 +2,7 @@ import { MenuButton } from "@/components/ui/menu-button";
 import logo from "@/assets/acoria-logo.png";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { LogOut, Trophy, X, Monitor, Map, Users } from "lucide-react";
+import { LogOut, Trophy, X, Monitor, Map, Users, Coins } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useEffect, useState } from "react";
@@ -58,6 +58,18 @@ const Menu = () => {
     navigate("/");
   };
 
+  // Fetch Coins
+  const { user } = useAuth();
+  const [coins, setCoins] = useState<number | null>(null);
+  useEffect(() => {
+    if(!user) return;
+    const fetchCoins = async () => {
+       const { data } = await import("@/integrations/supabase/client").then(m => m.supabase.from("profiles").select("divine_coins").eq("id", user.id).single());
+       if(data) setCoins(data.divine_coins || 0);
+    };
+    fetchCoins();
+  }, [user]);
+
   return (
     <div className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden bg-background">
       {/* Bio-Digital Background Grid */}
@@ -81,6 +93,14 @@ const Menu = () => {
       {/* Vignette */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/80" />
       
+      {/* Coin Display */}
+      {coins !== null && (
+          <div className="absolute top-4 right-4 z-50 flex items-center gap-2 bg-black/60 px-4 py-2 rounded-full border border-amber-500/30 shadow-lg animate-in fade-in slide-in-from-top-4">
+              <Coins className="w-4 h-4 text-yellow-500" />
+              <span className="text-yellow-100 font-bold font-cinzel">{coins.toLocaleString()}</span>
+          </div>
+      )}
+
       {/* Content */}
       <div className="relative z-10 flex flex-col items-center space-y-8 px-4 max-w-2xl w-full">
         {/* Logo */}
