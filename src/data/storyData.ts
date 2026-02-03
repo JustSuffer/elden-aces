@@ -315,7 +315,7 @@ const RAW_REGIONS: Region[] = [
     id: "tartarus",
     name: "TARTARUS",
     className: "Decay",
-    coordinates: { x: 68, y: 38 },
+    coordinates: { x: 63, y: 38 },
     description: {
       tr: "Çürümenin ve yıkıcı ateşin hüküm sürdüğü lanetli bölge. Volkanlar ve kül.",
       en: "A cursed region ruled by decay and destructive fire. Volcanoes and ash."

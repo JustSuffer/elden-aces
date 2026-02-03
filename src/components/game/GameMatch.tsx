@@ -7,6 +7,7 @@ import { VictoryPopup } from "@/components/game/VictoryPopup";
 import { CardSelectionPopup } from "@/components/game/CardSelectionPopup";
 import { VfxLayer, VfxEffect } from "@/components/game/VfxLayer";
 import { KnifeBar } from "@/components/game/KnifeBar";
+import { GameMenuModal } from "@/components/game/GameMenuModal";
 import { Button } from "@/components/ui/button";
 import { useGameState } from "@/hooks/useGameState";
 import { useNavigate } from "react-router-dom";
@@ -81,6 +82,7 @@ export const GameMatch = ({
   const [showHourglass, setShowHourglass] = useState(false);
   const [showWinConAnimation, setShowWinConAnimation] = useState(false);
   const [winConAnimationType, setWinConAnimationType] = useState<string | null>(null);
+  const [showMenu, setShowMenu] = useState(false);
 
   // Online: prevent local round from advancing before server confirmation (fixes 1-round delay / wrong cards)
   const [requestedNextRoundFor, setRequestedNextRoundFor] = useState<number | null>(null);
@@ -459,9 +461,9 @@ export const GameMatch = ({
         <SpecialCardInfoPanel />
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border">
-          <Button variant="ghost" onClick={() => navigate("/")} className="gap-2">
-            <ArrowLeft className="w-4 h-4" />
-            {t("victory.back")}
+          <Button variant="ghost" onClick={() => setShowMenu(true)} className="gap-2">
+            <Settings className="w-5 h-5 animate-spin-slow" />
+            
           </Button>
           <div className="text-center">
             <div className="text-xl font-bold text-primary glow-gold font-cinzel">

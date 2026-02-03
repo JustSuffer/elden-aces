@@ -657,6 +657,14 @@ const OnlineGame = () => {
     }
   }, [match, user, isPlayer1, gameEnded]);
 
+  const handleConcede = useCallback((result: "win" | "lose") => {
+     if (!match || !user) return;
+     const opponentId = isPlayer1 ? match.player2_id : match.player1_id;
+     // If result is 'lose', opponent wins.
+     const winnerId = result === "win" ? user.id : opponentId;
+     handleGameEnd(winnerId, result === "win" ? 40 : 0, result === "win" ? 0 : 40);
+  }, [match, user, isPlayer1, handleGameEnd]);
+
   // Navigate to new rematch
   useEffect(() => {
     if (rematchState.newMatchId) {
@@ -805,6 +813,7 @@ const OnlineGame = () => {
           opponentDeckCount={opponentDeckCount}
           onMovesReady={handleMovesReady}
           onRoundChange={handleRoundChange}
+          onGameEnd={handleConcede}
         />
       ) : gameStarted ? (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm z-40">
