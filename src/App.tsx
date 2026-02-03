@@ -24,6 +24,8 @@ import StoryMode from "./pages/StoryMode";
 import StoryGame from "./pages/StoryGame";
 import Friends from "./pages/Friends";
 
+import { BackgroundMusic } from "./components/BackgroundMusic";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -55,6 +57,7 @@ const App = () => (
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <BackgroundMusic />
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>
