@@ -12,7 +12,7 @@ interface TutorialOverlayProps {
   isLastStep?: boolean;
 }
 
-export const TutorialOverlay = ({ step, onNext, isVisible }: TutorialOverlayProps) => {
+export const TutorialOverlay = ({ step, onNext, isVisible, isLastStep }: TutorialOverlayProps) => {
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
 
   useEffect(() => {
