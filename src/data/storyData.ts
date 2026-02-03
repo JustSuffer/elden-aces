@@ -215,7 +215,7 @@ const RAW_REGIONS: Region[] = [
     id: "yorea",
     name: "YOREA",
     className: "Vessel",
-    coordinates: { x: 88, y: 22 },
+    coordinates: { x: 95, y: 22 },
     description: {
       tr: "Düzenin, medeniyetin ve kutsal gücün merkezi. Işıkla dolu şehirler.",
       en: "Center of order, civilization, and holy power. Cities filled with light."
