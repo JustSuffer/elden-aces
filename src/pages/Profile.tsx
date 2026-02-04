@@ -14,7 +14,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { MatchHistory } from "@/components/profile/MatchHistory";
 import { MASTER_CLASSES } from "@/data/gameData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { getRankTier, getTierProgress, getLpToNextTier } from "@/utils/lpCalculator";
+import { getRankByElo, getRankDisplayName, getRankTitle, getEloProgress, getEloToNextTier, getRankColor } from "@/utils/eloRankSystem";
 
 interface Profile {
   username: string;
@@ -27,8 +27,6 @@ interface GameStats {
   losses: number;
   total_games: number;
   elo_rating: number;
-  lp: number;
-  rank_tier: string;
 }
 
 interface ClassStat {
@@ -40,7 +38,8 @@ interface ClassStat {
 const Profile = () => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const lang = language as "tr" | "en";
   const [profile, setProfile] = useState<Profile | null>(null);
   const [stats, setStats] = useState<GameStats | null>(null);
   const [botStats, setBotStats] = useState<Record<string, ClassStat>>({});
@@ -83,7 +82,7 @@ const Profile = () => {
 
     const { data, error } = await supabase
       .from("game_stats")
-      .select("wins, losses, total_games, elo_rating, lp, rank_tier")
+      .select("wins, losses, total_games, elo_rating")
       .eq("user_id", user.id)
       .maybeSingle() as any;
 
@@ -275,35 +274,50 @@ const Profile = () => {
             </TabsList>
 
             <TabsContent value="stats">
-              {/* LP / Rank Section */}
-              <div className="mb-6 p-4 rounded-lg border border-primary/30 bg-primary/5">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                    <Shield className="w-8 h-8 text-primary" />
-                    <div>
-                      <div className="text-2xl font-bold text-primary">
-                        {getRankTier(stats?.lp || 0)}
+              {/* ELO / Rank Section */}
+              {(() => {
+                const elo = stats?.elo_rating || 0;
+                const rankData = getRankByElo(elo);
+                const rankColor = getRankColor(elo);
+                
+                return (
+                  <div className="mb-6 p-4 rounded-lg border border-primary/30 bg-primary/5">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div 
+                          className="w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold"
+                          style={{ backgroundColor: `${rankColor}30`, color: rankColor }}
+                        >
+                          {getRankDisplayName(elo, lang).split(" ")[0][0]}
+                        </div>
+                        <div>
+                          <div className="text-2xl font-bold" style={{ color: rankColor }}>
+                            {getRankDisplayName(elo, lang)}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            {getRankTitle(elo, lang)} • {elo} ELO
+                          </div>
+                        </div>
                       </div>
-                      <div className="text-sm text-muted-foreground">
-                        {stats?.lp || 0} LP
+                      <div className="flex items-center gap-3">
+                        <Coins className="w-6 h-6 text-amber-500" />
+                        <div className="text-right">
+                          <div className="text-xl font-bold text-amber-500">
+                            {profile?.divine_coins || 0}
+                          </div>
+                          <div className="text-xs text-muted-foreground">Divine Coins</div>
+                        </div>
                       </div>
                     </div>
+                    <Progress value={getEloProgress(elo)} className="h-2" />
+                    <p className="text-xs text-muted-foreground mt-2 text-center">
+                      {lang === "tr" 
+                        ? `Sonraki rütbeye ${getEloToNextTier(elo)} ELO kaldı` 
+                        : `${getEloToNextTier(elo)} ELO to next rank`}
+                    </p>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <Coins className="w-6 h-6 text-amber-500" />
-                    <div className="text-right">
-                      <div className="text-xl font-bold text-amber-500">
-                        {profile?.divine_coins || 0}
-                      </div>
-                      <div className="text-xs text-muted-foreground">Divine Coins</div>
-                    </div>
-                  </div>
-                </div>
-                <Progress value={getTierProgress(stats?.lp || 0)} className="h-2" />
-                <p className="text-xs text-muted-foreground mt-2 text-center">
-                  Sonraki rütbeye {getLpToNextTier(stats?.lp || 0)} LP kaldı
-                </p>
-              </div>
+                );
+              })()}
 
               {/* Standard Stats */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
