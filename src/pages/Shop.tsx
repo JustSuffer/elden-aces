@@ -83,19 +83,20 @@ export default function Shop() {
     if (!user) return;
     
     const fetchUserData = async () => {
-      // Mock fetching coins - In real app, select from 'profiles'
-      const { data, error } = await supabase.from("profiles").select("divine_coins, unlocked_items").eq("id", user.id).single();
+      // Fetch coins from profiles table
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("divine_coins")
+        .eq("user_id", user.id)
+        .maybeSingle();
       
       if (data) {
-        setCoins(data.divine_coins || 0); // Default 0 if null
-        // unlocked_items might be json or array. Assuming array of strings for simplicity
-        // If it's not present in DB, we default to empty.
-        setUnlockedItems(Array.isArray(data.unlocked_items) ? data.unlocked_items : []);
+        setCoins((data as any).divine_coins || 0);
       } else {
-        // Fallback for demo if column doesn't exist yet
         setCoins(0); 
-        setUnlockedItems([]);
       }
+      // unlocked_items not in schema yet, use empty for now
+      setUnlockedItems([]);
     };
     
     fetchUserData();
@@ -125,9 +126,8 @@ export default function Shop() {
     // Real DB Update
     if (user) {
         const { error } = await supabase.from("profiles").update({
-            divine_coins: newCoins,
-            unlocked_items: newUnlocked
-        } as any).eq("id", user.id);
+            divine_coins: newCoins
+        } as any).eq("user_id", user.id);
         
         if (error) {
             console.error("Purchase failed", error);
