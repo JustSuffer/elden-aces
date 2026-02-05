@@ -46,9 +46,12 @@ function generateSpecialCards(): Card[] {
   }));
 }
 
+import { useLanguage } from "@/hooks/useLanguage";
+
 const DeckBuilder = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { language } = useLanguage();
   const { decks: savedDecks, isLoading, isSyncing, saveDeck: cloudSaveDeck, deleteDeck: cloudDeleteDeck } = useCloudDecks();
   
   const [deckName, setDeckName] = useState("");
@@ -230,7 +233,7 @@ const DeckBuilder = () => {
       // 1. Class Backs (Default/Free)
       const classBacks = ALL_CLASSES.map(c => ({
           id: `default_${c}`,
-          name: c,
+          name: { tr: c, en: c }, // Match structure
           image: c,
           isLocked: false
       }));
@@ -238,7 +241,7 @@ const DeckBuilder = () => {
       // 2. Shop Backs
       const shopBacks = CARD_BACKS.map(cb => ({
           id: cb.id,
-          name: cb.name.tr, // Use TR or localized name
+          name: cb.name, // Pass the whole object
           image: cb.image,
           isLocked: !cb.isDefault && !unlockedItems.includes(cb.id)
       }));
@@ -490,30 +493,34 @@ const DeckBuilder = () => {
                  {availableBacks.map(back => (
                     <button
                       key={back.id}
-                      onClick={() => !back.isLocked && setCardBack(back.image)}
-                      disabled={back.isLocked}
+                      onClick={() => {
+                        if (back.isLocked) {
+                          toast.error(language === "tr" ? "Bu kart arkasını Mağaza'dan satın almalısınız!" : "You must purchase this card back from the Shop!");
+                          return;
+                        }
+                        setCardBack(back.image);
+                      }}
                       className={cn(
                         "relative group rounded-lg overflow-hidden border-2 transition-all duration-300 aspect-[2/3]",
                         cardBack === back.image
                           ? "border-primary shadow-[0_0_20px_rgba(197,160,89,0.5)] scale-105" 
                           : back.isLocked
-                            ? "border-red-900/50 opacity-60 grayscale cursor-not-allowed"
-                            : "border-transparent hover:border-primary/50 opacity-80 hover:opacity-100 hover:scale-[1.02]"
+                            ? "border-primary/20 opacity-80 grayscale hover:grayscale-0 transition-all" // Visible but gray, hover shows color
+                            : "border-transparent hover:border-primary/50 opacity-90 hover:opacity-100 hover:scale-[1.02]"
                       )}
                     >
                        <img 
                          src={`/assets/decks/${back.image}.jpg`} 
-                         alt={back.name} 
+                         alt={back.name[language as "tr" | "en"] || back.name["en"]} 
                          className="w-full h-full object-cover"
                          onError={(e) => e.currentTarget.src = "/assets/decks/default_back.jpg"} 
                        />
-                       <div className={cn("absolute inset-0 transition-all", back.isLocked ? "bg-black/70" : "bg-black/40 group-hover:bg-transparent")} />
+                       <div className={cn("absolute inset-0 transition-all", back.isLocked ? "bg-black/40 group-hover:bg-transparent" : "bg-black/20 group-hover:bg-transparent")} />
                        
                        {/* Lock overlay */}
                        {back.isLocked && (
-                           <div className="absolute inset-0 flex flex-col items-center justify-center text-red-500 gap-2">
-                               <Lock className="w-8 h-8" />
-                               <span className="text-xs font-bold uppercase tracking-widest bg-black/80 px-2 py-1 rounded">Kilitli</span>
+                           <div className="absolute inset-0 flex flex-col items-center justify-center text-white/90 gap-2 mb-4 group-hover:opacity-0 transition-opacity">
+                               <Lock className="w-8 h-8 drop-shadow-md" />
                            </div>
                        )}
 
@@ -523,8 +530,8 @@ const DeckBuilder = () => {
                          </div>
                        )}
                        
-                       <div className="absolute bottom-0 inset-x-0 bg-black/80 p-2 text-center text-xs font-bold text-gold uppercase tracking-wider">
-                          {back.name}
+                       <div className="absolute bottom-0 inset-x-0 bg-black/80 p-2 text-center text-xs font-bold text-gold uppercase tracking-wider truncate">
+                          {back.name[language as "tr" | "en"] || back.name["en"]}
                        </div>
                     </button>
                  ))}
