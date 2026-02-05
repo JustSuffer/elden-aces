@@ -54,9 +54,9 @@ export interface ShopItem {
     desc: { tr: string; en: string };
     image: string; // Filename in /assets/avatars or /assets/decks
     isDefault?: boolean;
+    className?: "Vitalist" | "Slayer" | "Fateweaver" | "Oracle" | "Chronokeeper" | "Cryomancer" | "Decay" | "Siren" | "Augmentor" | "Vessel" | "Mimic";
 }
 
-// "son atacağım dışında hepsi sadece shoptan alınabilecek"
 // "son atacağım dışında hepsi sadece shoptan alınabilecek"
 export const CARD_BACKS: ShopItem[] = [
     // Premium (Locked) Backs - Reverted to Original Names with Updated Price (10000)
@@ -76,9 +76,9 @@ export const CARD_BACKS: ShopItem[] = [
 ];
 
 export const HEROES: ShopItem[] = [
-    { id: "hero_chrono", type: "hero", price: 10000, name: { tr: "Chronokeeper", en: "Chronokeeper" }, desc: { tr: "Zamanın Efendisi.", en: "Master of Time." }, image: "chronokeeper" },
-    { id: "hero_siren", type: "hero", price: 10000, name: { tr: "Siren", en: "Siren" }, desc: { tr: "Aşkın Laneti.", en: "Curse of Love." }, image: "siren" },
-    { id: "hero_decay", type: "hero", price: 10000, name: { tr: "Decay", en: "Decay" }, desc: { tr: "Çürüme.", en: "Rot and Ruin." }, image: "decay" },
+    { id: "hero_yorxy", type: "hero", price: 10000, name: { tr: "Yorxy", en: "Yorxy" }, desc: { tr: "Buzul Kraliçe.", en: "Glacial Queen." }, image: "yorxy", className: "Cryomancer" },
+    { id: "hero_notkhell", type: "hero", price: 10000, name: { tr: "Notkhell", en: "Notkhell" }, desc: { tr: "Soğuk Savaşçı.", en: "Cold Warrior." }, image: "notkhell", className: "Cryomancer" },
+    { id: "hero_ciel", type: "hero", price: 10000, name: { tr: "Ciel", en: "Ciel" }, desc: { tr: "Kristal Muhafız.", en: "Crystal Guardian." }, image: "ciel", className: "Cryomancer" },
 ];
 
 export const ALL_SHOP_ITEMS = [...CARD_BACKS.filter(i => !i.isDefault), ...HEROES];

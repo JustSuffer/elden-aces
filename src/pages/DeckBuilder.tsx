@@ -12,7 +12,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { CharacterAvatar } from "@/components/game/CharacterAvatar";
 import { useCloudDecks } from "@/hooks/useCloudDecks";
 import { supabase } from "@/integrations/supabase/client";
-import { CARD_BACKS } from "@/data/shopData";
+import { CARD_BACKS, HEROES } from "@/data/shopData";
 
 const ALL_CLASSES: ClassName[] = [
   "Vitalist", "Slayer", "Fateweaver", "Oracle", "Chronokeeper",
@@ -61,6 +61,7 @@ const DeckBuilder = () => {
   const [cardBack, setCardBack] = useState<string>("Slayer");
   const [editingDeckId, setEditingDeckId] = useState<string | null>(null);
   const [unlockedItems, setUnlockedItems] = useState<string[]>([]); // New state
+  const [selectedHeroId, setSelectedHeroId] = useState<string | null>(null);
 
   // Fetch unlocked items
   useEffect(() => {
@@ -111,6 +112,56 @@ const DeckBuilder = () => {
     return ALL_CLASSES.filter(c => c !== mainClass);
   }, [mainClass]);
 
+  // Helpers for Hero Selection
+  const availableHeroes = useMemo(() => {
+    if (!mainClass) return [];
+    
+    // Default Hero (Class Avatar)
+    const defaultHero = {
+        id: `default_${mainClass}`,
+        name: MASTER_CLASSES[mainClass].heroName || mainClass,
+        image: "", // Empty string relies on CharacterAvatar default logic
+        isLocked: false,
+        className: mainClass
+    };
+
+    // Shop Heroes for this class
+    const shopHeroes = HEROES.filter(h => h.className === mainClass).map(h => ({
+        id: h.id,
+        name: h.name[language as "tr" | "en"] || h.name["en"],
+        image: h.image,
+        isLocked: !unlockedItems.includes(h.id),
+        className: h.className
+    }));
+
+    return [defaultHero, ...shopHeroes];
+  }, [mainClass, unlockedItems, language]);
+
+  // Helpers for Hero Selection
+  const availableHeroes = useMemo(() => {
+    if (!mainClass) return [];
+    
+    // Default Hero (Class Avatar)
+    const defaultHero = {
+        id: `default_${mainClass}`,
+        name: MASTER_CLASSES[mainClass].heroName || mainClass,
+        image: "", // Empty string relies on CharacterAvatar default logic
+        isLocked: false,
+        className: mainClass
+    };
+
+    // Shop Heroes for this class
+    const shopHeroes = HEROES.filter(h => h.className === mainClass).map(h => ({
+        id: h.id,
+        name: h.name[language as "tr" | "en"] || h.name["en"],
+        image: h.image,
+        isLocked: !unlockedItems.includes(h.id),
+        className: h.className
+    }));
+
+    return [defaultHero, ...shopHeroes];
+  }, [mainClass, unlockedItems, language]);
+
   const isComplete = useMemo(() => {
     const requiredCount = mainClass === "Vessel" ? 4 : 3;
     return mainClass && isHeroSelected && secondaryClasses.length === requiredCount && deckName.trim().length > 0;
@@ -129,8 +180,9 @@ const DeckBuilder = () => {
     }, 100);
   };
 
-  const handleHeroSelect = () => {
+  const handleHeroSelect = (heroId?: string) => {
     setIsHeroSelected(true);
+    if (heroId) setSelectedHeroId(heroId);
     setTimeout(() => {
         secondarySectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 100);
@@ -164,6 +216,7 @@ const DeckBuilder = () => {
   const handleResetDeck = () => {
     setMainClass(null);
     setIsHeroSelected(false);
+    setSelectedHeroId(null);
     setSecondaryClasses([]);
     setDeckName("");
     setCardBack("Slayer");
