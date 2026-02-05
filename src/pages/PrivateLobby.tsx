@@ -145,7 +145,7 @@ export default function PrivateLobby() {
           // If match started, navigate
           if (updated.match_id && updated.status === "started") {
             toast.success(language === "tr" ? "Maç başlıyor!" : "Match starting!");
-            navigate(`/online-game/${updated.match_id}`);
+            navigate(`/online-game/${updated.match_id}?mode=private`);
             return;
           }
 
@@ -276,7 +276,7 @@ export default function PrivateLobby() {
       .eq("id", invite.id);
 
     toast.success(language === "tr" ? "Maç başlıyor!" : "Match starting!");
-    navigate(`/online-game/${matchData.id}`);
+    navigate(`/online-game/${matchData.id}?mode=private`);
   }, [invite, user, navigate, language]);
 
   // Cancel/Leave lobby

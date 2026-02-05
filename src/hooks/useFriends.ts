@@ -164,47 +164,91 @@ export function useFriends() {
     }
   }, [user]);
 
-  // Fetch match invites
+  // Fetch match invites (Incoming & Outgoing)
   const fetchMatchInvites = useCallback(async () => {
     if (!user) return;
 
     try {
-      const { data: invites } = await (supabase
+      // Fetch Incoming
+      const { data: incoming } = await (supabase
         .from("private_match_invites" as any) as any)
         .select("*")
         .eq("receiver_id", user.id)
         .eq("status", "pending")
         .order("created_at", { ascending: false });
 
-      if (!invites || invites.length === 0) {
+      // Fetch Outgoing (Active ones)
+      const { data: outgoing } = await (supabase
+        .from("private_match_invites" as any) as any)
+        .select("*")
+        .eq("sender_id", user.id)
+        .neq("status", "rejected") // Don't show rejected
+        .neq("status", "cancelled")
+        .order("created_at", { ascending: false });
+
+      // Process Incoming
+      if (incoming && incoming.length > 0) {
+        const senderIds = incoming.map((i: any) => i.sender_id);
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("user_id, username, avatar_url")
+          .in("user_id", senderIds);
+
+        const profileMap = new Map(
+          (profiles || []).map((p: any) => [p.user_id, p])
+        );
+
+        setMatchInvites(
+            incoming.map((i: any) => {
+            const sender = profileMap.get(i.sender_id);
+            return {
+              id: i.id,
+              sender_id: i.sender_id,
+              sender_username: sender?.username || "Unknown",
+              sender_avatar: sender?.avatar_url,
+              status: i.status,
+              match_id: i.match_id,
+              created_at: i.created_at,
+            };
+          })
+        );
+      } else {
         setMatchInvites([]);
-        return;
       }
 
-      const senderIds = invites.map((i: any) => i.sender_id);
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("user_id, username, avatar_url")
-        .in("user_id", senderIds);
+      // Process Outgoing (Store in state, useFriends returns it)
+      if (outgoing && outgoing.length > 0) {
+          // For outgoing, we might want to know receiver info
+          const receiverIds = outgoing.map((i: any) => i.receiver_id);
+          const { data: profiles } = await supabase
+            .from("profiles")
+            .select("user_id, username, avatar_url")
+            .in("user_id", receiverIds);
+            
+           const profileMap = new Map((profiles || []).map((p:any) => [p.user_id, p]));
+           
+           setOutgoingMatchInvites(
+               outgoing.map((i:any) => {
+                   const receiver = profileMap.get(i.receiver_id);
+                   return {
+                       id: i.id,
+                       sender_id: i.sender_id, // I am sender
+                       sender_username: receiver?.username || "Unknown", // Reuse key or add receiver_username? 
+                       // Interface has sender_username, let's keep it consistent or extend interface.
+                       // Actually, let's just cheat and put receiver info in sender fields for local display if needed, 
+                       // BUT better is to add a proper state.
+                       // For now, I'll store it in a separate state `outgoingMatchInvites`
+                       sender_avatar: receiver?.avatar_url,
+                       status: i.status,
+                       match_id: i.match_id,
+                       created_at: i.created_at
+                   }
+               })
+           )
+      } else {
+          setOutgoingMatchInvites([]);
+      }
 
-      const profileMap = new Map(
-        (profiles || []).map((p: any) => [p.user_id, p])
-      );
-
-      setMatchInvites(
-        invites.map((i: any) => {
-          const sender = profileMap.get(i.sender_id);
-          return {
-            id: i.id,
-            sender_id: i.sender_id,
-            sender_username: sender?.username || "Unknown",
-            sender_avatar: sender?.avatar_url,
-            status: i.status,
-            match_id: i.match_id,
-            created_at: i.created_at,
-          };
-        })
-      );
     } catch (error) {
       console.error("Error fetching match invites:", error);
     }

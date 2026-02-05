@@ -610,81 +610,57 @@ const OnlineGame = () => {
       .single();
 
     const { data: oppStats } = await supabase
-      .from("game_stats")
-      .select("elo_rating")
-      .eq("user_id", opponentId)
-      .single();
-
-    if (myStats && oppStats) {
-      const myElo = myStats.elo_rating || 1000;
-      const oppElo = oppStats.elo_rating || 1000;
-
-      let newMyElo: number, newOppElo: number;
-      let wins = myStats.wins, losses = myStats.losses;
-
-      if (winnerId === user.id) {
-        const result = calculateNewRatings(myElo, oppElo);
-        newMyElo = result.winnerNewRating;
-        newOppElo = result.loserNewRating;
-        wins++;
-      } else if (winnerId === opponentId) {
-        const result = calculateNewRatings(oppElo, myElo);
-        newMyElo = result.loserNewRating;
-        newOppElo = result.winnerNewRating;
-        losses++;
-      } else {
-        const result = calculateDrawRatings(myElo, oppElo);
-        newMyElo = result.player1NewRating;
-        newOppElo = result.player2NewRating;
-      }
-
-      // Update my stats
-      await supabase
         .from("game_stats")
-        .update({
-          elo_rating: newMyElo,
-          wins,
-          losses,
-          total_games: myStats.total_games + 1
-        })
-        .eq("user_id", user.id);
-
-      // Update opponent stats (only total_games, their win/loss handled on their end)
-      await supabase
-        .from("game_stats")
-        .update({ elo_rating: newOppElo })
-        .eq("user_id", opponentId);
-
-      // COIN REWARDS - Online Match:
-      // Win = 100 DC, Draw = 50 DC, Lose = 25 DC, Surrender = 0 DC
-      let reward = 0;
-      if (winnerId === null) {
-          // Draw
-          reward = 50;
-      } else if (winnerId === user.id) {
-          // You Won
-          reward = 100;
-      } else {
-          // You Lost
-          if (isSurrender) {
-             reward = 0;
-          } else {
-             reward = 25;
-          }
-      }
-      
-      if (reward > 0) {
-         // Try RPC first (Atomic)
-         const { error: rpcError } = await supabase.rpc("increment_coins" as any, { amount: reward, user_id: user.id });
-         
-         if (rpcError) {
-             console.warn("[OnlineGame] RPC failed, falling back to direct update:", rpcError);
-             // Fallback
-             const { data } = await supabase.from("profiles").select("divine_coins").eq("user_id", user.id).single();
-             const current = data?.divine_coins || 0;
-             await supabase.from("profiles").update({ divine_coins: current + reward } as any).eq("user_id", user.id);
-         }
-      }
+        .select("elo_rating")
+        .eq("user_id", opponentId)
+        .single();
+    
+    // Check mode
+    const mode = searchParams.get("mode");
+    
+    // Only update ELO if NOT private
+    if (mode !== "private" && myStats && oppStats) {
+       const myElo = myStats.elo_rating || 1000;
+       const oppElo = oppStats.elo_rating || 1000;
+       
+       let newMyElo: number, newOppElo: number;
+       let wins = myStats.wins, losses = myStats.losses;
+       
+       if (winnerId === user.id) {
+         const result = calculateNewRatings(myElo, oppElo);
+         newMyElo = result.winnerNewRating;
+         newOppElo = result.loserNewRating;
+         wins++;
+       } else if (winnerId === opponentId) {
+         const result = calculateNewRatings(oppElo, myElo);
+         newMyElo = result.loserNewRating;
+         newOppElo = result.winnerNewRating;
+         losses++;
+       } else {
+         const result = calculateDrawRatings(myElo, oppElo);
+         newMyElo = result.player1NewRating;
+         newOppElo = result.player2NewRating;
+       }
+       
+       // Update ELO & Wins
+       await supabase.from("game_stats").update({ elo_rating: newMyElo, wins, losses, total_games: myStats.total_games + 1 }).eq("user_id", user.id);
+       await supabase.from("game_stats").update({ elo_rating: newOppElo }).eq("user_id", opponentId);
+       
+       // Coins
+       let reward = 0;
+       if (winnerId === null) reward = 50;
+       else if (winnerId === user.id) reward = 100;
+       else if (!isSurrender) reward = 25;
+       
+       if (reward > 0) {
+           const { error: rpcError } = await supabase.rpc("increment_coins" as any, { amount: reward, user_id: user.id });
+           if (rpcError) {
+              const { data } = await supabase.from("profiles").select("divine_coins").eq("user_id", user.id).single();
+              await supabase.from("profiles").update({ divine_coins: (data?.divine_coins || 0) + reward } as any).eq("user_id", user.id);
+           }
+       }
+    } else {
+        console.log("[OnlineGame] Private mode or missing stats - skipping ELO/Coin updates.");
     }
   }, [match, user, isPlayer1, gameEnded]);
 

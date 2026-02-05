@@ -13,6 +13,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { useEffect } from "react"; // Added useEffect
 import {
   ArrowLeft,
   Users,
@@ -41,6 +42,7 @@ const Friends = () => {
     incomingRequests,
     outgoingRequests,
     matchInvites,
+    outgoingMatchInvites,
     isLoading,
     sendFriendRequest,
     acceptRequest,
@@ -50,6 +52,17 @@ const Friends = () => {
     acceptMatchInvite,
     declineMatchInvite,
   } = useFriends();
+
+  // Watch for accepted outgoing invites
+  useEffect(() => {
+    if (outgoingMatchInvites.length > 0) {
+      const acceptedInvite = outgoingMatchInvites.find(inv => inv.status === 'accepted');
+      if (acceptedInvite) {
+        // Navigate to lobby
+        navigate(`/private-lobby/${acceptedInvite.id}`);
+      }
+    }
+  }, [outgoingMatchInvites, navigate]);
 
   const [searchUsername, setSearchUsername] = useState("");
   const [isSending, setIsSending] = useState(false);
