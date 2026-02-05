@@ -78,7 +78,7 @@ export default function Shop() {
   const [unlockedItems, setUnlockedItems] = useState<string[]>([]); // Mock logic
   const [activeTab, setActiveTab] = useState<"cardback" | "hero">("cardback");
 
-  // Load User Data
+  // Load User Data with Realtime subscription
   useEffect(() => {
     if (!user) return;
     
@@ -101,9 +101,32 @@ export default function Shop() {
     
     fetchUserData();
 
+    // Subscribe to coin changes
+    const channel = supabase
+      .channel("shop-coins")
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload: any) => {
+          if (payload.new?.divine_coins !== undefined) {
+            setCoins(payload.new.divine_coins);
+          }
+        }
+      )
+      .subscribe();
+
     // Random Quote
     const quotes = language === "tr" ? TAVERNER_QUOTES.tr : TAVERNER_QUOTES.en;
     setQuote(quotes[Math.floor(Math.random() * quotes.length)]);
+    
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user, language]);
 
   const handlePurchase = async (item: any) => {

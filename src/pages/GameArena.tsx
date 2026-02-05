@@ -32,21 +32,20 @@ export default function GameArena() {
 
   const { user } = useAuth();
 
-  const handleGameEnd = useCallback(async (result: "win" | "lose", isSurrender?: boolean) => {
+  const handleGameEnd = useCallback(async (result: "win" | "lose" | "draw", isSurrender?: boolean) => {
       if (!user) return;
       
+      // Bot Match Rewards:
+      // Win = 50 DC, Draw = 25 DC, Lose = 10 DC, Surrender = 0 DC
       let reward = 0;
-      if (result === "win") {
-          reward = 50;
-          // toast.success("Zafer! +50 Divine Coin");
+      if (isSurrender) {
+        reward = 0;
+      } else if (result === "win") {
+        reward = 50;
+      } else if (result === "draw") {
+        reward = 25;
       } else {
-          if (isSurrender) {
-              // toast.info("Teslim oldun. 0 Divine Coin");
-              reward = 0;
-          } else {
-              reward = 10; 
-              // toast.info("Yenilgi. +10 Divine Coin");
-          }
+        reward = 10;
       }
 
       if (reward > 0) {
@@ -59,12 +58,12 @@ export default function GameArena() {
              console.warn("[GameArena] RPC increment_coins failed, falling back to direct update:", rpcError);
              
              // Fallback: Direct Update
-             const { data, error: selectError } = await supabase.from("profiles").select("divine_coins").eq("id", user.id).single();
+             const { data, error: selectError } = await supabase.from("profiles").select("divine_coins").eq("user_id", user.id).single();
              if (selectError) {
                  console.error("[GameArena] Failed to fetch current coins for fallback:", selectError);
              } else {
                  const current = data?.divine_coins || 0;
-                 const { error: updateError } = await supabase.from("profiles").update({ divine_coins: current + reward } as any).eq("id", user.id);
+                 const { error: updateError } = await supabase.from("profiles").update({ divine_coins: current + reward } as any).eq("user_id", user.id);
                  
                  if (updateError) {
                      console.error("[GameArena] Fallback update also failed:", updateError);
@@ -77,7 +76,7 @@ export default function GameArena() {
              console.log(`[GameArena] RPC success. Added ${reward} coins.`);
          }
       } else {
-          console.log(`[GameArena] No reward for this outcome (Reward: ${reward})`);
+          console.log(`[GameArena] No reward for this outcome (Surrender)`);
       }
       
       // Do NOT navigate automatically. Wait for user to click "Return to Menu" on the Defeat screen.
