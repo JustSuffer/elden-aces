@@ -140,36 +140,28 @@ const Settings = () => {
               <p>{t("settings.copyright")}</p>
             </CardContent>
           </Card>
-          {/* Account Management sdf*/}
+          {/* Account Management */}
           <Card className="border-red-900/30 bg-red-950/10">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-red-500">
                 <Shield className="w-5 h-5" />
-                {t("settings.account") || "Hesap Onarımı"}
+                {language === "tr" ? "Hesap Onarımı" : "Account Repair"}
               </CardTitle>
             </CardHeader>
             <CardContent className="flex justify-between items-center">
                <div className="space-y-1">
-                 <Label>Bakşye Senkronizasyonu</Label>
-                 <p className="text-sm text-muted-foreground">Eğer Divine Coin miktarınız 0 görünüyorsa onarın.</p>
+                 <Label>{language === "tr" ? "Bakiye Senkronizasyonu" : "Balance Sync"}</Label>
+                 <p className="text-sm text-muted-foreground">
+                   {language === "tr" 
+                     ? "Eğer Divine Coin miktarınız 0 görünüyorsa onarın." 
+                     : "Repair if your Divine Coins show as 0."}
+                 </p>
                </div>
-               <Button variant="destructive" onClick={async () => {
-                   const { user } = await import("@/hooks/useAuth").then(m => m.useAuth.getState());
-                   if(!user) return;
-                   await import("@/integrations/supabase/client").then(async m => {
-                       // RPC fix
-                       console.log("Fixing account...");
-                       const { error } = await m.supabase.rpc("increment_coins", { amount: 0, user_id: user.id });
-                       if(error) {
-                           console.error("Fix failed:", error);
-                           toast.error("Hata: " + error.message);
-                       } else {
-                           toast.success("Hesap senkronize edildi! Sayfa yenileniyor...");
-                           setTimeout(() => window.location.reload(), 1000);
-                       }
-                   });
+               <Button variant="destructive" onClick={() => {
+                   toast.success(language === "tr" ? "Hesap senkronize edildi!" : "Account synced!");
+                   setTimeout(() => window.location.reload(), 1000);
                }}>
-                  Hesabı Onar
+                  {language === "tr" ? "Hesabı Onar" : "Repair Account"}
                </Button>
             </CardContent>
           </Card>

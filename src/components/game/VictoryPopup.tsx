@@ -13,7 +13,6 @@ interface VictoryPopupProps {
   winReason?: string;
   damageDetails?: string[];
   onReturnToMenu: () => void;
-  onReturnToMenu: () => void;
   delayMs?: number;
   isOnline?: boolean;
 }

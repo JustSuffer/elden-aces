@@ -1,7 +1,7 @@
-
 import React from "react";
 import { GameMatch } from "@/components/game/GameMatch";
 import { SavedDeck } from "@/types/deck";
+import { ClassName } from "@/types/game";
 import { MASTER_CLASSES, createDeck } from "@/data/gameData";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -29,7 +29,7 @@ const Tutorial = () => {
   const getSpecialCards = () => createDeck("Cryomancer").filter(c => c.type === "special"); // Reuse helper for specials
 
   // Player Deck: Cryomancer + Siren, Fateweaver, Vitalist
-  const playerSubclasses = ["Siren", "Fateweaver", "Vitalist"];
+  const playerSubclasses: ClassName[] = ["Siren", "Fateweaver", "Vitalist"];
   const playerCards = [
       ...createClassCards("Cryomancer", 6),
       ...getSpecialCards(),
@@ -46,7 +46,7 @@ const Tutorial = () => {
   };
 
   // Opponent Deck: Slayer + Siren, Fateweaver, Vitalist
-  const opponentSubclasses = ["Siren", "Fateweaver", "Vitalist"];
+  const opponentSubclasses: ClassName[] = ["Siren", "Fateweaver", "Vitalist"];
   const opponentCards = [
       ...createClassCards("Slayer", 6),
       ...getSpecialCards(),
