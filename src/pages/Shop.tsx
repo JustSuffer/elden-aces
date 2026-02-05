@@ -197,11 +197,8 @@ export default function Shop() {
                      <div className="h-48 bg-stone-900 relative flex items-center justify-center overflow-hidden">
                         {/* Here we would put real images. For now placeholders or CSS art */}
                         <div className={`w-32 h-44 rounded-lg shadow-2xl transform group-hover:scale-105 transition-transform duration-500 ${isUnlocked ? 'grayscale-0' : 'grayscale-[0.3]'}`}
-                             style={{ background: item.type === 'cardback' ? `linear-gradient(45deg, #333, #666)` : `url(/assets/avatars/${item.image}.jpg) center/cover` }}>
-                             {/* Mock Visual */}
-                             {item.type === 'cardback' && <div className="w-full h-full flex items-center justify-center border-4 border-amber-700/50 rounded-lg">
-                                 <span className="text-4xl">🃏</span>
-                             </div>}
+                             style={{ background: item.type === 'cardback' ? `url(/assets/decks/${item.image}.jpg) center/cover` : `url(/assets/avatars/${item.image}.jpg) center/cover` }}>
+                             {/* Mock Visual - Removed since we have images now */}
                         </div>
                         
                         {isUnlocked && (

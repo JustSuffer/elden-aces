@@ -59,13 +59,13 @@ export interface ShopItem {
 // "son atacağım dışında hepsi sadece shoptan alınabilecek"
 export const CARD_BACKS: ShopItem[] = [
     // Premium (Locked) Backs
-    { id: "cb_arid", type: "cardback", price: 3000, name: { tr: "Arid", en: "Arid" }, desc: { tr: "Kurak toprakların gücü.", en: "Power of the arid lands." }, image: "Arid", isDefault: false },
-    { id: "cb_noty", type: "cardback", price: 3500, name: { tr: "Noty", en: "Noty" }, desc: { tr: "Gizemli semboller.", en: "Mysterious symbols." }, image: "Noty", isDefault: false },
-    { id: "cb_reniur", type: "cardback", price: 4000, name: { tr: "Reniur", en: "Reniur" }, desc: { tr: "Kadim büyü.", en: "Ancient magic." }, image: "Reniur", isDefault: false },
-    { id: "cb_perol", type: "cardback", price: 4500, name: { tr: "Perol", en: "Perol" }, desc: { tr: "İhtişamlı.", en: "Magnificent." }, image: "Perol", isDefault: false },
-    { id: "cb_ctrix", type: "cardback", price: 5000, name: { tr: "Ctrix", en: "Ctrix" }, desc: { tr: "Teknolojik.", en: "Technological." }, image: "Ctrix", isDefault: false },
-    { id: "cb_prxyla", type: "cardback", price: 5500, name: { tr: "Prxyla", en: "Prxyla" }, desc: { tr: "Kristalize enerji.", en: "Crystallized energy." }, image: "Prxyla", isDefault: false },
-    { id: "cb_lrot", type: "cardback", price: 6000, name: { tr: "Lrot", en: "Lrot" }, desc: { tr: "Doğanın öfkesi.", en: "Nature's wrath." }, image: "Lrot", isDefault: false },
+    { id: "cb_arid", type: "cardback", price: 10000, name: { tr: "Arid", en: "Arid" }, desc: { tr: "Kurak toprakların gücü.", en: "Power of the arid lands." }, image: "Arid", isDefault: false },
+    { id: "cb_noty", type: "cardback", price: 10000, name: { tr: "Noty", en: "Noty" }, desc: { tr: "Gizemli semboller.", en: "Mysterious symbols." }, image: "Noty", isDefault: false },
+    { id: "cb_reniur", type: "cardback", price: 10000, name: { tr: "Reniur", en: "Reniur" }, desc: { tr: "Kadim büyü.", en: "Ancient magic." }, image: "Reniur", isDefault: false },
+    { id: "cb_perol", type: "cardback", price: 10000, name: { tr: "Perol", en: "Perol" }, desc: { tr: "İhtişamlı.", en: "Magnificent." }, image: "Perol", isDefault: false },
+    { id: "cb_ctrix", type: "cardback", price: 10000, name: { tr: "Ctrix", en: "Ctrix" }, desc: { tr: "Teknolojik.", en: "Technological." }, image: "Ctrix", isDefault: false },
+    { id: "cb_prxyla", type: "cardback", price: 10000, name: { tr: "Prxyla", en: "Prxyla" }, desc: { tr: "Kristalize enerji.", en: "Crystallized energy." }, image: "Prxyla", isDefault: false },
+    { id: "cb_lrot", type: "cardback", price: 10000, name: { tr: "Lrot", en: "Lrot" }, desc: { tr: "Doğanın öfkesi.", en: "Nature's wrath." }, image: "Lrot", isDefault: false },
     
     // Story Reward (Not in Shop)
     { id: "cb_eratyum", type: "cardback", price: 99999, name: { tr: "Eratyum", en: "Eratyum" }, desc: { tr: "Hikaye Modu Ödülü.", en: "Story Mode Reward." }, image: "Eratyum", isDefault: false },

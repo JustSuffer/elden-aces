@@ -90,8 +90,9 @@ const Credits = () => {
                 To all players who embark on this strategic journey through the ancient realms of ACORIA.
                 May your cards be ever in your favor, and your strategy unmatched.
 
-                                    İzzet Can Sorna
+                                    
               </p>
+              <p className="text-center text-muted-foreground">İzzet Can Sorna</p>
             </CardContent>
           </Card>
 
