@@ -538,6 +538,7 @@ export function useFriends() {
     incomingRequests,
     outgoingRequests,
     matchInvites,
+    outgoingMatchInvites, // Add this line
     isLoading,
     sendFriendRequest,
     acceptRequest,

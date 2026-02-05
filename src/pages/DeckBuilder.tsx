@@ -1,7 +1,50 @@
-import { supabase } from "@/integrations/supabase/client"; // Add supabase import
-import { CARD_BACKS } from "@/data/shopData"; // Add CARD_BACKS import
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft, Save, RotateCcw, Check, Trash2, Edit2, Cloud, Loader2, Lock } from "lucide-react";
+import { useState, useMemo, useEffect, useRef } from "react";
+import { toast } from "sonner";
+import { ClassName, Card, SpecialCardType } from "@/types/game";
+import { SavedDeck } from "@/types/deck";
+import { MASTER_CLASSES, SPECIAL_CARDS_DATA } from "@/data/gameData";
+import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
+import { CharacterAvatar } from "@/components/game/CharacterAvatar";
+import { useCloudDecks } from "@/hooks/useCloudDecks";
+import { supabase } from "@/integrations/supabase/client";
+import { CARD_BACKS } from "@/data/shopData";
 
-// ... imports
+const ALL_CLASSES: ClassName[] = [
+  "Vitalist", "Slayer", "Fateweaver", "Oracle", "Chronokeeper",
+  "Cryomancer", "Decay", "Siren", "Augmentor", "Vessel", "Mimic"
+];
+
+function generateClassCards(className: ClassName): Card[] {
+  const classData = MASTER_CLASSES[className];
+  return Array.from({ length: 6 }, (_, i) => ({
+    id: `${className.toLowerCase()}-${i + 1}-${Date.now()}`,
+    name: `${classData.name} ${i + 1}`,
+    symbol: classData.symbol,
+    value: i + 1,
+    type: "numeric" as const,
+    classSymbol: classData.symbol,
+    color: classData.color,
+  }));
+}
+
+function generateSpecialCards(): Card[] {
+  const specialTypes: SpecialCardType[] = ["twisted", "twisted", "deflate", "deflate", "delta", "sigma"];
+  return specialTypes.map((type, idx) => ({
+    id: `special-${type}-${idx}-${Date.now()}`,
+    name: SPECIAL_CARDS_DATA[type].name,
+    symbol: SPECIAL_CARDS_DATA[type].symbol,
+    type: "special" as const,
+    specialType: type,
+    value: 0,
+    description: SPECIAL_CARDS_DATA[type].description,
+    color: "primary",
+  }));
+}
 
 const DeckBuilder = () => {
   const navigate = useNavigate();
