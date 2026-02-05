@@ -62,13 +62,39 @@ const Menu = () => {
   // Fetch Coins
   const { user } = useAuth();
   const [coins, setCoins] = useState<number | null>(null);
+  
+  // Fetch and subscribe to coin updates
   useEffect(() => {
     if(!user) return;
+    
     const fetchCoins = async () => {
-       const { data } = await supabase.from("profiles").select("divine_coins").eq("id", user.id).single();
+       const { data } = await supabase.from("profiles").select("divine_coins").eq("user_id", user.id).single();
        if(data) setCoins(data.divine_coins || 0);
     };
     fetchCoins();
+    
+    // Subscribe to coin changes
+    const channel = supabase
+      .channel("profile-coins")
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload: any) => {
+          if (payload.new?.divine_coins !== undefined) {
+            setCoins(payload.new.divine_coins);
+          }
+        }
+      )
+      .subscribe();
+    
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user]);
 
   return (
