@@ -140,11 +140,24 @@ const DeckBuilder = () => {
     const limit = mainClass === "Vessel" ? 4 : 3;
     
     setSecondaryClasses(prev => {
+      let newClasses = prev;
       if (prev.includes(className)) {
-        return prev.filter(c => c !== className);
+        newClasses = prev.filter(c => c !== className);
+      } else {
+         if (prev.length >= limit) return prev;
+         newClasses = [...prev, className];
       }
-      if (prev.length >= limit) return prev;
-      return [...prev, className];
+
+      // If we reached the limit, scroll to the card back section
+      if (newClasses.length === limit) {
+         setTimeout(() => {
+            // Find the card back section (it renders when length === limit)
+            const section = document.getElementById("step-4-cardback");
+            section?.scrollIntoView({ behavior: "smooth", block: "start" });
+         }, 200); // Slight delay for render
+      }
+
+      return newClasses;
     });
   };
 
@@ -505,7 +518,7 @@ const DeckBuilder = () => {
                         cardBack === back.image
                           ? "border-primary shadow-[0_0_20px_rgba(197,160,89,0.5)] scale-105" 
                           : back.isLocked
-                            ? "border-primary/20 opacity-80 grayscale hover:grayscale-0 transition-all" // Visible but gray, hover shows color
+                            ? "border-gray-800 opacity-100 grayscale cursor-not-allowed hover:grayscale-0 transition-all duration-300" // Fully visible but grayscale
                             : "border-transparent hover:border-primary/50 opacity-90 hover:opacity-100 hover:scale-[1.02]"
                       )}
                     >
@@ -513,14 +526,17 @@ const DeckBuilder = () => {
                          src={`/assets/decks/${back.image}.jpg`} 
                          alt={back.name[language as "tr" | "en"] || back.name["en"]} 
                          className="w-full h-full object-cover"
-                         onError={(e) => e.currentTarget.src = "/assets/decks/default_back.jpg"} 
+                         onError={(e) => {
+                           e.currentTarget.src = "/assets/decks/default_back.jpg";
+                           e.currentTarget.style.filter = "grayscale(100%)"; // Ensure fallback is also gray if locked
+                         }} 
                        />
-                       <div className={cn("absolute inset-0 transition-all", back.isLocked ? "bg-black/40 group-hover:bg-transparent" : "bg-black/20 group-hover:bg-transparent")} />
+                       <div className={cn("absolute inset-0 transition-all", back.isLocked ? "bg-black/30" : "bg-black/20 group-hover:bg-transparent")} />
                        
-                       {/* Lock overlay */}
+                       {/* Lock overlay - Make it clearer but less obstructive */}
                        {back.isLocked && (
-                           <div className="absolute inset-0 flex flex-col items-center justify-center text-white/90 gap-2 mb-4 group-hover:opacity-0 transition-opacity">
-                               <Lock className="w-8 h-8 drop-shadow-md" />
+                           <div className="absolute top-2 left-2 text-white/90 drop-shadow-md z-10">
+                               <Lock className="w-6 h-6" />
                            </div>
                        )}
 
