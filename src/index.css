@@ -262,9 +262,7 @@ All colors MUST be HSL.
   box-shadow: 0 40px 80px rgba(0,0,0,0.8);
   border: 4px solid #444;
   border-image: linear-gradient(to bottom, #b8860b, #333) 1;
-  background: 
-    linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
-    url('/arena_stone_texture_1766164178159.png');
+  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5));
   background-size: cover;
   border-radius: 12px;
   padding: 3rem;
