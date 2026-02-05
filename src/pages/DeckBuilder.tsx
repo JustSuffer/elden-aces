@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { GameCard } from "@/components/game/GameCard";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Save, RotateCcw, Check, Trash2, Edit2, Cloud, Loader2 } from "lucide-react";
+import { ArrowLeft, Save, RotateCcw, Check, Trash2, Edit2, Cloud, Loader2, Lock } from "lucide-react";
 import { useState, useMemo, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { ClassName, Card, SpecialCardType } from "@/types/game";

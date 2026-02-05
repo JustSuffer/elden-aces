@@ -7,67 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Coins, Lock, ShoppingCart, Info } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { MASTER_CLASSES } from "@/data/gameData";
-
-const TAVERNER_QUOTES = {
-  tr: [
-    "Hoş geldin gezgin! Altınların parlıyor.",
-    "Buralarda en iyi mallar benim tezgahımda.",
-    "Acoria'nın derinliklerinden gelen eşyalar...",
-    "Biraz dinlen, belki bir şeyler satın alırsın?",
-    "Savaş zorlu mu geçiyor? Doğru yere geldin.",
-    "Kaderini değiştirecek kartlar burada.",
-    "Bu kupa senin için mi? Yoksa düşmanın için mi?",
-    "Altınlarını akıllıca harca, geri dönüşü yok.",
-    "Hah! O son maçını izledim, daha iyi kartlara ihtiyacın var.",
-    "Efsaneler burada doğar... ve burada iflas eder.",
-    "Gözlerin yorgun bakıyor, ama cüzdanın dolu gibi.",
-    "Karanlıkta parlayan tek şey benim dükkanım.",
-    "Bir büyücü, bir savaşçı ve sen... Bara girmemişsiniz ama dükkanındasınız.",
-    "Nadir bulunan parçalar, sadece seçilmişler için.",
-    "Korkma, fiyatlarım can yakmaz... en azından çok fazla.",
-    "Bugün şanslı günündesin evlat.",
-    "Bakma öyle, bu yara izlerini bedava almadım.",
-    "Sessizliği severim ama altın sesini daha çok severim.",
-    "Acele etme, zaman burada farklı akar.",
-    "Bunu alırsan pişman olmazsın, almazsan belki."
-  ],
-  en: [
-    "Welcome traveler! Your coin purse looks heavy.",
-    "Best wares in all of Acoria right here.",
-    "Artifacts from the deep abyss...",
-    "Rest a while, spend a coin or two?",
-    "War treating you rough? You came to the right place.",
-    "Cards to change your fate lie here.",
-    "Is that chalice for you? Or your enemy?",
-    "Spend wisely, there are no refunds on destiny.",
-    "Hah! I saw that last match, you need better gear.",
-    "Legends are born here... and go broke here.",
-    "Your eyes look tired, but your purse looks full.",
-    "The only thing shining in the dark is my shop.",
-    "Rare items, for the chosen few only.",
-    "Don't worry, my prices don't bite... much.",
-    "Today is your lucky day, kid.",
-    "Don't stare, I didn't get these scars for free.",
-    "I like silence, but I like the sound of gold more.",
-    "Take your time, time flows differently here.",
-    "Buy this and you won't regret it. Maybe.",
-    "Looking for power? It has a price."
-  ]
-};
-
-const ITEMS = [
-  // Card Backs
-  { id: "cb_gold", type: "cardback", price: 5500, name: { tr: "Altın Varak", en: "Gold Leaf" }, desc: { tr: "Zenginliğin simgesi.", en: "Symbol of wealth." }, image: "gold-back" },
-  { id: "cb_void", type: "cardback", price: 5500, name: { tr: "Hiçlik", en: "The Void" }, desc: { tr: "Karanlığın kendisi.", en: "Darkness itself." }, image: "void-back" },
-  { id: "cb_blood", type: "cardback", price: 5500, name: { tr: "Kan Yemini", en: "Blood Oath" }, desc: { tr: "Zafer kan ister.", en: "Victory demands blood." }, image: "blood-back" },
-  
-  // Heroes (Mock - usually unlocked via story but can be bought to skip?)
-  // Let's assume unlocking a hero class early or a skin
-  { id: "hero_chrono", type: "hero", price: 10000, name: { tr: "Chronokeeper", en: "Chronokeeper" }, desc: { tr: "Zamanın Efendisi.", en: "Master of Time." }, image: "chronokeeper" },
-  { id: "hero_siren", type: "hero", price: 10000, name: { tr: "Siren", en: "Siren" }, desc: { tr: "Aşkın Laneti.", en: "Curse of Love." }, image: "siren" },
-  { id: "hero_decay", type: "hero", price: 10000, name: { tr: "Decay", en: "Decay" }, desc: { tr: "Çürüme.", en: "Rot and Ruin." }, image: "decay" },
-];
+import { TAVERNER_QUOTES, ALL_SHOP_ITEMS, ShopItem } from "@/data/shopData";
 
 export default function Shop() {
   const { user } = useAuth();
@@ -75,7 +15,7 @@ export default function Shop() {
   const navigate = useNavigate();
   const [quote, setQuote] = useState("");
   const [coins, setCoins] = useState(0);
-  const [unlockedItems, setUnlockedItems] = useState<string[]>([]); // Mock logic
+  const [unlockedItems, setUnlockedItems] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<"cardback" | "hero">("cardback");
 
   // Load User Data
@@ -83,20 +23,26 @@ export default function Shop() {
     if (!user) return;
     
     const fetchUserData = async () => {
-      // Fetch coins from profiles table
+      // Fetch coins and unlocked_items from profiles table
       const { data, error } = await supabase
         .from("profiles")
-        .select("divine_coins")
-        .eq("user_id", user.id)
+        .select("divine_coins, unlocked_items")
+        .eq("id", user.id) // IMPORTANT: changed user_id to id to match schema used in GameArena
         .maybeSingle();
       
       if (data) {
         setCoins((data as any).divine_coins || 0);
+        // Ensure unlocked_items is an array
+        const items = (data as any).unlocked_items;
+        if (Array.isArray(items)) {
+            setUnlockedItems(items);
+        } else {
+            setUnlockedItems([]);
+        }
       } else {
         setCoins(0); 
+        setUnlockedItems([]);
       }
-      // unlocked_items not in schema yet, use empty for now
-      setUnlockedItems([]);
     };
     
     fetchUserData();
@@ -106,7 +52,7 @@ export default function Shop() {
     setQuote(quotes[Math.floor(Math.random() * quotes.length)]);
   }, [user, language]);
 
-  const handlePurchase = async (item: any) => {
+  const handlePurchase = async (item: ShopItem) => {
     if (unlockedItems.includes(item.id)) return;
 
     if (coins < item.price) {
@@ -114,7 +60,7 @@ export default function Shop() {
       return;
     }
 
-    // Mock Transaction
+    // Mock Transaction (Optimistic)
     const newCoins = coins - item.price;
     const newUnlocked = [...unlockedItems, item.id];
 
@@ -125,18 +71,22 @@ export default function Shop() {
 
     // Real DB Update
     if (user) {
+        // We need to update both coins and the array.
+        // Supabase basic update:
         const { error } = await supabase.from("profiles").update({
-            divine_coins: newCoins
-        } as any).eq("user_id", user.id);
+            divine_coins: newCoins,
+            unlocked_items: newUnlocked
+        } as any).eq("id", user.id);
         
         if (error) {
             console.error("Purchase failed", error);
-            // Revert on error would go here
+            toast.error("Bağlantı hatası: İşlem kaydedilemedi.");
+            // Revert state if needed, but for now just warn
         }
     }
   };
 
-  const filteredItems = ITEMS.filter(i => i.type === activeTab);
+  const filteredItems = ALL_SHOP_ITEMS.filter(i => i.type === activeTab);
 
   return (
     <div className="min-h-screen bg-stone-950 flex flex-col md:flex-row font-cinzel text-amber-500 overflow-hidden relative">
