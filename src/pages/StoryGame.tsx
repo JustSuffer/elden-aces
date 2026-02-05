@@ -96,13 +96,26 @@ export default function StoryGame() {
     return region.levels[currentIndex + 1].id;
   };
 
-  const handleGameEnd = async (result: "win" | "lose") => {
-    setShowOutro(result);
-    if (result === "win" && level) {
-      completeLevel(level.id);
+  const handleGameEnd = async (result: "win" | "lose" | "draw", isSurrender?: boolean) => {
+    setShowOutro(result === "draw" ? "win" : result); // Treat draw as win for story purposes
+    if (result === "win" || result === "draw") {
+      if (level) completeLevel(level.id);
     }
 
-    // Save Bot Match Stats
+    // Story Mode Rewards:
+    // Win = 50 DC, Draw = 25 DC, Lose = 10 DC, Surrender = 0 DC
+    let reward = 0;
+    if (isSurrender) {
+      reward = 0;
+    } else if (result === "win") {
+      reward = 50;
+    } else if (result === "draw") {
+      reward = 25;
+    } else {
+      reward = 10;
+    }
+
+    // Save Bot Match Stats and Award Coins
     if (user && playerDeck && level) {
       const { error } = await (supabase.from("bot_match_stats" as any) as any).insert({
         user_id: user.id,
@@ -113,11 +126,23 @@ export default function StoryGame() {
         result: result,
         player_final_hp: 0,
         opponent_final_hp: 0,
-        divine_coins_earned: result === "win" ? 10 : 0,
+        divine_coins_earned: reward,
       });
 
       if (error) {
         console.error("Error saving match stats:", error);
+      }
+
+      // Award coins
+      if (reward > 0) {
+        const { error: rpcError } = await supabase.rpc("increment_coins" as any, { amount: reward, user_id: user.id });
+        
+        if (rpcError) {
+          console.warn("[StoryGame] RPC failed, falling back:", rpcError);
+          const { data } = await supabase.from("profiles").select("divine_coins").eq("user_id", user.id).single();
+          const current = data?.divine_coins || 0;
+          await supabase.from("profiles").update({ divine_coins: current + reward } as any).eq("user_id", user.id);
+        }
       }
     }
   };

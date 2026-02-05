@@ -655,9 +655,13 @@ const OnlineGame = () => {
         .update({ elo_rating: newOppElo })
         .eq("user_id", opponentId);
 
-      // COIN REWARDS
+      // COIN REWARDS - Online Match:
+      // Win = 100 DC, Draw = 50 DC, Lose = 25 DC, Surrender = 0 DC
       let reward = 0;
-      if (winnerId === user.id) {
+      if (winnerId === null) {
+          // Draw
+          reward = 50;
+      } else if (winnerId === user.id) {
           // You Won
           reward = 100;
       } else {
@@ -676,23 +680,24 @@ const OnlineGame = () => {
          if (rpcError) {
              console.warn("[OnlineGame] RPC failed, falling back to direct update:", rpcError);
              // Fallback
-             const { data } = await supabase.from("profiles").select("divine_coins").eq("id", user.id).single();
+             const { data } = await supabase.from("profiles").select("divine_coins").eq("user_id", user.id).single();
              const current = data?.divine_coins || 0;
-             await supabase.from("profiles").update({ divine_coins: current + reward } as any).eq("id", user.id);
+             await supabase.from("profiles").update({ divine_coins: current + reward } as any).eq("user_id", user.id);
          }
       }
     }
   }, [match, user, isPlayer1, gameEnded]);
 
   // Handle generic game end from GameMatch (Concede OR Normal)
-  const handleMatchEnd = useCallback((result: "win" | "lose", isSurrender: boolean = false) => {
+  const handleMatchEnd = useCallback((result: "win" | "lose" | "draw", isSurrender: boolean = false) => {
      if (!match || !user) return;
      const opponentId = isPlayer1 ? match.player2_id : match.player1_id;
      
      // Determine winner based on result from MY perspective
      // result="win" -> I won.
      // result="lose" -> I lost (or conceded).
-     const winnerId = result === "win" ? user.id : opponentId;
+     // result="draw" -> No winner
+     const winnerId = result === "win" ? user.id : (result === "lose" ? opponentId : null);
      
      // For HP, we might want real values, but if not available we use 40/0 or 0/40.
      // GameMatch doesn't pass HP in onGameEnd yet. We can assume 0 for loser.
