@@ -22,19 +22,26 @@ const PLAYLIST = [
 
 export function BackgroundMusic() {
   const [isPlaying, setIsPlaying] = useState(true);
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState(() => {
+    return localStorage.getItem("bg_music_muted") === "true";
+  });
   const [volume, setVolume] = useState([0.3]);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
   const [isMinimized, setIsMinimized] = useState(true);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [hasInteracted, setHasInteracted] = useState(false);
 
+  // Persist mute state
+  useEffect(() => {
+    localStorage.setItem("bg_music_muted", String(isMuted));
+  }, [isMuted]);
+
   useEffect(() => {
     // Create audio element
     const audio = new Audio(PLAYLIST[currentTrackIndex].src);
     audioRef.current = audio;
     audio.loop = false; // We handle loop by playing next track
-    audio.volume = volume[0];
+    audio.volume = isMuted ? 0 : volume[0]; // Respect mute immediately
 
     // Event listeners
     const handleEnded = () => {
@@ -55,6 +62,7 @@ export function BackgroundMusic() {
       const playPromise = audio.play();
       if (playPromise !== undefined) {
         playPromise.catch((error) => {
+           // Autoplay errors are common, just log it.
           console.log("Autoplay prevented:", error);
           setIsPlaying(false);
         });
@@ -197,18 +205,6 @@ export function BackgroundMusic() {
             </div>
 
             <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={toggleMute}
-                className="h-6 w-6 shrink-0"
-              >
-                {isMuted || volume[0] === 0 ? (
-                  <VolumeX className="h-4 w-4" />
-                ) : (
-                  <Volume2 className="h-4 w-4" />
-                )}
-              </Button>
               <Slider
                 value={volume}
                 max={1}
@@ -216,6 +212,19 @@ export function BackgroundMusic() {
                 onValueChange={setVolume}
                 className="flex-1"
               />
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleMute}
+                className={cn("h-6 w-6 shrink-0", isMuted && "text-destructive")}
+                title={isMuted ? "Sesi aç" : "Sessize al"}
+              >
+                {isMuted || volume[0] === 0 ? (
+                  <VolumeX className="h-4 w-4" />
+                ) : (
+                  <Volume2 className="h-4 w-4" />
+                )}
+              </Button>
             </div>
           </div>
         )}
