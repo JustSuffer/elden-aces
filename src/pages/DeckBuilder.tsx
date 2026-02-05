@@ -71,15 +71,79 @@ const DeckBuilder = () => {
     fetchUnlocked();
   }, [user]);
 
-  // ... (refs and other state)
+  const heroSectionRef = useRef<HTMLDivElement>(null);
+  const secondarySectionRef = useRef<HTMLDivElement>(null);
+  const saveSectionRef = useRef<HTMLDivElement>(null);
 
-  // ... (useMemo for customDeck)
+  const customDeck = useMemo<Card[]>(() => {
+    const requiredCount = mainClass === "Vessel" ? 4 : 3;
+    if (!mainClass || secondaryClasses.length !== requiredCount) return [];
+    
+    // Check if we have 6 base + 3*6 secondary = 24 OR 6 base + 4*6 = 30?
+    // Actually game logic often expects 30 cards total? 
+    // Let's stick to the previous logic: Main(6) + Special(6) + Secondaries(6 each).
+    // Vessel: 4 secondaries * 6 = 24. Main 6. Special 6. Total 36?
+    // Normal: 3 secondaries * 6 = 18. Main 6. Special 6. Total 30.
+    
+    const deck: Card[] = [];
+    deck.push(...generateClassCards(mainClass));
+    // Mimic Special Rule: Add 6 extra Main Class cards to reach 12 for Win Condition
+    // Wait, the previous code had this logic. Let's look at what was there.
+    // logic: main(6) + special(6) + secondaries.
+    // Mimic rule: "Mimic" main class gets duplicate main cards or something?
+    // "Mimic Special Rule: Add 6 extra Main Class cards to reach 12 for Win Condition"
+    if (mainClass === "Mimic") {
+         deck.push(...generateClassCards(mainClass).map(c => ({...c, id: `mimic-extra-${c.id}`})));
+    }
+    deck.push(...generateSpecialCards());
+    secondaryClasses.forEach(className => {
+      deck.push(...generateClassCards(className));
+    });
+    
+    return deck;
+  }, [mainClass, secondaryClasses]);
 
-  // ... (handleMainClassSelect)
+  const availableSecondary = useMemo(() => {
+    if (!mainClass) return [];
+    return ALL_CLASSES.filter(c => c !== mainClass);
+  }, [mainClass]);
 
-  // ... (handleHeroSelect)
+  const isComplete = useMemo(() => {
+    const requiredCount = mainClass === "Vessel" ? 4 : 3;
+    return mainClass && isHeroSelected && secondaryClasses.length === requiredCount && deckName.trim().length > 0;
+  }, [mainClass, isHeroSelected, secondaryClasses, deckName]);
 
-  // ... (handleSecondaryToggle)
+  const handleMainClassSelect = (className: ClassName) => {
+    if (className === mainClass) return;
+    setMainClass(className);
+    setIsHeroSelected(false);
+    setSecondaryClasses([]);
+    setCardBack(className); // Default to class card back
+    
+    // Scroll to next step after a brief delay
+    setTimeout(() => {
+        heroSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
+  };
+
+  const handleHeroSelect = () => {
+    setIsHeroSelected(true);
+    setTimeout(() => {
+        secondarySectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  };
+
+  const handleSecondaryToggle = (className: ClassName) => {
+    const limit = mainClass === "Vessel" ? 4 : 3;
+    
+    setSecondaryClasses(prev => {
+      if (prev.includes(className)) {
+        return prev.filter(c => c !== className);
+      }
+      if (prev.length >= limit) return prev;
+      return [...prev, className];
+    });
+  };
 
   const handleResetDeck = () => {
     setMainClass(null);

@@ -58,14 +58,15 @@ export interface ShopItem {
 
 // "son atacağım dışında hepsi sadece shoptan alınabilecek"
 export const CARD_BACKS: ShopItem[] = [
-    // Premium (Locked) Backs
-    { id: "cb_arid", type: "cardback", price: 10000, name: { tr: "Arid", en: "Arid" }, desc: { tr: "Kurak toprakların gücü.", en: "Power of the arid lands." }, image: "Arid", isDefault: false },
-    { id: "cb_noty", type: "cardback", price: 10000, name: { tr: "Noty", en: "Noty" }, desc: { tr: "Gizemli semboller.", en: "Mysterious symbols." }, image: "Noty", isDefault: false },
-    { id: "cb_reniur", type: "cardback", price: 10000, name: { tr: "Reniur", en: "Reniur" }, desc: { tr: "Kadim büyü.", en: "Ancient magic." }, image: "Reniur", isDefault: false },
-    { id: "cb_perol", type: "cardback", price: 10000, name: { tr: "Perol", en: "Perol" }, desc: { tr: "İhtişamlı.", en: "Magnificent." }, image: "Perol", isDefault: false },
-    { id: "cb_ctrix", type: "cardback", price: 10000, name: { tr: "Ctrix", en: "Ctrix" }, desc: { tr: "Teknolojik.", en: "Technological." }, image: "Ctrix", isDefault: false },
-    { id: "cb_prxyla", type: "cardback", price: 10000, name: { tr: "Prxyla", en: "Prxyla" }, desc: { tr: "Kristalize enerji.", en: "Crystallized energy." }, image: "Prxyla", isDefault: false },
-    { id: "cb_lrot", type: "cardback", price: 10000, name: { tr: "Lrot", en: "Lrot" }, desc: { tr: "Doğanın öfkesi.", en: "Nature's wrath." }, image: "Lrot", isDefault: false },
+    // New Card Backs from Image (All 10,000 Coins)
+    { id: "cb_undead_legion", type: "cardback", price: 10000, name: { tr: "Ölümsüz Lejyon", en: "Undead Legion" }, desc: { tr: "Karanlığın ordusu.", en: "Army of darkness." }, image: "undead_legion", isDefault: false },
+    { id: "cb_frozen_citadel", type: "cardback", price: 10000, name: { tr: "Donmuş Hisar", en: "Frozen Citadel" }, desc: { tr: "Soğuğun kalbi.", en: "Heart of the cold." }, image: "frozen_citadel", isDefault: false },
+    { id: "cb_void_tree", type: "cardback", price: 10000, name: { tr: "Hiçlik Ağacı", en: "Void Tree" }, desc: { tr: "Evrenin kökleri.", en: "Roots of the universe." }, image: "void_tree", isDefault: false },
+    { id: "cb_frost_skull", type: "cardback", price: 10000, name: { tr: "Buzuk Kuru Kafa", en: "Frost Skull" }, desc: { tr: "Soğuk ölüm.", en: "Cold death." }, image: "frost_skull", isDefault: false },
+    { id: "cb_storm_peak", type: "cardback", price: 10000, name: { tr: "Fırtına Zirvesi", en: "Storm Peak" }, desc: { tr: "Yıldırımların gücü.", en: "Power of lightning." }, image: "storm_peak", isDefault: false },
+    { id: "cb_ice_dragon", type: "cardback", price: 10000, name: { tr: "Buz Ejderhası", en: "Ice Dragon" }, desc: { tr: "Kadim soğuk.", en: "Ancient cold." }, image: "ice_dragon", isDefault: false },
+    { id: "cb_winter_lion", type: "cardback", price: 10000, name: { tr: "Kış Aslanı", en: "Winter Lion" }, desc: { tr: "Kuzeyin kralı.", en: "King of the north." }, image: "winter_lion", isDefault: false },
+    { id: "cb_excalibur", type: "cardback", price: 10000, name: { tr: "Efsanevi Kılıç", en: "Legendary Sword" }, desc: { tr: "Taştan çekilen güç.", en: "Power pulled from stone." }, image: "excalibur", isDefault: false },
     
     // Story Reward (Not in Shop)
     { id: "cb_eratyum", type: "cardback", price: 99999, name: { tr: "Eratyum", en: "Eratyum" }, desc: { tr: "Hikaye Modu Ödülü.", en: "Story Mode Reward." }, image: "Eratyum", isDefault: false },
