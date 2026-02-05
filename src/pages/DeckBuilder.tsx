@@ -137,30 +137,7 @@ const DeckBuilder = () => {
     return [defaultHero, ...shopHeroes];
   }, [mainClass, unlockedItems, language]);
 
-  // Helpers for Hero Selection
-  const availableHeroes = useMemo(() => {
-    if (!mainClass) return [];
-    
-    // Default Hero (Class Avatar)
-    const defaultHero = {
-        id: `default_${mainClass}`,
-        name: MASTER_CLASSES[mainClass].heroName || mainClass,
-        image: "", // Empty string relies on CharacterAvatar default logic
-        isLocked: false,
-        className: mainClass
-    };
 
-    // Shop Heroes for this class
-    const shopHeroes = HEROES.filter(h => h.className === mainClass).map(h => ({
-        id: h.id,
-        name: h.name[language as "tr" | "en"] || h.name["en"],
-        image: h.image,
-        isLocked: !unlockedItems.includes(h.id),
-        className: h.className
-    }));
-
-    return [defaultHero, ...shopHeroes];
-  }, [mainClass, unlockedItems, language]);
 
   const isComplete = useMemo(() => {
     const requiredCount = mainClass === "Vessel" ? 4 : 3;
@@ -450,50 +427,76 @@ const DeckBuilder = () => {
            </div>
          </section>
 
-         {/* Step 2: Hero - Unchanged */}
-         {mainClass && (
-            <section 
-              ref={heroSectionRef}
-              className="bg-card/50 backdrop-blur-sm border border-primary/30 rounded-lg p-6 animate-in fade-in zoom-in duration-500 scroll-mt-24"
-            >
-              <h2 className="text-2xl font-bold text-primary glow-gold mb-4 font-cinzel">
-                2. KAHRAMAN SEÇ
-              </h2>
-              <div className="flex justify-center md:justify-start">
-                 <button 
-                   onClick={handleHeroSelect}
-                   className={cn(
-                     "relative group p-6 rounded-xl border-2 transition-all duration-300 flex flex-col items-center gap-4 bg-black/40",
-                      isHeroSelected 
-                       ? "border-primary shadow-[0_0_30px_rgba(197,160,89,0.3)] scale-105" 
-                       : "border-border hover:border-primary/50 hover:bg-black/60"
-                   )}
-                 >
-                   <div className="scale-125 my-4">
-                      <CharacterAvatar 
-                        className={mainClass} 
-                        isPlayer={true} 
-                        characterName=""
-                      />
-                   </div>
-                   <div className="text-center mt-2">
-                     <div className="text-xl font-bold text-primary font-cinzel">
-                       {MASTER_CLASSES[mainClass].heroName || mainClass}
-                     </div>
-                     <div className="text-sm text-muted-foreground uppercase tracking-widest text-[10px]">
-                       {MASTER_CLASSES[mainClass].role}
-                     </div>
-                   </div>
-                   
-                   {isHeroSelected && (
-                     <div className="absolute top-4 right-4 w-8 h-8 bg-primary rounded-full flex items-center justify-center animate-in zoom-in">
-                       <Check className="w-5 h-5 text-black font-bold" />
-                     </div>
-                   )}
-                 </button>
-              </div>
-            </section>
-         )}
+         {/* Step 2: Hero */}
+          {mainClass && (
+             <section 
+               ref={heroSectionRef}
+               className="bg-card/50 backdrop-blur-sm border border-primary/30 rounded-lg p-6 animate-in fade-in zoom-in duration-500 scroll-mt-24"
+             >
+               <h2 className="text-2xl font-bold text-primary glow-gold mb-4 font-cinzel">
+                 2. KAHRAMAN SEÇ
+               </h2>
+               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                  {availableHeroes.map(hero => {
+                      const isSelected = isHeroSelected && (hero.id === (selectedHeroId || `default_${mainClass}`));
+
+                      return (
+                         <button 
+                           key={hero.id}
+                           onClick={() => {
+                               if (hero.isLocked) {
+                                   toast.error(language === "tr" ? "Bu kahramanı Mağaza'dan açmalısınız!" : "You must unlock this hero in the Shop!");
+                                   return;
+                               }
+                               setSelectedHeroId(hero.id);
+                               handleHeroSelect(hero.id);
+                           }}
+                           className={cn(
+                             "relative group p-4 rounded-xl border-2 transition-all duration-300 flex flex-col items-center gap-2 bg-black/40",
+                              isSelected 
+                               ? "border-primary shadow-[0_0_30px_rgba(197,160,89,0.3)] scale-105" 
+                               : hero.isLocked
+                                 ? "border-gray-800 opacity-70 grayscale"
+                                 : "border-border hover:border-primary/50 hover:bg-black/60"
+                           )}
+                         >
+                           <div className="scale-110 my-2">
+                              {hero.id.startsWith("default") ? (
+                                  <CharacterAvatar 
+                                    className={mainClass} 
+                                    isPlayer={true} 
+                                    characterName=""
+                                    sizeClass="w-16 h-16"
+                                  />
+                              ) : (
+                                  <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-primary/50">
+                                      <img src={`/assets/avatars/${hero.image}.jpeg`} className="w-full h-full object-cover" />
+                                  </div>
+                              )}
+                           </div>
+                           <div className="text-center mt-1">
+                             <div className="text-sm font-bold text-primary font-cinzel truncate max-w-full px-1">
+                               {hero.name}
+                             </div>
+                           </div>
+                           
+                           {isSelected && (
+                             <div className="absolute top-2 right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center animate-in zoom-in">
+                               <Check className="w-3 h-3 text-black font-bold" />
+                             </div>
+                           )}
+
+                           {hero.isLocked && (
+                               <div className="absolute top-2 left-2 text-white/90 drop-shadow-md">
+                                   <Lock className="w-4 h-4" />
+                               </div>
+                           )}
+                         </button>
+                      );
+                  })}
+               </div>
+             </section>
+          )}
 
          {/* Step 3: Secondary - Unchanged */}
          {mainClass && isHeroSelected && (
