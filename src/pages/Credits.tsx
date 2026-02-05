@@ -92,7 +92,7 @@ const Credits = () => {
 
                                     
               </p>
-              <p className="text-center text-muted-foreground">İzzet Can Sorna</p>
+              <p className="text-center text-muted-foreground">-Izzet Can Sorna</p>
             </CardContent>
           </Card>
 

@@ -92,6 +92,27 @@ const DeckBuilder = () => {
     toast.success("Deste oluşturucu sıfırlandı!");
   };
 
+  const handleEditDeck = (deck: SavedDeck) => {
+    setMainClass(deck.mainClass);
+    // Determine if hero was selected (usually true for saved decks)
+    setIsHeroSelected(true); 
+    setSecondaryClasses(deck.secondaryClasses);
+    setDeckName(deck.name);
+    setCardBack(typeof deck.cardBack === 'string' ? deck.cardBack : "Slayer");
+    setEditingDeckId(deck.id);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    toast.info("Deste düzenleme moduna alındı.");
+  };
+
+  const handleDeleteDeck = async (deckId: string) => {
+    if (confirm("Bu desteyi silmek istediğinize emin misiniz?")) {
+        const success = await cloudDeleteDeck(deckId);
+        if (success && editingDeckId === deckId) {
+            handleResetDeck();
+        }
+    }
+  };
+
   const handleSaveDeck = async () => {
     const requiredCount = mainClass === "Vessel" ? 4 : 3;
     if (!mainClass || !isHeroSelected || secondaryClasses.length !== requiredCount) {

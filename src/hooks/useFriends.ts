@@ -36,6 +36,7 @@ export function useFriends() {
   const [incomingRequests, setIncomingRequests] = useState<FriendRequest[]>([]);
   const [outgoingRequests, setOutgoingRequests] = useState<FriendRequest[]>([]);
   const [matchInvites, setMatchInvites] = useState<PrivateMatchInvite[]>([]);
+  const [outgoingMatchInvites, setOutgoingMatchInvites] = useState<PrivateMatchInvite[]>([]); // Added missing state
   const [isLoading, setIsLoading] = useState(true);
 
   // Fetch friends list
