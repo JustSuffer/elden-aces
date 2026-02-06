@@ -124,107 +124,44 @@ export default function PrivateLobby() {
     fetchInvite();
   }, [inviteId, user, navigate, language]);
 
-  // Subscribe to invite updates
-  useEffect(() => {
-    if (!inviteId || !user) return;
-
-    const channel = supabase
-      .channel(`private-invite-${inviteId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'private_match_invites',
-          filter: `id=eq.${inviteId}`
-        },
-        async (payload) => {
-          const updated = payload.new as InviteData;
-          setInvite(updated);
-
-          // If match started, navigate
-          if (updated.match_id && updated.status === "started") {
-            toast.success(language === "tr" ? "Maç başlıyor!" : "Match starting!");
-            navigate(`/online-game/${updated.match_id}?mode=private`);
-            return;
-          }
-
-          // Check opponent readiness
-          const oppDeckId = user.id === updated.sender_id ? updated.receiver_deck_id : updated.sender_deck_id;
-          if (oppDeckId) {
-            setOpponentReady(true);
-            const { data: deckData } = await (supabase
-              .from("user_decks" as any) as any)
-              .select("name")
-              .eq("id", oppDeckId)
-              .single();
-            if (deckData) {
-              setOpponentDeckName(deckData.name);
-            }
-          } else {
-            setOpponentReady(false);
-            setOpponentDeckName(null);
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [inviteId, user, navigate, language]);
-
-  // Handle deck selection and ready
-  const handleReady = useCallback(async () => {
-    if (!invite || !user || !selectedDeckId) return;
-
-    setIsReady(true);
-
-    // Update invite with selected deck
-    const { error } = await (supabase
-      .from("private_match_invites" as any) as any)
-      .update({ [myDeckColumn]: selectedDeckId })
-      .eq("id", invite.id);
-
-    if (error) {
-      console.error("Error setting deck:", error);
-      toast.error(language === "tr" ? "Deste seçilemedi!" : "Failed to select deck!");
-      setIsReady(false);
-      return;
-    }
-
-    toast.success(language === "tr" ? "Deste seçildi! Rakip bekleniyor..." : "Deck selected! Waiting for opponent...");
-
-    // Check if opponent is also ready - if so, start match
-    const { data: currentInvite } = await (supabase
-      .from("private_match_invites" as any) as any)
-      .select("sender_deck_id, receiver_deck_id")
-      .eq("id", invite.id)
-      .single();
-
-    if (currentInvite?.sender_deck_id && currentInvite?.receiver_deck_id) {
-      await startMatch();
-    }
-  }, [invite, user, selectedDeckId, myDeckColumn, language]);
-
   // Start the match when both ready
   const startMatch = useCallback(async () => {
     if (!invite || !user) return;
+
+    // Re-fetch the latest invite to get fresh deck IDs
+    const { data: freshInvite } = await (supabase
+      .from("private_match_invites" as any) as any)
+      .select("*")
+      .eq("id", invite.id)
+      .maybeSingle();
+
+    if (!freshInvite?.sender_deck_id || !freshInvite?.receiver_deck_id) {
+      console.log("[PrivateLobby] Not both decks set yet, waiting...");
+      return;
+    }
+
+    // Check if match already created (prevent double creation)
+    if (freshInvite.match_id) {
+      console.log("[PrivateLobby] Match already created, navigating...");
+      navigate(`/online-game/${freshInvite.match_id}?mode=private`);
+      return;
+    }
 
     // Fetch both decks
     const { data: senderDeckData } = await (supabase
       .from("user_decks" as any) as any)
       .select("*")
-      .eq("id", invite.sender_deck_id)
-      .single();
+      .eq("id", freshInvite.sender_deck_id)
+      .maybeSingle();
 
     const { data: receiverDeckData } = await (supabase
       .from("user_decks" as any) as any)
       .select("*")
-      .eq("id", invite.receiver_deck_id)
-      .single();
+      .eq("id", freshInvite.receiver_deck_id)
+      .maybeSingle();
 
     if (!senderDeckData || !receiverDeckData) {
+      console.error("[PrivateLobby] Failed to fetch decks:", { senderDeckData, receiverDeckData });
       toast.error(language === "tr" ? "Deste bilgisi alınamadı!" : "Failed to fetch deck data!");
       return;
     }
@@ -247,8 +184,8 @@ export default function PrivateLobby() {
     const { data: matchData, error: matchError } = await (supabase
       .from("matches" as any) as any)
       .insert({
-        player1_id: invite.sender_id,
-        player2_id: invite.receiver_id,
+        player1_id: freshInvite.sender_id,
+        player2_id: freshInvite.receiver_id,
         player1_deck: player1Deck,
         player2_deck: player2Deck,
         status: "active",
@@ -278,6 +215,97 @@ export default function PrivateLobby() {
     toast.success(language === "tr" ? "Maç başlıyor!" : "Match starting!");
     navigate(`/online-game/${matchData.id}?mode=private`);
   }, [invite, user, navigate, language]);
+
+  // Subscribe to invite updates
+  useEffect(() => {
+    if (!inviteId || !user) return;
+
+    const channel = supabase
+      .channel(`private-invite-${inviteId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'private_match_invites',
+          filter: `id=eq.${inviteId}`
+        },
+        async (payload) => {
+          const updated = payload.new as InviteData;
+          setInvite(updated);
+
+          // If match started, navigate
+          if (updated.match_id && updated.status === "started") {
+            toast.success(language === "tr" ? "Maç başlıyor!" : "Match starting!");
+            navigate(`/online-game/${updated.match_id}?mode=private`);
+            return;
+          }
+
+          // Check opponent readiness
+          const oppDeckId = user.id === updated.sender_id ? updated.receiver_deck_id : updated.sender_deck_id;
+          const myDeckId = user.id === updated.sender_id ? updated.sender_deck_id : updated.receiver_deck_id;
+          
+          if (oppDeckId) {
+            setOpponentReady(true);
+            const { data: deckData } = await (supabase
+              .from("user_decks" as any) as any)
+              .select("name")
+              .eq("id", oppDeckId)
+              .maybeSingle();
+            if (deckData) {
+              setOpponentDeckName(deckData.name);
+            }
+            
+            // If both decks are set and no match yet, start the match
+            if (myDeckId && !updated.match_id) {
+              await startMatch();
+            }
+          } else {
+            setOpponentReady(false);
+            setOpponentDeckName(null);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [inviteId, user, navigate, language, startMatch]);
+
+  // Handle deck selection and ready
+  const handleReady = useCallback(async () => {
+    if (!invite || !user || !selectedDeckId) return;
+
+    setIsReady(true);
+
+    // Update invite with selected deck
+    const { error } = await (supabase
+      .from("private_match_invites" as any) as any)
+      .update({ [myDeckColumn]: selectedDeckId })
+      .eq("id", invite.id);
+
+    if (error) {
+      console.error("Error setting deck:", error);
+      toast.error(language === "tr" ? "Deste seçilemedi!" : "Failed to select deck!");
+      setIsReady(false);
+      return;
+    }
+
+    toast.success(language === "tr" ? "Deste seçildi! Rakip bekleniyor..." : "Deck selected! Waiting for opponent...");
+
+    // Check if opponent is also ready - if so, start match
+    const { data: currentInvite } = await (supabase
+      .from("private_match_invites" as any) as any)
+      .select("sender_deck_id, receiver_deck_id")
+      .eq("id", invite.id)
+      .maybeSingle();
+
+    if (currentInvite?.sender_deck_id && currentInvite?.receiver_deck_id) {
+      await startMatch();
+    }
+  }, [invite, user, selectedDeckId, myDeckColumn, language, startMatch]);
+
 
   // Cancel/Leave lobby
   const handleCancel = async () => {
