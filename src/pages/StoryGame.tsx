@@ -216,8 +216,10 @@ export default function StoryGame() {
             <Button
               disabled={!playerDeck}
               className={cn(
-                "bg-gold text-black hover:bg-yellow-400 font-bold min-w-[120px] transition-all duration-500",
+                "font-bold min-w-[120px] transition-colors",
                 !playerDeck 
+                  ? "bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700" 
+                  : "bg-gold text-black hover:bg-yellow-400 border border-gold shadow-[0_0_10px_rgba(251,191,36,0.3)]"
               )}
               onClick={handleStartGame}
             >
@@ -237,10 +239,9 @@ export default function StoryGame() {
           customReturnLabel={language === "tr" ? "Haritaya Dön" : "Return to Map"}
           onNextLevel={getNextLevelId() ? () => {
              const nextLvl = getNextLevelId();
-             if (nextLvl) {
+             if (nextLvl && regionId) {
                  // Force a hard navigation to ensure clean game state
                  window.location.href = `/story-game/${regionId}/${nextLvl}`;
-                 // Alternative: navigate(..., { replace: true }) might not be enough if state lingers
              }
           } : undefined}
           onRetry={() => window.location.reload()}

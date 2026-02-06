@@ -195,6 +195,14 @@ export default function Shop() {
             <h1 className="text-4xl font-bold tracking-[0.2em] text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-700">
                {language === "tr" ? "PAZAR YERİ" : "MARKETPLACE"}
             </h1>
+
+            <button
+              onClick={() => navigate("/checkout")}
+              className="w-9 h-9 flex items-center justify-center rounded-full bg-black/60 border border-amber-500/30 text-amber-500 hover:bg-amber-500/10 hover:text-amber-300 hover:border-amber-500/60 transition-all shadow-lg"
+              title={language === "tr" ? "Coin Satın Al" : "Buy Coins"}
+          >
+              <Store className="w-4 h-4" />
+            </button>
             <div className="flex items-center gap-3 bg-black/40 px-6 py-3 rounded-xl border border-amber-500/30 shadow-inner">
                 <Coins className="w-6 h-6 text-yellow-500 drop-shadow-md animate-pulse" />
                 <span className="text-2xl font-bold text-yellow-100/90">{coins.toLocaleString()}</span>
