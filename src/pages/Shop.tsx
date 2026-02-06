@@ -22,17 +22,15 @@ export default function Shop() {
   useEffect(() => {
     if (!user) return;
     
-    const fetchUserData = async () => {
-      // Fetch coins and unlocked_items from profiles table
-      const { data, error } = await supabase
+    // Fetch unlocked items separately
+    const fetchUnlockedItems = async () => {
+      const { data } = await supabase
         .from("profiles")
-        .select("divine_coins, unlocked_items")
+        .select("unlocked_items")
         .eq("user_id", user.id)
         .maybeSingle();
       
       if (data) {
-        setCoins((data as any).divine_coins || 0);
-        // Ensure unlocked_items is an array
         const items = (data as any).unlocked_items;
         if (Array.isArray(items)) {
             setUnlockedItems(items);
@@ -40,16 +38,22 @@ export default function Shop() {
             setUnlockedItems([]);
         }
       } else {
-        setCoins(0); 
         setUnlockedItems([]);
       }
     };
-    
-    fetchUserData();
 
-    // Subscribe to coin changes
+    fetchUnlockedItems();
+
+    // Fetch Coins (User provided logic)
+    const fetchCoins = async () => {
+       const { data } = await supabase.from("profiles").select("divine_coins").eq("user_id", user.id).single();
+       if(data) setCoins(data.divine_coins || 0);
+    };
+    fetchCoins();
+    
+    // Subscribe to coin changes (User provided logic)
     const channel = supabase
-      .channel("shop-coins")
+      .channel("profile-coins-shop")
       .on(
         'postgres_changes',
         {
@@ -62,10 +66,14 @@ export default function Shop() {
           if (payload.new?.divine_coins !== undefined) {
             setCoins(payload.new.divine_coins);
           }
+          // Also update unlocked items if they changed
+          if (payload.new?.unlocked_items !== undefined) {
+             setUnlockedItems(payload.new.unlocked_items);
+          }
         }
       )
       .subscribe();
-
+    
     // Random Quote
     const quotes = language === "tr" ? TAVERNER_QUOTES.tr : TAVERNER_QUOTES.en;
     setQuote(quotes[Math.floor(Math.random() * quotes.length)]);
@@ -185,13 +193,13 @@ export default function Shop() {
          </div>
 
          {/* Items Grid */}
-         <div className="flex-1 overflow-y-auto p-4 md:p-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 align-start content-start acoria-scrollbar">
+         <div className="flex-1 overflow-y-auto p-4 md:p-8 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 auto-rows-min acoria-scrollbar pb-20">
             {filteredItems.map(item => {
                const isUnlocked = unlockedItems.includes(item.id);
                const canAfford = coins >= item.price;
                
                return (
-                  <div key={item.id} className="group relative bg-stone-950 border border-amber-800/50 rounded-xl overflow-hidden hover:border-amber-500 transition-all duration-300 hover:shadow-[0_0_30px_rgba(217,119,6,0.2)] hover:-translate-y-1 flex flex-col">
+                  <div key={item.id} className="group relative bg-stone-950 border border-amber-800/50 rounded-xl overflow-hidden hover:border-amber-500 transition-all duration-300 hover:shadow-[0_0_30px_rgba(217,119,6,0.2)] hover:-translate-y-1 flex flex-col min-h-[500px]">
                      
                      {/* Image Section */}
                      <div className="h-96 bg-black/40 relative flex items-center justify-center overflow-hidden p-6">
