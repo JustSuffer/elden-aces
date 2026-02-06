@@ -523,11 +523,27 @@ export function useFriends() {
         )
         .subscribe();
 
+      // Also subscribe to outgoing invite changes (so sender gets notified when accepted)
+      const outgoingInvitesChannel = supabase
+        .channel("outgoing_match_invites_changes")
+        .on(
+          "postgres_changes",
+          {
+            event: "UPDATE",
+            schema: "public",
+            table: "private_match_invites",
+            filter: `sender_id=eq.${user.id}`,
+          },
+          () => fetchMatchInvites()
+        )
+        .subscribe();
+
       // Cleanup
       return () => {
         updatePresence("offline");
         supabase.removeChannel(requestsChannel);
         supabase.removeChannel(invitesChannel);
+        supabase.removeChannel(outgoingInvitesChannel);
       };
     } else {
       setIsLoading(false);
