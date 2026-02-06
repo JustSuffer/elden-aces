@@ -8,6 +8,13 @@ import { ArrowLeft, Coins, Lock, ShoppingCart, Info } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { TAVERNER_QUOTES, ALL_SHOP_ITEMS, ShopItem } from "@/data/shopData";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 export default function Shop() {
   const { user } = useAuth();
@@ -17,6 +24,8 @@ export default function Shop() {
   const [coins, setCoins] = useState(0);
   const [unlockedItems, setUnlockedItems] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<"cardback" | "hero">("cardback");
+  const [selectedItem, setSelectedItem] = useState<ShopItem | null>(null);
+  const [showInsufficientFunds, setShowInsufficientFunds] = useState(false);
 
   // Load User Data with Realtime subscription
   useEffect(() => {
@@ -83,11 +92,24 @@ export default function Shop() {
     };
   }, [user, language]);
 
-  const handlePurchase = async (item: ShopItem) => {
-    if (unlockedItems.includes(item.id)) return;
+  const handlePurchaseClick = (item: ShopItem) => {
+      if (unlockedItems.includes(item.id)) return;
 
+      if (coins < item.price) {
+          setShowInsufficientFunds(true);
+      } else {
+          setSelectedItem(item);
+      }
+  };
+
+  const confirmPurchase = async () => {
+    if (!selectedItem) return;
+    const item = selectedItem;
+
+    // Double check funds (just in case)
     if (coins < item.price) {
-      toast.error(language === "tr" ? "Yetersiz Divine Coin!" : "Insufficient Divine Coins!");
+      setSelectedItem(null);
+      setShowInsufficientFunds(true);
       return;
     }
 
@@ -98,6 +120,7 @@ export default function Shop() {
     // Optimistic UI
     setCoins(newCoins);
     setUnlockedItems(newUnlocked);
+    setSelectedItem(null); // Close dialog
     toast.success(language === "tr" ? "Satın alma başarılı!" : "Purchase successful!");
 
     // Real DB Update
@@ -245,15 +268,15 @@ export default function Shop() {
 
                         <div className="mt-auto pt-2">
                             <Button 
-                               disabled={isUnlocked || !canAfford}
-                               onClick={() => handlePurchase(item)}
+                               disabled={isUnlocked}
+                               onClick={() => handlePurchaseClick(item)}
                                className={cn(
                                   "w-full h-12 font-bold tracking-[0.15em] transition-all duration-300 relative overflow-hidden",
                                   isUnlocked 
                                      ? "bg-stone-800 text-stone-500 border border-stone-700 pointer-events-none" 
                                      : canAfford 
                                         ? "bg-amber-900/40 hover:bg-amber-600 text-amber-100 border border-amber-700 hover:border-amber-400 hover:shadow-[0_0_15px_rgba(217,119,6,0.4)]" 
-                                        : "bg-red-900/10 text-red-500 border border-red-900/30 cursor-not-allowed opacity-70"
+                                        : "bg-red-900/10 hover:bg-red-900/30 text-amber-500 border border-red-900/30 opacity-70"
                                )}
                             >
                                <span className="relative z-10 flex items-center justify-center gap-2">
@@ -270,6 +293,75 @@ export default function Shop() {
          </div>
 
       </div>
+
+      {/* Confirmation Dialog */}
+       <Dialog open={!!selectedItem} onOpenChange={(open) => !open && setSelectedItem(null)}>
+        <DialogContent className="bg-stone-900 border border-amber-600/50 text-amber-100 font-cinzel">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+              <Coins className="text-amber-500" />
+              {language === "tr" ? "Satın Almayı Onayla" : "Confirm Purchase"}
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="py-4">
+            <p className="text-lg">
+              {language === "tr" 
+                ? `${selectedItem ? (language === "tr" ? selectedItem.name.tr : selectedItem.name.en) : ""} öğesini satın almak istiyor musunuz?`
+                : `Are you sure you want to purchase ${selectedItem ? (language === "tr" ? selectedItem.name.tr : selectedItem.name.en) : ""}?`
+              }
+            </p>
+            <div className="flex items-center gap-2 mt-4 text-xl font-bold text-amber-400">
+              {language === "tr" ? "Fiyat:" : "Price:"} 
+              <span className="flex items-center gap-1">
+                {selectedItem?.price.toLocaleString()} <Coins className="w-5 h-5" />
+              </span>
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setSelectedItem(null)} className="border-amber-700/50 hover:bg-amber-900/20 text-amber-200">
+              {language === "tr" ? "İptal" : "Cancel"}
+            </Button>
+            <Button onClick={confirmPurchase} className="bg-amber-600 hover:bg-amber-500 text-black font-bold">
+              {language === "tr" ? "Satın Al" : "Purchase"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Insufficient Funds Dialog */}
+      <Dialog open={showInsufficientFunds} onOpenChange={setShowInsufficientFunds}>
+        <DialogContent className="bg-stone-900 border border-red-500/50 text-red-100 font-cinzel">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold flex items-center gap-2 text-red-500">
+              <Lock className="w-6 h-6" />
+              {language === "tr" ? "Yetersiz Bakiye" : "Insufficient Funds"}
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="py-4">
+            <p className="text-lg">
+              {language === "tr"
+                ? "Bu işlem için yeterli Divine Coin'iniz bulunmuyor."
+                : "You do not have enough Divine Coins for this transaction."
+              }
+            </p>
+            <p className="text-sm text-stone-400 mt-2">
+              {language === "tr" 
+                ? "Daha fazla maç kazanarak Divine Coin toplayabilirsiniz!"
+                : "You can earn more Divine Coins by winning matches!"
+              }
+            </p>
+          </div>
+
+          <DialogFooter>
+            <Button onClick={() => setShowInsufficientFunds(false)} variant="destructive" className="w-full">
+              {language === "tr" ? "Tamam" : "Close"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

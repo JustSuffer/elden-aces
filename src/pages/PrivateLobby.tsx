@@ -11,6 +11,7 @@ import { Loader2, Swords, Check, X, ArrowLeft, Layers, Clock, Users } from "luci
 import { toast } from "sonner";
 import { SavedDeck } from "@/types/deck";
 import { cn } from "@/lib/utils";
+import { shuffleDeck } from "@/data/gameData";
 
 interface InviteData {
   id: string;
@@ -166,6 +167,8 @@ export default function PrivateLobby() {
       return;
     }
 
+
+
     // Convert to SavedDeck format
     const convertDeck = (d: any): SavedDeck => ({
       id: d.id,
@@ -177,8 +180,17 @@ export default function PrivateLobby() {
       createdAt: d.created_at,
     });
 
+    // Shuffle the cards for the initial hand randomization!
+    // This fixes the issue where players always get the same fixed cards (e.g. 6 class cards) in private matches.
     const player1Deck = convertDeck(senderDeckData);
+    if (player1Deck.cards && player1Deck.cards.length > 0) {
+        player1Deck.cards = shuffleDeck([...player1Deck.cards]);
+    }
+
     const player2Deck = convertDeck(receiverDeckData);
+    if (player2Deck.cards && player2Deck.cards.length > 0) {
+        player2Deck.cards = shuffleDeck([...player2Deck.cards]);
+    }
 
     // Create match
     const { data: matchData, error: matchError } = await (supabase
