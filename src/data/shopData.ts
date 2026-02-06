@@ -76,9 +76,9 @@ export const CARD_BACKS: ShopItem[] = [
 ];
 
 export const HEROES: ShopItem[] = [
-    { id: "hero_yorxy", type: "hero", price: 10000, name: { tr: "Yorxy", en: "Yorxy" }, desc: { tr: "Buzul Kraliçe.", en: "Glacial Queen." }, image: "yorxy", className: "Cryomancer" },
-    { id: "hero_notkhell", type: "hero", price: 10000, name: { tr: "Notkhell", en: "Notkhell" }, desc: { tr: "Soğuk Savaşçı.", en: "Cold Warrior." }, image: "notkhell", className: "Cryomancer" },
-    { id: "hero_ciel", type: "hero", price: 10000, name: { tr: "Ciel", en: "Ciel" }, desc: { tr: "Kristal Muhafız.", en: "Crystal Guardian." }, image: "ciel", className: "Cryomancer" },
+    { id: "hero_yorxy", type: "hero", price: 15000, name: { tr: "Yorxy", en: "Yorxy" }, desc: { tr: "Buzul Kraliçe.", en: "Glacial Queen." }, image: "yorxy", className: "Cryomancer" },
+    { id: "hero_notkhell", type: "hero", price: 15000, name: { tr: "Notkhell", en: "Notkhell" }, desc: { tr: "Soğuk Savaşçı.", en: "Cold Warrior." }, image: "notkhell", className: "Cryomancer" },
+    { id: "hero_ciel", type: "hero", price: 15000, name: { tr: "Ciel", en: "Ciel" }, desc: { tr: "Kristal Muhafız.", en: "Crystal Guardian." }, image: "ciel", className: "Cryomancer" },
 ];
 
 export const ALL_SHOP_ITEMS = [...CARD_BACKS.filter(i => !i.isDefault), ...HEROES];

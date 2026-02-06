@@ -568,6 +568,9 @@ const DeckBuilder = () => {
                           return;
                         }
                         setCardBack(back.image);
+                        setTimeout(() => {
+                            saveSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }, 100);
                       }}
                       className={cn(
                         "relative group rounded-lg overflow-hidden border-2 transition-all duration-300 aspect-[2/3]",
@@ -611,8 +614,8 @@ const DeckBuilder = () => {
            </section>
          )}
 
-         {/* Preview & Save - Unchanged logic, just ensure render */}
-         {isComplete && (
+         {/* Preview & Save - Show when Card Back is selected */}
+         {mainClass && isHeroSelected && secondaryClasses.length === (mainClass === "Vessel" ? 4 : 3) && cardBack && (
            <div ref={saveSectionRef} className="space-y-8 animate-in fade-in duration-700">
               {/* Save Area */}
              <section className="bg-card/90 backdrop-blur border border-primary rounded-lg p-6 shadow-2xl shadow-primary/10 sticky bottom-4 z-40">
