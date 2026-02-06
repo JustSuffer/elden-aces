@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { GameMatch } from "@/components/game/GameMatch";
 import { STORY_REGIONS, StoryLevel } from "@/data/storyData";
 import { useStoryProgress } from "@/hooks/useStoryProgress";
@@ -17,6 +17,7 @@ import { useAuth } from "@/hooks/useAuth";
 export default function StoryGame() {
   const { regionId, levelId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { completeLevel } = useStoryProgress();
   const { language } = useLanguage(); // Get language
   const { user } = useAuth();
@@ -53,19 +54,30 @@ export default function StoryGame() {
     setLevel(lvl);
   }, [regionId, levelId, navigate, language]);
 
-  // Load Decks
+  // Load Decks & Handle Auto-Start
   useEffect(() => {
     try {
       const savedDecks = JSON.parse(localStorage.getItem("acoria-saved-decks") || "[]");
       setAvailableDecks(savedDecks);
-      if (savedDecks.length > 0) {
+      
+      // Check for navigation state for auto-start
+      const state = (location as any).state as { autoStart?: boolean; deckId?: string } | null;
+      
+      if (state?.autoStart && state?.deckId) {
+         const deck = savedDecks.find((d: any) => d.id === state.deckId);
+         if (deck) {
+             setSelectedDeckId(deck.id);
+             setPlayerDeck(deck);
+             setShowIntro(false); // Skip intro to start game immediately
+         }
+      } else if (savedDecks.length > 0) {
         setSelectedDeckId(savedDecks[0].id);
         setPlayerDeck(savedDecks[0]);
       }
     } catch (e) {
       console.error("Failed to load decks", e);
     }
-  }, []);
+  }, [location.state]); // Re-run when location state changes (navigation)
 
   const handleDeckChange = (deckId: string) => {
     setSelectedDeckId(deckId);
@@ -203,9 +215,10 @@ export default function StoryGame() {
               {language === "tr" ? "Geri Dön" : "Go Back"}
             </Button>
             <Button
+              disabled={!playerDeck}
               className={cn(
                 "bg-gold text-black hover:bg-yellow-400 font-bold min-w-[120px] transition-all duration-500",
-                !playerDeck ? "opacity-0 pointer-events-none" : "opacity-100"
+                !playerDeck && "opacity-50 cursor-not-allowed" 
               )}
               onClick={handleStartGame}
             >
@@ -247,17 +260,36 @@ export default function StoryGame() {
               {language === "tr" ? "Haritaya Dön" : "Return to Map"}
             </Button>
 
+            {/* Win Condition - Not last level */}
             {showOutro === "win" && getNextLevelId() && (
               <Button
                 className="w-full sm:w-auto bg-green-600 text-white hover:bg-green-700 font-bold"
                 onClick={() => {
-                  setShowOutro(null);
-                  setShowIntro(true); // Reset for next level
-                  navigate(`/story-game/${regionId}/${getNextLevelId()}`);
+                  const nextLvl = getNextLevelId();
+                  if (nextLvl) {
+                    setShowOutro(null);
+                    // Navigate to next level with state to auto-start
+                    navigate(`/story-game/${regionId}/${nextLvl}`, { 
+                      state: { autoStart: true, deckId: playerDeck?.id } 
+                    });
+                  }
                 }}
               >
-                {language === "tr" ? "Sonraki Seviye" : "Next Level"}
+                {language === "tr" ? "Devam Et" : "Continue"}
               </Button>
+            )}
+
+            {/* Lose or Draw Condition - Retry */}
+            {showOutro !== "win" && (
+                 <Button
+                 className="w-full sm:w-auto bg-red-600 text-white hover:bg-red-700 font-bold"
+                 onClick={() => {
+                   // Refresh page to retry same level
+                   window.location.reload();
+                 }}
+               >
+                 {language === "tr" ? "Yeniden Dene" : "Retry"}
+               </Button>
             )}
           </DialogFooter>
         </DialogContent>
