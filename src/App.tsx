@@ -27,6 +27,7 @@ import Friends from "./pages/Friends";
 import Shop from "./pages/Shop";
 import PrivateLobby from "./pages/PrivateLobby";
 import Checkout from "./pages/Checkout";
+import Achievements from "./pages/Achievements";
 
 import { BackgroundMusic } from "./components/BackgroundMusic";
 
@@ -61,6 +62,7 @@ const App = () => (
             <Route path="/private-lobby/:inviteId" element={<ProtectedRoute><PrivateLobby /></ProtectedRoute>} />
             <Route path="/shop" element={<ProtectedRoute><Shop /></ProtectedRoute>} />
             <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
+            <Route path="/achievements" element={<ProtectedRoute><Achievements /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

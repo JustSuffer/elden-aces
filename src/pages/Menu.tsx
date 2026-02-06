@@ -2,13 +2,15 @@ import { MenuButton } from "@/components/ui/menu-button";
 import logo from "@/assets/acoria-logo.png";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { LogOut, Trophy, X, Monitor, Map, Users, Coins, Store } from "lucide-react";
+import { LogOut, Trophy, X, Monitor, Map, Users, Coins, Store, Award } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useEffect, useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { ACHIEVEMENTS } from "@/data/achievementsData";
+import { useStoryProgress } from "@/hooks/useStoryProgress";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -59,19 +61,60 @@ const Menu = () => {
     navigate("/");
   };
 
-  // Fetch Coins
+  // Fetch Coins & Achievements Notification
   const { user } = useAuth();
   const [coins, setCoins] = useState<number | null>(null);
+  const [unclaimedAchievements, setUnclaimedAchievements] = useState(0);
+  const { isLevelCompleted, isRegionUnlocked } = useStoryProgress();
   
-  // Fetch and subscribe to coin updates
+  // Fetch and subscribe to data
   useEffect(() => {
     if(!user) return;
     
-    const fetchCoins = async () => {
-       const { data } = await supabase.from("profiles").select("divine_coins").eq("user_id", user.id).single();
-       if(data) setCoins(data.divine_coins || 0);
+    const fetchData = async () => {
+       // 1. Profile (Coins & Unlocked Items)
+       const { data: profile } = await supabase.from("profiles").select("divine_coins, unlocked_items" as any).eq("user_id", user.id).single();
+       let unlockedIds: string[] = [];
+       
+       if(profile) {
+           const p = profile as any;
+           setCoins(p.divine_coins || 0);
+           unlockedIds = (p.unlocked_items as string[]) || [];
+       }
+
+       // 2. Stats for Achievement Calc (Simplified fetch)
+       const { data: stats } = await supabase.from("bot_match_stats").select("result, player_class, player_final_hp").eq("user_id", user.id);
+       
+       if (stats) {
+           // Calculate Unclaimed Count
+           const totalWins = stats.filter(m => m.result === "win").length;
+           const classWins: Record<string, number> = {};
+           stats.forEach(m => { if (m.result === "win") classWins[m.player_class] = (classWins[m.player_class] || 0) + 1; });
+           
+           let count = 0;
+           ACHIEVEMENTS.forEach(achiv => {
+               if (unlockedIds.includes(achiv.id)) return; // Already claimed
+
+               let progress = 0;
+               switch (achiv.conditionType) {
+                   case "total_wins": progress = totalWins; break;
+                   case "class_wins": progress = classWins[achiv.conditionParam || ""] || 0; break;
+                   case "total_games": progress = stats.length; break;
+                   case "coins_earned": progress = (profile as any)?.divine_coins || 0; break;
+                   case "items_owned": progress = unlockedIds.filter(id => !id.startsWith("achiv_")).length; break;
+                   case "story_level_complete": progress = isLevelCompleted(achiv.conditionParam!) ? 1 : 0; break;
+                   case "story_region_unlock": progress = isRegionUnlocked(achiv.conditionParam!) ? 1 : 0; break;
+                   case "perfect_win": progress = stats.filter(m => m.result === "win" && m.player_final_hp >= 20).length; break;
+                   case "close_call": progress = stats.filter(m => m.result === "win" && m.player_final_hp <= 5).length; break;
+                   default: progress = 0;
+               }
+
+               if (progress >= achiv.targetCount) count++;
+           });
+           setUnclaimedAchievements(count);
+       }
     };
-    fetchCoins();
+    fetchData();
     
     // Subscribe to coin changes
     const channel = supabase
@@ -88,6 +131,7 @@ const Menu = () => {
           if (payload.new?.divine_coins !== undefined) {
             setCoins(payload.new.divine_coins);
           }
+          // If items update, we might need to re-calc, but for now just coins is fine for basic update
         }
       )
       .subscribe();
@@ -95,7 +139,7 @@ const Menu = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user]);
+  }, [user, isLevelCompleted, isRegionUnlocked]);
 
   return (
     <div className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden bg-background">
@@ -122,6 +166,19 @@ const Menu = () => {
       
       {/* Coin Display */}
       <div className="absolute top-4 right-4 z-50 flex items-center gap-3 animate-in fade-in slide-in-from-top-4">
+          <button
+              onClick={() => navigate("/achievements")}
+              className="w-9 h-9 flex items-center justify-center rounded-full bg-black/60 border border-amber-500/30 text-amber-500 hover:bg-amber-500/10 hover:text-amber-300 hover:border-amber-500/60 transition-all shadow-lg relative hvr-pulse"
+              title={language === "tr" ? "Başarımlar" : "Achievements"}
+          >
+              <Award className="w-5 h-5" />
+              {unclaimedAchievements > 0 && (
+                  <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-600 border border-black flex items-center justify-center text-[10px] text-white font-bold animate-bounce">
+                      {unclaimedAchievements > 9 ? "!" : unclaimedAchievements}
+                  </span>
+              )}
+          </button>
+          
           <button
               onClick={() => navigate("/checkout")}
               className="w-9 h-9 flex items-center justify-center rounded-full bg-black/60 border border-amber-500/30 text-amber-500 hover:bg-amber-500/10 hover:text-amber-300 hover:border-amber-500/60 transition-all shadow-lg"
