@@ -27,7 +27,7 @@ export default function Shop() {
       const { data, error } = await supabase
         .from("profiles")
         .select("divine_coins, unlocked_items")
-        .eq("id", user.id) // IMPORTANT: changed user_id to id to match schema used in GameArena
+        .eq("user_id", user.id)
         .maybeSingle();
       
       if (data) {
@@ -99,7 +99,7 @@ export default function Shop() {
         const { error } = await supabase.from("profiles").update({
             divine_coins: newCoins,
             unlocked_items: newUnlocked
-        } as any).eq("id", user.id);
+        } as any).eq("user_id", user.id);
         
         if (error) {
             console.error("Purchase failed", error);
