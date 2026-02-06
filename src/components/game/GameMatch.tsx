@@ -47,6 +47,8 @@ interface GameMatchProps {
   onMovesReady?: (moves: (Card | null)[]) => Promise<void>;
   onRoundChange?: (newRound: number) => Promise<void>;
   onGameEnd?: (result: "win" | "lose", isSurrender?: boolean) => void;
+  // Online ELO Changes
+  lpChange?: { win: number; lose: number; draw: number } | null;
   // Tutorial Props
   isTutorial?: boolean;
 }
@@ -65,6 +67,7 @@ export const GameMatch = ({
   onMovesReady,
   onRoundChange,
   onGameEnd,
+  lpChange,
   isTutorial = false,
 }: GameMatchProps) => {
   const navigate = useNavigate();
@@ -1116,6 +1119,7 @@ export const GameMatch = ({
           onReturnToMenu={() => navigate("/")}
           delayMs={0}
           isOnline={isOnline}
+          lpChange={lpChange}
         />
 
         <GameMenuModal 

@@ -114,6 +114,9 @@ const OnlineGame = () => {
   // Opponent deck count for real-time tracking
   const [opponentDeckCount, setOpponentDeckCount] = useState<number | undefined>(undefined);
   
+  // Stats for ELO calculation
+  const [potentialLpChange, setPotentialLpChange] = useState<{win: number, lose: number, draw: number} | null>(null);
+
   // Rematch hook
   const {
     rematchState,
@@ -193,7 +196,47 @@ const OnlineGame = () => {
     };
 
     fetchMatch();
+    fetchMatch();
   }, [matchId, user]);
+
+  // Fetch stats and calculate potential ELO changes
+  useEffect(() => {
+    if (!match || !user) return;
+    
+    const fetchStats = async () => {
+        const opponentId = user.id === match.player1_id ? match.player2_id : match.player1_id;
+        
+        const { data: myStats } = await supabase
+          .from("game_stats")
+          .select("elo_rating")
+          .eq("user_id", user.id)
+          .single();
+    
+        const { data: oppStats } = await supabase
+            .from("game_stats")
+            .select("elo_rating")
+            .eq("user_id", opponentId)
+            .single();
+            
+        if (myStats && oppStats) {
+            const myElo = myStats.elo_rating || 1000;
+            const oppElo = oppStats.elo_rating || 1000;
+            
+            // Calculate potential outcomes
+            const winRes = calculateNewRatings(myElo, oppElo);
+            const loseRes = calculateNewRatings(oppElo, myElo);
+            const drawRes = calculateDrawRatings(myElo, oppElo);
+            
+            setPotentialLpChange({
+                win: winRes.winnerNewRating - myElo,
+                lose: loseRes.loserNewRating - myElo, // will be negative
+                draw: drawRes.player1NewRating - myElo
+            });
+        }
+    };
+    
+    fetchStats();
+  }, [match, user]);
 
   // Track which round's opponentMoves we've processed to avoid stale data
   const processedOpponentRoundRef = useRef<number>(0);
@@ -829,6 +872,7 @@ const OnlineGame = () => {
           onMovesReady={handleMovesReady}
           onRoundChange={handleRoundChange}
           onGameEnd={handleMatchEnd}
+          lpChange={potentialLpChange}
         />
       ) : gameStarted ? (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm z-40">

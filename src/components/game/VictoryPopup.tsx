@@ -15,6 +15,7 @@ interface VictoryPopupProps {
   onReturnToMenu: () => void;
   delayMs?: number;
   isOnline?: boolean;
+  lpChange?: { win: number; lose: number; draw: number } | null;
 }
 
 export function VictoryPopup({
@@ -26,7 +27,8 @@ export function VictoryPopup({
   damageDetails,
   onReturnToMenu,
   delayMs = 0,
-  isOnline = false
+  isOnline = false,
+  lpChange
 }: VictoryPopupProps) {
   const { t, language } = useLanguage();
   
@@ -40,6 +42,18 @@ export function VictoryPopup({
   } else {
       // Draw
       reward = isOnline ? 10 : 5; // Assuming small reward for draw
+  }
+
+  // Determine LP change
+  let currentLpChange = 0;
+  if (lpChange) {
+      if (winReason === "SURRENDER" || outcome === "loss") {
+          currentLpChange = lpChange.lose;
+      } else if (outcome === "win") {
+          currentLpChange = lpChange.win;
+      } else {
+          currentLpChange = lpChange.draw;
+      }
   }
 
   const [showPopup, setShowPopup] = useState(false);
@@ -276,28 +290,56 @@ export function VictoryPopup({
               )}
             </motion.div>
 
-            {/* Reward */}
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ type: "spring", delay: 0.8 }}
-              className={`
-                p-4 rounded-lg mb-6 flex items-center justify-center gap-3
-                ${
-                  isVictory ? "bg-gradient-to-r from-amber-950/50 via-amber-900/30 to-amber-950/50 border border-amber-500/30" :
-                  isDraw ? "bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border border-slate-500/30" :
-                  "bg-card/30 border border-border/50"
-                }
-              `}
-            >
-              <Coins className={`w-8 h-8 ${isVictory ? "text-amber-400" : isDraw ? "text-slate-300" : "text-muted-foreground"}`} />
-              <span className={`
-                text-2xl font-bold font-cinzel
-                ${isVictory ? "text-amber-300 glow-gold" : isDraw ? "text-slate-200" : "text-muted-foreground"}
-              `}>
-                +{reward} DivineCoin
-              </span>
-            </motion.div>
+            {/* Rewards Container */}
+            <div className="space-y-3">
+              {/* Currency Reward */}
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: "spring", delay: 0.8 }}
+                className={`
+                  p-4 rounded-lg flex items-center justify-center gap-3
+                  ${
+                    isVictory ? "bg-gradient-to-r from-amber-950/50 via-amber-900/30 to-amber-950/50 border border-amber-500/30" :
+                    isDraw ? "bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border border-slate-500/30" :
+                    "bg-card/30 border border-border/50"
+                  }
+                `}
+              >
+                <Coins className={`w-8 h-8 ${isVictory ? "text-amber-400" : isDraw ? "text-slate-300" : "text-muted-foreground"}`} />
+                <span className={`
+                  text-2xl font-bold font-cinzel
+                  ${isVictory ? "text-amber-300 glow-gold" : isDraw ? "text-slate-200" : "text-muted-foreground"}
+                `}>
+                  +{reward} DivineCoin
+                </span>
+              </motion.div>
+
+              {/* LP Reward (Online Only) */}
+              {isOnline && lpChange && (
+                  <motion.div
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ type: "spring", delay: 0.9 }}
+                  className={`
+                    p-4 rounded-lg mb-6 flex items-center justify-center gap-3
+                    ${
+                      currentLpChange > 0 ? "bg-gradient-to-r from-blue-950/50 via-blue-900/30 to-blue-950/50 border border-blue-500/30" :
+                      currentLpChange < 0 ? "bg-gradient-to-r from-red-950/50 via-red-900/30 to-red-950/50 border border-red-500/30" :
+                      "bg-card/30 border border-border/50"
+                    }
+                  `}
+                >
+                  <Scale className={`w-8 h-8 ${currentLpChange > 0 ? "text-blue-400" : currentLpChange < 0 ? "text-red-400" : "text-muted-foreground"}`} />
+                  <span className={`
+                    text-2xl font-bold font-cinzel
+                    ${currentLpChange > 0 ? "text-blue-300 glow-blue" : currentLpChange < 0 ? "text-red-300" : "text-muted-foreground"}
+                  `}>
+                    {currentLpChange > 0 ? "+" : ""}{currentLpChange} LP
+                  </span>
+                </motion.div>
+              )}
+            </div>
 
             {/* Return Button */}
             <motion.div
