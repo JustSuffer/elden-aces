@@ -191,51 +191,69 @@ export default function Shop() {
                const canAfford = coins >= item.price;
                
                return (
-                  <div key={item.id} className="group relative bg-stone-950/80 border border-amber-800/50 rounded-xl overflow-hidden hover:border-amber-500 transition-all duration-300 hover:shadow-[0_0_30px_rgba(217,119,6,0.2)] hover:-translate-y-1">
+                  <div key={item.id} className="group relative bg-stone-950 border border-amber-800/50 rounded-xl overflow-hidden hover:border-amber-500 transition-all duration-300 hover:shadow-[0_0_30px_rgba(217,119,6,0.2)] hover:-translate-y-1 flex flex-col">
                      
-                     {/* Image Placeholder */}
-                     <div className="h-48 bg-stone-900 relative flex items-center justify-center overflow-hidden">
-                        {/* Here we would put real images. For now placeholders or CSS art */}
-                        <div className={`w-32 h-44 rounded-lg shadow-2xl transform group-hover:scale-105 transition-transform duration-500 ${isUnlocked ? 'grayscale-0' : 'grayscale-[0.3]'}`}
-                             style={{ background: item.type === 'cardback' ? `url(/assets/decks/${item.image}) center/cover` : `url(/assets/avatars/${item.image}) center/cover` }}>
-                             {/* Mock Visual - Removed since we have images now */}
+                     {/* Image Section */}
+                     <div className="h-64 bg-black/40 relative flex items-center justify-center overflow-hidden p-4">
+                        {/* Glow Effect */}
+                        <div className="absolute inset-0 bg-amber-500/5 opacity-0 group-hover:opacity-20 transition-opacity duration-500" />
+                        
+                        <div className={`w-40 h-56 rounded-lg shadow-2xl transform group-hover:scale-105 transition-transform duration-500 ${isUnlocked ? 'grayscale-0' : 'grayscale-[0.3]'} border border-amber-900/30`}
+                             style={{ 
+                                 backgroundImage: item.type === 'cardback' ? `url(/assets/decks/${item.image})` : `url(/assets/avatars/${item.image})`,
+                                 backgroundPosition: 'center',
+                                 backgroundSize: 'cover'
+                             }}>
                         </div>
                         
                         {isUnlocked && (
-                            <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                                <span className="text-green-500 font-bold border-2 border-green-500 px-4 py-2 -rotate-12 text-xl tracking-widest">{language === "tr" ? "SAHİPSİN" : "OWNED"}</span>
+                            <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-sm">
+                                <span className="text-green-400 font-bold border-2 border-green-500/50 bg-green-900/20 px-6 py-2 -rotate-12 text-xl tracking-[0.2em] shadow-lg backdrop-blur-md">
+                                    {language === "tr" ? "SAHİPSİN" : "OWNED"}
+                                </span>
                             </div>
                         )}
                      </div>
 
-                     <div className="p-5 flex flex-col gap-3">
-                        <div className="flex justify-between items-start">
-                           <div>
-                              <h3 className="text-xl font-bold text-amber-100 group-hover:text-amber-400 transition-colors">{language === "tr" ? item.name.tr : item.name.en}</h3>
-                              <p className="text-xs text-amber-500/60">{language === "tr" ? item.desc.tr : item.desc.en}</p>
+                     {/* Details Section */}
+                     <div className="p-5 flex flex-col gap-4 bg-gradient-to-b from-stone-900 to-stone-950 flex-1 border-t border-amber-900/30">
+                        <div className="flex justify-between items-start gap-2">
+                           <div className="flex flex-col gap-1">
+                              <h3 className="text-xl font-bold text-amber-100 group-hover:text-amber-400 transition-colors uppercase tracking-wide">
+                                {language === "tr" ? item.name.tr : item.name.en}
+                              </h3>
+                              <p className="text-xs text-amber-500/60 font-medium leading-relaxed max-w-[150px]">
+                                {language === "tr" ? item.desc.tr : item.desc.en}
+                              </p>
                            </div>
-                           <div className="text-right">
-                              <span className={cn("font-bold text-lg", canAfford ? "text-yellow-400" : "text-red-400")}>{item.price.toLocaleString()}</span>
-                              <Coins className="w-4 h-4 inline ml-1 -mt-1 text-yellow-600" />
+                           <div className="text-right whitespace-nowrap bg-black/30 px-3 py-1 rounded-lg border border-amber-500/10">
+                              <span className={cn("font-bold text-lg", canAfford ? "text-amber-400" : "text-red-400")}>
+                                {item.price.toLocaleString()}
+                              </span>
+                              <Coins className="w-4 h-4 inline ml-1.5 -mt-1 text-amber-500" />
                            </div>
                         </div>
 
-                        <Button 
-                           disabled={isUnlocked || !canAfford}
-                           onClick={() => handlePurchase(item)}
-                           className={cn(
-                              "w-full mt-2 font-bold tracking-widest",
-                              isUnlocked 
-                                 ? "bg-green-900/20 text-green-700 border border-green-900/50" 
-                                 : canAfford 
-                                    ? "bg-amber-700 hover:bg-amber-600 text-white" 
-                                    : "bg-red-900/20 text-red-500 border border-red-900/50 cursor-not-allowed"
-                           )}
-                        >
-                           {isUnlocked 
-                              ? (language === "tr" ? "ENVANTERDE" : "IN INVENTORY") 
-                              : (language === "tr" ? "SATIN AL" : "PURCHASE")}
-                        </Button>
+                        <div className="mt-auto pt-2">
+                            <Button 
+                               disabled={isUnlocked || !canAfford}
+                               onClick={() => handlePurchase(item)}
+                               className={cn(
+                                  "w-full h-12 font-bold tracking-[0.15em] transition-all duration-300 relative overflow-hidden",
+                                  isUnlocked 
+                                     ? "bg-stone-800 text-stone-500 border border-stone-700 pointer-events-none" 
+                                     : canAfford 
+                                        ? "bg-amber-900/40 hover:bg-amber-600 text-amber-100 border border-amber-700 hover:border-amber-400 hover:shadow-[0_0_15px_rgba(217,119,6,0.4)]" 
+                                        : "bg-red-900/10 text-red-500 border border-red-900/30 cursor-not-allowed opacity-70"
+                               )}
+                            >
+                               <span className="relative z-10 flex items-center justify-center gap-2">
+                                   {isUnlocked 
+                                      ? (language === "tr" ? "ENVANTERDE" : "IN INVENTORY") 
+                                      : (language === "tr" ? "SATIN AL" : "PURCHASE")}
+                               </span>
+                            </Button>
+                        </div>
                      </div>
                   </div>
                );
