@@ -197,7 +197,7 @@ export default function Shop() {
                      <div className="h-48 bg-stone-900 relative flex items-center justify-center overflow-hidden">
                         {/* Here we would put real images. For now placeholders or CSS art */}
                         <div className={`w-32 h-44 rounded-lg shadow-2xl transform group-hover:scale-105 transition-transform duration-500 ${isUnlocked ? 'grayscale-0' : 'grayscale-[0.3]'}`}
-                             style={{ background: item.type === 'cardback' ? `url(/assets/decks/${item.image}.jpg) center/cover` : `url(/assets/avatars/${item.image}.jpg) center/cover` }}>
+                             style={{ background: item.type === 'cardback' ? `url(/assets/decks/${item.image}) center/cover` : `url(/assets/avatars/${item.image}) center/cover` }}>
                              {/* Mock Visual - Removed since we have images now */}
                         </div>
                         
