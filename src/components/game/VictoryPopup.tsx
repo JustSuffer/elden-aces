@@ -16,6 +16,9 @@ interface VictoryPopupProps {
   delayMs?: number;
   isOnline?: boolean;
   lpChange?: { win: number; lose: number; draw: number } | null;
+  onNextLevel?: () => void;
+  onRetry?: () => void;
+  customReturnLabel?: string;
 }
 
 export function VictoryPopup({
@@ -28,7 +31,10 @@ export function VictoryPopup({
   onReturnToMenu,
   delayMs = 0,
   isOnline = false,
-  lpChange
+  lpChange,
+  onNextLevel,
+  onRetry,
+  customReturnLabel
 }: VictoryPopupProps) {
   const { t, language } = useLanguage();
   
@@ -341,26 +347,56 @@ export function VictoryPopup({
               )}
             </div>
 
-            {/* Return Button */}
+            {/* Buttons Container */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.9 }}
+              className="flex flex-col gap-3"
             >
+              {/* Next Level / Continue Button */}
+              {onNextLevel && isVictory && (
+                <Button
+                  variant="default"
+                  size="lg"
+                  onClick={onNextLevel}
+                  className="w-full text-lg font-cinzel py-6 bg-green-600 hover:bg-green-500 text-white shadow-[0_0_20px_rgba(34,197,94,0.4)] border border-green-400/30"
+                >
+                  {language === "tr" ? "Devam Et" : "Continue"}
+                </Button>
+              )}
+
+              {/* Retry Button */}
+              {onRetry && !isVictory && (
+                <Button
+                  variant="default"
+                  size="lg"
+                  onClick={onRetry}
+                  className="w-full text-lg font-cinzel py-6 bg-red-600 hover:bg-red-500 text-white shadow-[0_0_20px_rgba(239,68,68,0.4)] border border-red-400/30"
+                >
+                   {language === "tr" ? "Yeniden Dene" : "Retry"}
+                </Button>
+              )}
+
+              {/* Return Button */}
               <Button
-                variant="default"
+                variant={onNextLevel || onRetry ? "outline" : "default"}
                 size="lg"
                 onClick={onReturnToMenu}
                 className={`
                   w-full text-lg font-cinzel py-6
                   ${
-                    isVictory ? "bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-amber-950" :
-                    isDraw ? "bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white" :
-                    ""
+                    onNextLevel || onRetry 
+                      ? "border-slate-500/50 hover:bg-slate-800/50 text-slate-300" // Secondary style
+                      : isVictory // Primary style (if only button)
+                        ? "bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-amber-950" 
+                        : isDraw 
+                          ? "bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white" 
+                          : ""
                   }
                 `}
               >
-                {t("victory.back")}
+                {customReturnLabel || t("victory.back")}
               </Button>
             </motion.div>
           </div>

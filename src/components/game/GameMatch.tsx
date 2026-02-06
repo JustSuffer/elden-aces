@@ -46,11 +46,17 @@ interface GameMatchProps {
   opponentDeckCount?: number; // Real-time opponent deck count for online mode
   onMovesReady?: (moves: (Card | null)[]) => Promise<void>;
   onRoundChange?: (newRound: number) => Promise<void>;
-  onGameEnd?: (result: "win" | "lose", isSurrender?: boolean) => void;
+  onGameEnd?: (result: "win" | "lose" | "draw", isSurrender?: boolean) => void;
   // Online ELO Changes
   lpChange?: { win: number; lose: number; draw: number } | null;
   // Tutorial Props
   isTutorial?: boolean;
+  
+  // Story Mode Actions
+  onNextLevel?: () => void;
+  onRetry?: () => void;
+  onReturnToMap?: () => void;
+  customReturnLabel?: string;
 }
 
 import { TUTORIAL_SCRIPT, TutorialStep } from "@/data/tutorialData";
@@ -69,6 +75,10 @@ export const GameMatch = ({
   onGameEnd,
   lpChange,
   isTutorial = false,
+  onNextLevel,
+  onRetry,
+  onReturnToMap,
+  customReturnLabel
 }: GameMatchProps) => {
   const navigate = useNavigate();
   const { t, language } = useLanguage();
@@ -1116,10 +1126,13 @@ export const GameMatch = ({
           opponentHP={gameState.opponentHP}
           winReason={isSurrendered ? "SURRENDER" : gameState.winReason}
           damageDetails={gameState.damageResult?.details}
-          onReturnToMenu={() => navigate("/")}
+          onReturnToMenu={onReturnToMap || (() => navigate("/"))}
           delayMs={0}
           isOnline={isOnline}
           lpChange={lpChange}
+          onNextLevel={onNextLevel}
+          onRetry={onRetry}
+          customReturnLabel={customReturnLabel}
         />
 
         <GameMenuModal 

@@ -24,7 +24,6 @@ export default function StoryGame() {
 
   const [level, setLevel] = useState<StoryLevel | null>(null);
   const [showIntro, setShowIntro] = useState(true);
-  const [showOutro, setShowOutro] = useState<"win" | "lose" | null>(null);
 
   // Deck State
   const [availableDecks, setAvailableDecks] = useState<SavedDeck[]>([]);
@@ -109,7 +108,7 @@ export default function StoryGame() {
   };
 
   const handleGameEnd = async (result: "win" | "lose" | "draw", isSurrender?: boolean) => {
-    setShowOutro(result === "draw" ? "win" : result); // Treat draw as win for story purposes
+    // setShowOutro is removed, logic is handled by passing props to GameMatch
     if (result === "win" || result === "draw") {
       if (level) completeLevel(level.id);
     }
@@ -228,79 +227,23 @@ export default function StoryGame() {
         </DialogContent>
       </Dialog>
 
-      {/* Dialogue Overlay - Outro */}
-      <Dialog open={!!showOutro} onOpenChange={(open) => !open && navigate("/story-mode")}>
-        <DialogContent className="bg-black/90 border-gold/50 text-gold max-w-lg font-cinzel">
-          <DialogHeader className="text-center">
-            <DialogTitle className="text-3xl font-bold mb-2">
-              {showOutro === "win"
-                ? <span className="text-green-500">{language === "tr" ? "ZAFER!" : "VICTORY!"}</span>
-                : <span className="text-red-500">{language === "tr" ? "YENİLGİ..." : "DEFEAT..."}</span>}
-            </DialogTitle>
-          </DialogHeader>
-
-          <div className="py-6 text-center text-xl italic text-white/90">
-            "{showOutro === "win" ? getLoc(level.dialogue.win) : getLoc(level.dialogue.lose)}"
-          </div>
-
-          {showOutro === "win" && level.rewards && (
-            <div className="bg-gold/10 border border-gold/30 p-4 rounded-lg mb-4 text-center">
-              <p className="text-sm text-gold/70 uppercase tracking-widest mb-1">{language === "tr" ? "ÖDÜLLER" : "REWARDS"}</p>
-              {level.rewards.cardBack && (
-                <div className="flex items-center justify-center gap-2 font-bold text-white">
-                  <div className="w-8 h-12 bg-slate-800 border border-gold/50 rounded"></div>
-                  {level.rewards.cardBack} {language === "tr" ? "Kart Arkası" : "Card Back"}
-                </div>
-              )}
-            </div>
-          )}
-
-          <DialogFooter className="sm:justify-center gap-2 flex-col sm:flex-row">
-            <Button variant="outline" className="w-full sm:w-auto border-gold/30 hover:bg-gold/10 text-gold" onClick={() => navigate("/story-mode")}>
-              {language === "tr" ? "Haritaya Dön" : "Return to Map"}
-            </Button>
-
-            {/* Win Condition - Not last level */}
-            {showOutro === "win" && getNextLevelId() && (
-              <Button
-                className="w-full sm:w-auto bg-green-600 text-white hover:bg-green-700 font-bold"
-                onClick={() => {
-                  const nextLvl = getNextLevelId();
-                  if (nextLvl) {
-                    setShowOutro(null);
-                    // Navigate to next level with state to auto-start
-                    navigate(`/story-game/${regionId}/${nextLvl}`, { 
-                      state: { autoStart: true, deckId: playerDeck?.id } 
-                    });
-                  }
-                }}
-              >
-                {language === "tr" ? "Devam Et" : "Continue"}
-              </Button>
-            )}
-
-            {/* Lose or Draw Condition - Retry */}
-            {showOutro !== "win" && (
-                 <Button
-                 className="w-full sm:w-auto bg-red-600 text-white hover:bg-red-700 font-bold"
-                 onClick={() => {
-                   // Refresh page to retry same level
-                   window.location.reload();
-                 }}
-               >
-                 {language === "tr" ? "Yeniden Dene" : "Retry"}
-               </Button>
-            )}
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
       {/* The Game */}
       {!showIntro && playerDeck && (
         <GameMatch
           playerDeck={playerDeck}
           opponentClass={level.opponentClass}
           onGameEnd={handleGameEnd}
+          onReturnToMap={() => navigate("/story-mode")}
+          customReturnLabel={language === "tr" ? "Haritaya Dön" : "Return to Map"}
+          onNextLevel={getNextLevelId() ? () => {
+             const nextLvl = getNextLevelId();
+             if (nextLvl) {
+                 navigate(`/story-game/${regionId}/${nextLvl}`, { 
+                     state: { autoStart: true, deckId: playerDeck?.id } 
+                 });
+             }
+          } : undefined}
+          onRetry={() => window.location.reload()}
         />
       )}
     </div>
