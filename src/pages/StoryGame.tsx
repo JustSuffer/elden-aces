@@ -217,7 +217,7 @@ export default function StoryGame() {
               disabled={!playerDeck}
               className={cn(
                 "bg-gold text-black hover:bg-yellow-400 font-bold min-w-[120px] transition-all duration-500",
-                !playerDeck && "opacity-50 cursor-not-allowed" 
+                !playerDeck 
               )}
               onClick={handleStartGame}
             >
@@ -238,9 +238,9 @@ export default function StoryGame() {
           onNextLevel={getNextLevelId() ? () => {
              const nextLvl = getNextLevelId();
              if (nextLvl) {
-                 navigate(`/story-game/${regionId}/${nextLvl}`, { 
-                     state: { autoStart: true, deckId: playerDeck?.id } 
-                 });
+                 // Force a hard navigation to ensure clean game state
+                 window.location.href = `/story-game/${regionId}/${nextLvl}`;
+                 // Alternative: navigate(..., { replace: true }) might not be enough if state lingers
              }
           } : undefined}
           onRetry={() => window.location.reload()}
