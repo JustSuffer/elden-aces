@@ -617,9 +617,10 @@ const OnlineGame = () => {
     
     // Check mode
     const mode = searchParams.get("mode");
+    const isPrivate = mode === "private";
     
-    // Only update ELO if NOT private
-    if (mode !== "private" && myStats && oppStats) {
+    // Update ELO only for ranked (non-private) matches
+    if (!isPrivate && myStats && oppStats) {
        const myElo = myStats.elo_rating || 1000;
        const oppElo = oppStats.elo_rating || 1000;
        
@@ -645,22 +646,21 @@ const OnlineGame = () => {
        // Update ELO & Wins
        await supabase.from("game_stats").update({ elo_rating: newMyElo, wins, losses, total_games: myStats.total_games + 1 }).eq("user_id", user.id);
        await supabase.from("game_stats").update({ elo_rating: newOppElo }).eq("user_id", opponentId);
-       
-       // Coins
-       let reward = 0;
-       if (winnerId === null) reward = 50;
-       else if (winnerId === user.id) reward = 100;
-       else if (!isSurrender) reward = 25;
-       
-       if (reward > 0) {
-           const { error: rpcError } = await supabase.rpc("increment_coins" as any, { amount: reward, user_id: user.id });
-           if (rpcError) {
-              const { data } = await supabase.from("profiles").select("divine_coins").eq("user_id", user.id).single();
-              await supabase.from("profiles").update({ divine_coins: (data?.divine_coins || 0) + reward } as any).eq("user_id", user.id);
-           }
-       }
-    } else {
-        console.log("[OnlineGame] Private mode or missing stats - skipping ELO/Coin updates.");
+    }
+    
+    // Award coins for ALL online matches (ranked + private)
+    // Online: Win 100, Draw 50, Loss 25, Surrender 0
+    let reward = 0;
+    if (winnerId === null) reward = 50;
+    else if (winnerId === user.id) reward = 100;
+    else if (!isSurrender) reward = 25;
+    
+    if (reward > 0) {
+        const { error: rpcError } = await supabase.rpc("increment_coins" as any, { amount: reward, user_id: user.id });
+        if (rpcError) {
+           const { data } = await supabase.from("profiles").select("divine_coins").eq("user_id", user.id).single();
+           await supabase.from("profiles").update({ divine_coins: (data?.divine_coins || 0) + reward } as any).eq("user_id", user.id);
+        }
     }
   }, [match, user, isPlayer1, gameEnded]);
 
