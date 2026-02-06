@@ -2,7 +2,7 @@ import { MenuButton } from "@/components/ui/menu-button";
 import logo from "@/assets/acoria-logo.png";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { LogOut, Trophy, X, Monitor, Map, Users, Coins } from "lucide-react";
+import { LogOut, Trophy, X, Monitor, Map, Users, Coins, Store } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -121,9 +121,19 @@ const Menu = () => {
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/80" />
       
       {/* Coin Display */}
-      <div className="absolute top-4 right-4 z-50 flex items-center gap-2 bg-black/60 px-4 py-2 rounded-full border border-amber-500/30 shadow-lg animate-in fade-in slide-in-from-top-4">
-          <Coins className="w-4 h-4 text-yellow-500" />
-          <span className="text-yellow-100 font-bold font-cinzel">{(coins || 0).toLocaleString()}</span>
+      <div className="absolute top-4 right-4 z-50 flex items-center gap-3 animate-in fade-in slide-in-from-top-4">
+          <button
+              onClick={() => navigate("/checkout")}
+              className="w-9 h-9 flex items-center justify-center rounded-full bg-black/60 border border-amber-500/30 text-amber-500 hover:bg-amber-500/10 hover:text-amber-300 hover:border-amber-500/60 transition-all shadow-lg"
+              title={language === "tr" ? "Coin Satın Al" : "Buy Coins"}
+          >
+              <Store className="w-4 h-4" />
+          </button>
+          
+          <div className="flex items-center gap-2 bg-black/60 px-4 py-2 rounded-full border border-amber-500/30 shadow-lg">
+              <Coins className="w-4 h-4 text-yellow-500" />
+              <span className="text-yellow-100 font-bold font-cinzel">{(coins || 0).toLocaleString()}</span>
+          </div>
       </div>
 
       {/* Content */}

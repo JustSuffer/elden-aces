@@ -4,7 +4,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Coins, Lock, ShoppingCart, Info } from "lucide-react";
+import { ArrowLeft, Coins, Lock, ShoppingCart, Info, Store } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { TAVERNER_QUOTES, ALL_SHOP_ITEMS, ShopItem } from "@/data/shopData";
@@ -307,8 +307,8 @@ export default function Shop() {
           <div className="py-4">
             <p className="text-lg">
               {language === "tr" 
-                ? `${selectedItem ? (language === "tr" ? selectedItem.name.tr : selectedItem.name.en) : ""} öğesini satın almak istiyor musunuz?`
-                : `Are you sure you want to purchase ${selectedItem ? (language === "tr" ? selectedItem.name.tr : selectedItem.name.en) : ""}?`
+                ? `${selectedItem ? selectedItem.name.tr : ""} öğesini satın almak istiyor musunuz?`
+                : `Are you sure you want to purchase ${selectedItem ? selectedItem.name.en : ""}?`
               }
             </p>
             <div className="flex items-center gap-2 mt-4 text-xl font-bold text-amber-400">
