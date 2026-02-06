@@ -194,15 +194,16 @@ export default function Shop() {
                   <div key={item.id} className="group relative bg-stone-950 border border-amber-800/50 rounded-xl overflow-hidden hover:border-amber-500 transition-all duration-300 hover:shadow-[0_0_30px_rgba(217,119,6,0.2)] hover:-translate-y-1 flex flex-col">
                      
                      {/* Image Section */}
-                     <div className="h-64 bg-black/40 relative flex items-center justify-center overflow-hidden p-4">
+                     <div className="h-80 bg-black/40 relative flex items-center justify-center overflow-hidden p-6">
                         {/* Glow Effect */}
                         <div className="absolute inset-0 bg-amber-500/5 opacity-0 group-hover:opacity-20 transition-opacity duration-500" />
                         
-                        <div className={`w-40 h-56 rounded-lg shadow-2xl transform group-hover:scale-105 transition-transform duration-500 ${isUnlocked ? 'grayscale-0' : 'grayscale-[0.3]'} border border-amber-900/30`}
+                        <div className={`w-48 h-64 rounded-xl shadow-2xl transform group-hover:scale-105 transition-transform duration-500 ${isUnlocked ? 'grayscale-0' : 'grayscale-[0.3]'} border border-amber-900/30`}
                              style={{ 
                                  backgroundImage: item.type === 'cardback' ? `url(/assets/decks/${item.image})` : `url(/assets/avatars/${item.image})`,
                                  backgroundPosition: 'center',
-                                 backgroundSize: 'cover'
+                                 backgroundSize: 'contain',
+                                 backgroundRepeat: 'no-repeat'
                              }}>
                         </div>
                         
