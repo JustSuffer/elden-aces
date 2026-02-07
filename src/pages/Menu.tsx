@@ -72,46 +72,59 @@ const Menu = () => {
     if(!user) return;
     
     const fetchData = async () => {
-       // 1. Profile (Coins & Unlocked Items)
-       const { data: profile } = await supabase.from("profiles").select("divine_coins, unlocked_items" as any).eq("user_id", user.id).single();
-       let unlockedIds: string[] = [];
-       
-       if(profile) {
-           const p = profile as any;
-           setCoins(p.divine_coins || 0);
-           unlockedIds = (p.unlocked_items as string[]) || [];
+       // 1. Fetch Coins (Isolated)
+       try {
+           const { data: coinData } = await supabase.from("profiles").select("divine_coins").eq("user_id", user.id).single();
+           if (coinData) setCoins(coinData.divine_coins || 0);
+       } catch (e) {
+           console.error("Error fetching coins:", e);
        }
 
-       // 2. Stats for Achievement Calc (Simplified fetch)
-       const { data: stats } = await supabase.from("bot_match_stats").select("result, player_class, player_final_hp").eq("user_id", user.id);
-       
-       if (stats) {
-           // Calculate Unclaimed Count
-           const totalWins = stats.filter(m => m.result === "win").length;
-           const classWins: Record<string, number> = {};
-           stats.forEach(m => { if (m.result === "win") classWins[m.player_class] = (classWins[m.player_class] || 0) + 1; });
+       // 2. Fetch Unlocked Items (Isolated)
+       let unlockedIds: string[] = [];
+       try {
+           const { data: itemData } = await supabase.from("profiles").select("unlocked_items").eq("user_id", user.id).maybeSingle();
+           if (itemData) {
+               unlockedIds = ((itemData as any).unlocked_items as string[]) || [];
+           }
+       } catch (e) {
+           console.error("Error fetching unlocked items:", e);
+       }
+
+       // 3. Stats for Achievement Calc
+       try {
+           const { data: stats } = await supabase.from("bot_match_stats").select("result, player_class, player_final_hp").eq("user_id", user.id);
            
-           let count = 0;
-           ACHIEVEMENTS.forEach(achiv => {
-               if (unlockedIds.includes(achiv.id)) return; // Already claimed
+           if (stats) {
+               // Calculate Unclaimed Count
+               const totalWins = stats.filter(m => m.result === "win").length;
+               const classWins: Record<string, number> = {};
+               stats.forEach(m => { if (m.result === "win") classWins[m.player_class] = (classWins[m.player_class] || 0) + 1; });
+               
+               let count = 0;
+               ACHIEVEMENTS.forEach(achiv => {
+                   if (unlockedIds.includes(achiv.id)) return; // Already claimed
 
-               let progress = 0;
-               switch (achiv.conditionType) {
-                   case "total_wins": progress = totalWins; break;
-                   case "class_wins": progress = classWins[achiv.conditionParam || ""] || 0; break;
-                   case "total_games": progress = stats.length; break;
-                   case "coins_earned": progress = (profile as any)?.divine_coins || 0; break;
-                   case "items_owned": progress = unlockedIds.filter(id => !id.startsWith("achiv_")).length; break;
-                   case "story_level_complete": progress = isLevelCompleted(achiv.conditionParam!) ? 1 : 0; break;
-                   case "story_region_unlock": progress = isRegionUnlocked(achiv.conditionParam!) ? 1 : 0; break;
-                   case "perfect_win": progress = stats.filter(m => m.result === "win" && m.player_final_hp >= 20).length; break;
-                   case "close_call": progress = stats.filter(m => m.result === "win" && m.player_final_hp <= 5).length; break;
-                   default: progress = 0;
-               }
+                   let progress = 0;
+                   switch (achiv.conditionType) {
+                       case "total_wins": progress = totalWins; break;
+                       case "class_wins": progress = classWins[achiv.conditionParam || ""] || 0; break;
+                       case "total_games": progress = stats.length; break;
+                       case "coins_earned": progress = coins || 0; break;
+                       case "items_owned": progress = unlockedIds.filter(id => !id.startsWith("achiv_")).length; break;
+                       case "story_level_complete": progress = isLevelCompleted(achiv.conditionParam!) ? 1 : 0; break;
+                       case "story_region_unlock": progress = isRegionUnlocked(achiv.conditionParam!) ? 1 : 0; break;
+                       case "perfect_win": progress = stats.filter(m => m.result === "win" && m.player_final_hp >= 20).length; break;
+                       case "close_call": progress = stats.filter(m => m.result === "win" && m.player_final_hp <= 5).length; break;
+                       default: progress = 0;
+                   }
 
-               if (progress >= achiv.targetCount) count++;
-           });
-           setUnclaimedAchievements(count);
+                   if (progress >= achiv.targetCount) count++;
+               });
+               setUnclaimedAchievements(count);
+           }
+       } catch (e) {
+           console.error("Error calculating achievements:", e);
        }
     };
     fetchData();
@@ -131,7 +144,6 @@ const Menu = () => {
           if (payload.new?.divine_coins !== undefined) {
             setCoins(payload.new.divine_coins);
           }
-          // If items update, we might need to re-calc, but for now just coins is fine for basic update
         }
       )
       .subscribe();
@@ -139,7 +151,7 @@ const Menu = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, isLevelCompleted, isRegionUnlocked]);
+  }, [user, isLevelCompleted, isRegionUnlocked, coins]); // Added coins to dependency for achievement calc update
 
   return (
     <div className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden bg-background">

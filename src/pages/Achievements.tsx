@@ -39,17 +39,22 @@ export default function Achievements() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // 1. Profile (Coins & Unlocked Items)
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("divine_coins, unlocked_items" as any)
-          .eq("user_id", user.id)
-          .single();
+        // 1. Fetch Coins (Isolated)
+        try {
+            const { data: coinData } = await supabase.from("profiles").select("divine_coins").eq("user_id", user.id).single();
+            if (coinData) setCoins(coinData.divine_coins || 0);
+        } catch (e) {
+            console.error("Error fetching coins:", e);
+        }
 
-        if (profile) {
-          const p = profile as any;
-          setCoins(p.divine_coins || 0);
-          setUnlockedItems((p.unlocked_items as string[]) || []);
+        // 2. Fetch Unlocked Items (Isolated)
+        try {
+            const { data: itemData } = await supabase.from("profiles").select("unlocked_items").eq("user_id", user.id).maybeSingle();
+            if (itemData) {
+                setUnlockedItems(((itemData as any).unlocked_items as string[]) || []);
+            }
+        } catch (e) {
+            console.error("Error fetching unlocked items:", e);
         }
 
         // 2. Match Stats (for calculation)
@@ -174,35 +179,59 @@ export default function Achievements() {
   const handleClaim = async (achievement: Achievement) => {
     if (!user) return;
     const status = achievementStatus[achievement.id];
+    // Check local status first to avoiding unnecessary calls
     if (!status.isUnlocked || status.isClaimed) return;
 
-    // 1. Update UI Optimistically
-    const newUnlockedItems = [...unlockedItems, achievement.id];
-    setUnlockedItems(newUnlockedItems);
+    // Optimistic UI Update
+    setUnlockedItems(prev => [...prev, achievement.id]);
     setCoins(prev => prev + achievement.reward);
-
+    
     toast.success(
         language === "tr" 
         ? `${achievement.reward} Divine Coin kazanıldı!` 
         : `Earned ${achievement.reward} Divine Coins!`
     );
 
-    // 2. Persist to DB
-    // Update coins and unlocked_items
     try {
-        const { error } = await supabase
+        // 1. Fetch LATEST data to avoid race conditions or stale state
+        const { data: latestProfile, error: fetchError } = await supabase
+            .from("profiles")
+            .select("unlocked_items, divine_coins" as any)
+            .eq("user_id", user.id)
+            .single();
+            
+        if (fetchError) throw fetchError;
+        
+        const currentItems = ((latestProfile as any).unlocked_items as string[]) || [];
+        const currentCoins = (latestProfile as any).divine_coins || 0;
+        
+        // Check if already claimed in DB (to be safe)
+        if (currentItems.includes(achievement.id)) return;
+        
+        const newItems = [...currentItems, achievement.id];
+        const newCoins = currentCoins + achievement.reward;
+
+        // 2. Perform Update
+        const { error: updateError } = await supabase
             .from("profiles")
             .update({ 
-                unlocked_items: newUnlockedItems,
-                divine_coins: coins + achievement.reward 
+                unlocked_items: newItems,
+                divine_coins: newCoins 
             } as any)
             .eq("user_id", user.id);
         
-        if (error) throw error;
+        if (updateError) throw updateError;
+        
+        // Sync state with DB result (optional, but good for consistency)
+        setCoins(newCoins);
+        setUnlockedItems(newItems);
+
     } catch (err) {
         console.error("Claim failed:", err);
-        toast.error("Error saving progress, please try again.");
-        // Revert UI? For now assume success or reload fixes it.
+        toast.error("Error saving progress. Please check your connection.");
+        // Revert Optimistic UI if needed
+        setUnlockedItems(prev => prev.filter(id => id !== achievement.id));
+        setCoins(prev => prev - achievement.reward);
     }
   };
 
@@ -293,7 +322,7 @@ export default function Achievements() {
                                 <div className={cn(
                                     "w-14 h-14 rounded-full flex items-center justify-center border-2 shrink-0",
                                     status.isClaimed ? "bg-gold/10 border-gold/30 text-gold/50" :
-                                    status.isUnlocked ? "bg-gold text-black border-white shadow-lg animate-pulse-slow" :
+                                    status.isUnlocked ? "bg-black text-orange-500 border-orange-500 shadow-[0_0_15px_rgba(249,115,22,0.4)] animate-pulse-slow" :
                                     "bg-slate-900 border-white/10 text-white/20"
                                 )}>
                                     {status.isClaimed ? <CheckCircle className="w-7 h-7" /> :
