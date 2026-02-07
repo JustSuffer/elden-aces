@@ -57,6 +57,9 @@ interface GameMatchProps {
   onRetry?: () => void;
   onReturnToMap?: () => void;
   customReturnLabel?: string;
+
+  // Opponent surrendered (online)
+  opponentSurrendered?: boolean;
 }
 
 import { TUTORIAL_SCRIPT, TutorialStep } from "@/data/tutorialData";
@@ -78,7 +81,8 @@ export const GameMatch = ({
   onNextLevel,
   onRetry,
   onReturnToMap,
-  customReturnLabel
+  customReturnLabel,
+  opponentSurrendered = false
 }: GameMatchProps) => {
   const navigate = useNavigate();
   const { t, language } = useLanguage();
@@ -1120,11 +1124,11 @@ export const GameMatch = ({
         )}
 
         <VictoryPopup
-          open={(gameState.phase === "end" || isSurrendered) && !showWinConAnimation}
-          outcome={isSurrendered ? "loss" : (gameState.winner === "p1" ? "win" : gameState.winner === "p2" ? "loss" : "draw")}
+          open={(gameState.phase === "end" || isSurrendered || opponentSurrendered) && !showWinConAnimation}
+          outcome={isSurrendered ? "loss" : opponentSurrendered ? "win" : (gameState.winner === "p1" ? "win" : gameState.winner === "p2" ? "loss" : "draw")}
           playerHP={gameState.playerHP}
           opponentHP={gameState.opponentHP}
-          winReason={isSurrendered ? "SURRENDER" : gameState.winReason}
+          winReason={isSurrendered ? "SURRENDER" : opponentSurrendered ? "OPPONENT_SURRENDER" : gameState.winReason}
           damageDetails={gameState.damageResult?.details}
           onReturnToMenu={onReturnToMap || (() => navigate("/"))}
           delayMs={0}
