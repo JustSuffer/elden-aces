@@ -301,18 +301,18 @@ export default function Achievements() {
                     key={cat}
                     onClick={() => setActiveTab(cat)}
                     className={cn(
-                        "px-4 py-1.5 rounded-full text-sm font-bold whitespace-nowrap transition-all border",
+                        "px-6 py-1.5 rounded-full text-sm font-bold whitespace-nowrap transition-all border tracking-widest uppercase",
                         activeTab === cat 
-                            ? "bg-gold text-black border-gold shadow-[0_0_10px_rgba(251,191,36,0.3)]"
-                            : "bg-transparent text-gold/60 border-gold/20 hover:border-gold/50 hover:text-gold"
+                            ? "bg-transparent text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-amber-600 border-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.3)] backdrop-blur-sm"
+                            : "bg-transparent text-amber-600/60 border-amber-900/30 hover:border-amber-500/50 hover:text-amber-500"
                     )}
                 >
-                    {language === "tr" && cat === "All" ? "Tümü" : 
-                     language === "tr" && cat === "Combat" ? "Savaş" :
-                     language === "tr" && cat === "Mastery" ? "Ustalık" :
-                     language === "tr" && cat === "Story" ? "Hikaye" :
-                     language === "tr" && cat === "Collection" ? "Koleksiyon" :
-                     language === "tr" && cat === "Social" ? "Sosyal" : cat}
+                    {language === "tr" && cat === "All" ? "TÜMÜ" : 
+                     language === "tr" && cat === "Combat" ? "SAVAŞ" :
+                     language === "tr" && cat === "Mastery" ? "USTALIK" :
+                     language === "tr" && cat === "Story" ? "HİKAYE" :
+                     language === "tr" && cat === "Collection" ? "KOLEKSİYON" :
+                     language === "tr" && cat === "Social" ? "SOSYAL" : cat.toUpperCase()}
                 </button>
             ))}
         </div>
