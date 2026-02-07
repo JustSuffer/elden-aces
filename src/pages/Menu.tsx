@@ -80,13 +80,23 @@ const Menu = () => {
            console.error("Error fetching coins:", e);
        }
 
-       // 2. Fetch Unlocked Items (Isolated)
+       // 2. Fetch Unlocked Items (Isolated with LocalStorage Fallback)
        let unlockedIds: string[] = [];
        try {
            const { data: itemData } = await supabase.from("profiles").select("unlocked_items").eq("user_id", user.id).maybeSingle();
+           
+           let dbItems: string[] = [];
            if (itemData) {
-               unlockedIds = ((itemData as any).unlocked_items as string[]) || [];
+               dbItems = ((itemData as any).unlocked_items as string[]) || [];
            }
+           
+           // Merge with LocalStorage to see locally claimed items
+           const localStored = localStorage.getItem(`achievements_${user.id}`);
+           let localItems: string[] = localStored ? JSON.parse(localStored) : [];
+           
+           // Union unique items
+           unlockedIds = Array.from(new Set([...dbItems, ...localItems]));
+           
        } catch (e) {
            console.error("Error fetching unlocked items:", e);
        }
