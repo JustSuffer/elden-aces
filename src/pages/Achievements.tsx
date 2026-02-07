@@ -47,12 +47,23 @@ export default function Achievements() {
             console.error("Error fetching coins:", e);
         }
 
-        // 2. Fetch Unlocked Items (Isolated)
+        // 2. Fetch Unlocked Items (Isolated with LocalStorage Fallback)
         try {
             const { data: itemData } = await supabase.from("profiles").select("unlocked_items").eq("user_id", user.id).maybeSingle();
+            
+            let dbItems: string[] = [];
             if (itemData) {
-                setUnlockedItems(((itemData as any).unlocked_items as string[]) || []);
+                dbItems = ((itemData as any).unlocked_items as string[]) || [];
             }
+            
+            // Merge with LocalStorage (Schema fallback)
+            const localStored = localStorage.getItem(`achievements_${user.id}`);
+            let localItems: string[] = localStored ? JSON.parse(localStored) : [];
+            
+            // Union unique items
+            const mergedItems = Array.from(new Set([...dbItems, ...localItems]));
+            setUnlockedItems(mergedItems);
+            
         } catch (e) {
             console.error("Error fetching unlocked items:", e);
         }
@@ -193,11 +204,10 @@ export default function Achievements() {
     );
 
     try {
-        // 1. Fetch LATEST data to avoid race conditions or stale state
-        // Use select("*") to ensure we get all data even if types are partial
-        const { data: latestProfile, error: fetchError } = await supabase
+        // 1. Fetch LATEST data (Coins only, as it's the critical DB part)
+        const { data: profileData, error: fetchError } = await supabase
             .from("profiles")
-            .select("*") 
+            .select("divine_coins") 
             .eq("user_id", user.id)
             .single();
             
@@ -206,36 +216,42 @@ export default function Achievements() {
              throw new Error("Could not fetch profile data.");
         }
         
-        const currentItems = ((latestProfile as any).unlocked_items as string[]) || [];
-        const currentCoins = (latestProfile as any).divine_coins || 0;
+        const currentCoins = profileData.divine_coins || 0;
         
-        // Check if already claimed in DB (to be safe)
-        if (currentItems.includes(achievement.id)) return;
-        
-        const newItems = [...currentItems, achievement.id];
+        // 2. Update Coins (Priority 1 - Must Succeed)
         const newCoins = currentCoins + achievement.reward;
-
-        // 2. Perform Update
-        const { error: updateError } = await supabase
+        const { error: coinError } = await supabase
             .from("profiles")
-            .update({ 
-                unlocked_items: newItems,
-                divine_coins: newCoins 
-            } as any)
+            .update({ divine_coins: newCoins } as any)
             .eq("user_id", user.id);
-        
-        if (updateError) {
-            console.error("Profile update error:", updateError);
-            throw new Error(`Update failed: ${updateError.message}`);
+
+        if (coinError) {
+            throw new Error(`Coin update failed: ${coinError.message}`);
         }
+
+        // 3. Update Unlocked Items (Priority 2 - Try DB, Fallback to LocalStorage)
+        // We tried getting it from DB but schema might be missing 'unlocked_items'.
+        // So we use our local 'unlockedItems' state + new item.
+        const newItems = [...unlockedItems, achievement.id];
         
-        // Sync state with DB result (optional, but good for consistency)
+        // Attempt DB update for items
+        const { error: itemError } = await supabase
+            .from("profiles")
+            .update({ unlocked_items: newItems } as any)
+            .eq("user_id", user.id);
+
+        if (itemError) {
+            console.warn("DB Item Update failed (Schema mismatch?), falling back to LocalStorage:", itemError);
+            // Fallback: Save to LocalStorage
+            localStorage.setItem(`achievements_${user.id}`, JSON.stringify(newItems));
+        }
+
+        // 4. Final Success State
         setCoins(newCoins);
         setUnlockedItems(newItems);
 
     } catch (err: any) {
         console.error("Claim failed:", err);
-        // Show specific error to user/dev to debug
         toast.error(`Error saving progress: ${err.message || "Unknown Error"}`);
         
         // Revert Optimistic UI
@@ -253,7 +269,7 @@ export default function Achievements() {
       <div className="fixed inset-0 bg-[url('/assets/hex-pattern.png')] opacity-5 -z-40" />
 
       {/* Header */}
-      <header className="sticky top-0 z-50 backdrop-blur-md border-b border-gold/10 bg-black/80">
+      <header className="sticky top-0 z-50 backdrop-blur-md border-b border-gold/10 bg-white/80">
         <div className="container mx-auto px-4 h-20 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button 
