@@ -41,13 +41,15 @@ export function VictoryPopup({
   let reward = 0;
   if (winReason === "SURRENDER") {
       reward = 0;
+  } else if (winReason === "OPPONENT_SURRENDER") {
+      reward = isOnline ? 100 : 50; // Full win reward when opponent surrenders
   } else if (outcome === "win") {
       reward = isOnline ? 100 : 50;
   } else if (outcome === "loss") {
       reward = isOnline ? 25 : 10;
   } else {
       // Draw
-      reward = isOnline ? 10 : 5; // Assuming small reward for draw
+      reward = isOnline ? 10 : 5;
   }
 
   // Determine LP change
@@ -55,7 +57,7 @@ export function VictoryPopup({
   if (lpChange) {
       if (winReason === "SURRENDER" || outcome === "loss") {
           currentLpChange = lpChange.lose;
-      } else if (outcome === "win") {
+      } else if (outcome === "win" || winReason === "OPPONENT_SURRENDER") {
           currentLpChange = lpChange.win;
       } else {
           currentLpChange = lpChange.draw;
@@ -217,11 +219,13 @@ export function VictoryPopup({
             >
               {winReason === "SURRENDER" 
                   ? (language === "tr" ? "TESLİM OLDUN" : "SURRENDERED")
-                  : (isVictory ? t("victory.title.win") : (isDraw ? t("victory.title.draw") : t("victory.title.loss")))}
+                  : winReason === "OPPONENT_SURRENDER"
+                    ? (language === "tr" ? "RAKİP TESLİM OLDU!" : "OPPONENT SURRENDERED!")
+                    : (isVictory ? t("victory.title.win") : (isDraw ? t("victory.title.draw") : t("victory.title.loss")))}
             </motion.h1>
 
-            {/* Win reason if provided (don't show if it's SURRENDER as it's already in title) */}
-            {winReason && winReason !== "SURRENDER" && (
+            {/* Win reason if provided (don't show if it's SURRENDER or OPPONENT_SURRENDER as it's already in title) */}
+            {winReason && winReason !== "SURRENDER" && winReason !== "OPPONENT_SURRENDER" && (
               <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}

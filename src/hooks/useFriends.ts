@@ -534,7 +534,18 @@ export function useFriends() {
             table: "private_match_invites",
             filter: `sender_id=eq.${user.id}`,
           },
-          () => fetchMatchInvites()
+          (payload) => {
+            console.log("[useFriends] Outgoing invite updated:", payload.new);
+            const updated = payload.new as any;
+            // Immediately update outgoingMatchInvites state for instant UI reaction
+            if (updated.status === 'accepted') {
+              setOutgoingMatchInvites(prev => 
+                prev.map(inv => inv.id === updated.id ? { ...inv, status: 'accepted' as const, match_id: updated.match_id } : inv)
+              );
+            }
+            // Also do a full refetch for consistency
+            fetchMatchInvites();
+          }
         )
         .subscribe();
 

@@ -12,6 +12,8 @@ import { toast } from "sonner";
 import { calculateNewRatings, calculateDrawRatings } from "@/utils/eloCalculator";
 import { ReadyPopup } from "@/components/game/ReadyPopup";
 import { NextRoundWaitingPopup } from "@/components/game/NextRoundWaitingPopup";
+import { VictoryPopup } from "@/components/game/VictoryPopup";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface Match {
   id: string;
@@ -90,6 +92,7 @@ const OnlineGame = () => {
   const isReconnect = searchParams.get("reconnect") === "true";
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { language } = useLanguage();
   const [match, setMatch] = useState<Match | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -98,6 +101,7 @@ const OnlineGame = () => {
   const [waitingForOpponent, setWaitingForOpponent] = useState(false);
   const [opponentReady, setOpponentReady] = useState(false);
   const [gameEnded, setGameEnded] = useState(false);
+  const [opponentSurrendered, setOpponentSurrendered] = useState(false);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   
   // Game start ready states
@@ -129,6 +133,7 @@ const OnlineGame = () => {
   // Keep latest values for realtime callbacks (avoid stale closures + partial payload overwrites)
   const matchRef = useRef<Match | null>(null);
   const currentRoundRef = useRef<number>(1);
+  const gameEndedRef = useRef(false);
 
   useEffect(() => {
     matchRef.current = match;
@@ -137,6 +142,10 @@ const OnlineGame = () => {
   useEffect(() => {
     currentRoundRef.current = currentRound;
   }, [currentRound]);
+
+  useEffect(() => {
+    gameEndedRef.current = gameEnded;
+  }, [gameEnded]);
 
   // Validate DB field arrays (avoid resolving with empty/partial data)
   // Accept length===5 (proper [null,null,null,null,null] or filled) 
@@ -272,6 +281,26 @@ const OnlineGame = () => {
           setMatch(merged);
 
           const isP1 = user.id === merged.player1_id;
+
+          // ========== OPPONENT SURRENDER DETECTION ==========
+          if (merged.status === "completed" && merged.winner_id && merged.winner_id === user.id && !gameEndedRef.current) {
+            console.log("[OnlineGame] Opponent surrendered! I am the winner.");
+            setOpponentSurrendered(true);
+            setGameEnded(true);
+            gameEndedRef.current = true;
+            
+            // Award coins to the winner (ELO was already updated by the surrendering player)
+            const reward = 100; // Full online win reward
+            supabase.rpc("increment_coins" as any, { amount: reward, user_id: user.id }).then(({ error: rpcError }) => {
+              if (rpcError) {
+                // Fallback
+                supabase.from("profiles").select("divine_coins").eq("user_id", user.id).single().then(({ data }) => {
+                  supabase.from("profiles").update({ divine_coins: (data?.divine_coins || 0) + reward } as any).eq("user_id", user.id);
+                });
+              }
+            });
+            return;
+          }
 
           // ========== GAME START READY SYNC ==========
           if (!merged.game_started) {
@@ -873,6 +902,7 @@ const OnlineGame = () => {
           onRoundChange={handleRoundChange}
           onGameEnd={handleMatchEnd}
           lpChange={potentialLpChange}
+          opponentSurrendered={opponentSurrendered}
         />
       ) : gameStarted ? (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm z-40">
@@ -886,6 +916,20 @@ const OnlineGame = () => {
           </Button>
         </div>
       ) : null}
+
+      {/* Opponent Surrender Victory Popup - shown even if game hasn't fully started */}
+      {opponentSurrendered && !gameStarted && (
+        <VictoryPopup
+          open={true}
+          outcome="win"
+          playerHP={40}
+          opponentHP={0}
+          winReason={language === "tr" ? "Rakip teslim oldu!" : "Opponent surrendered!"}
+          onReturnToMenu={() => navigate("/")}
+          isOnline={true}
+          lpChange={potentialLpChange}
+        />
+      )}
     </div>
   );
 };
