@@ -194,13 +194,17 @@ export default function Achievements() {
 
     try {
         // 1. Fetch LATEST data to avoid race conditions or stale state
+        // Use select("*") to ensure we get all data even if types are partial
         const { data: latestProfile, error: fetchError } = await supabase
             .from("profiles")
-            .select("unlocked_items, divine_coins" as any)
+            .select("*") 
             .eq("user_id", user.id)
             .single();
             
-        if (fetchError) throw fetchError;
+        if (fetchError) {
+             console.error("Profile fetch error:", fetchError);
+             throw new Error("Could not fetch profile data.");
+        }
         
         const currentItems = ((latestProfile as any).unlocked_items as string[]) || [];
         const currentCoins = (latestProfile as any).divine_coins || 0;
@@ -220,16 +224,21 @@ export default function Achievements() {
             } as any)
             .eq("user_id", user.id);
         
-        if (updateError) throw updateError;
+        if (updateError) {
+            console.error("Profile update error:", updateError);
+            throw new Error(`Update failed: ${updateError.message}`);
+        }
         
         // Sync state with DB result (optional, but good for consistency)
         setCoins(newCoins);
         setUnlockedItems(newItems);
 
-    } catch (err) {
+    } catch (err: any) {
         console.error("Claim failed:", err);
-        toast.error("Error saving progress. Please check your connection.");
-        // Revert Optimistic UI if needed
+        // Show specific error to user/dev to debug
+        toast.error(`Error saving progress: ${err.message || "Unknown Error"}`);
+        
+        // Revert Optimistic UI
         setUnlockedItems(prev => prev.filter(id => id !== achievement.id));
         setCoins(prev => prev - achievement.reward);
     }
