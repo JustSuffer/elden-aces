@@ -461,7 +461,7 @@ const DeckBuilder = () => {
                                   />
                               ) : (
                                   <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-primary/50">
-                                      <img src={`/assets/avatars/${hero.image}.jpeg`} className="w-full h-full object-cover" />
+                                      <img src={`/assets/avatars/${hero.image}`} className="w-full h-full object-cover" />
                                   </div>
                               )}
                            </div>
@@ -573,12 +573,12 @@ const DeckBuilder = () => {
                       )}
                     >
                        <img 
-                         src={`/assets/decks/${back.image}.jpg`} 
+                         src={`/assets/decks/${back.image}`} 
                          alt={back.name[language as "tr" | "en"] || back.name["en"]} 
                          className="w-full h-full object-cover"
                          onError={(e) => {
-                           e.currentTarget.src = "/assets/decks/default_back.jpg";
-                           e.currentTarget.style.filter = "grayscale(100%)"; // Ensure fallback is also gray if locked
+                           e.currentTarget.src = "/assets/decks/default_back.jpg"; // This might need verification if default_back exists
+                           e.currentTarget.style.filter = "grayscale(100%)"; 
                          }} 
                        />
                        <div className={cn("absolute inset-0 transition-all", back.isLocked ? "bg-black/30" : "bg-black/20 group-hover:bg-transparent")} />
