@@ -12,6 +12,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { CharacterAvatar } from "@/components/game/CharacterAvatar";
 import { useCloudDecks } from "@/hooks/useCloudDecks";
 import { supabase } from "@/integrations/supabase/client";
+import { useInventory } from "@/hooks/useInventory";
 import { CARD_BACKS, HEROES } from "@/data/shopData";
 
 const ALL_CLASSES: ClassName[] = [
@@ -60,21 +61,11 @@ const DeckBuilder = () => {
   const [secondaryClasses, setSecondaryClasses] = useState<ClassName[]>([]);
   const [cardBack, setCardBack] = useState<string>("Slayer");
   const [editingDeckId, setEditingDeckId] = useState<string | null>(null);
-  const [unlockedItems, setUnlockedItems] = useState<string[]>([]); // New state
+  const { unlockedItems } = useInventory(); // Use Hook
   const [selectedHeroId, setSelectedHeroId] = useState<string | null>(null);
 
-  // Fetch unlocked items
-  useEffect(() => {
-    if (!user) return;
-    const fetchUnlocked = async () => {
-        const { data } = await supabase.from("profiles").select("unlocked_items").eq("id", user.id).maybeSingle();
-        if (data && Array.isArray((data as any).unlocked_items)) {
-            setUnlockedItems((data as any).unlocked_items);
-        }
-    }
-    fetchUnlocked();
-  }, [user]);
-
+  // Removed manual fetch useEffect
+  
   const heroSectionRef = useRef<HTMLDivElement>(null);
   const secondarySectionRef = useRef<HTMLDivElement>(null);
   const saveSectionRef = useRef<HTMLDivElement>(null);

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useAuth } from "@/hooks/useAuth";
+import { useInventory } from "@/hooks/useInventory";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Coins, Lock, ShoppingCart, Info, Store } from "lucide-react";
@@ -21,75 +22,19 @@ export default function Shop() {
   const { language } = useLanguage();
   const navigate = useNavigate();
   const [quote, setQuote] = useState("");
-  const [coins, setCoins] = useState(0);
-  const [unlockedItems, setUnlockedItems] = useState<string[]>([]);
+  const { coins, unlockedItems, purchaseItem } = useInventory(); // Use the hook
+  const [activeTab, setActiveTab] = useState<"cardback" | "hero">("cardback");
   const [activeTab, setActiveTab] = useState<"cardback" | "hero">("cardback");
   const [selectedItem, setSelectedItem] = useState<ShopItem | null>(null);
   const [showInsufficientFunds, setShowInsufficientFunds] = useState(false);
 
-  // Load User Data with Realtime subscription
-  useEffect(() => {
-    if (!user) return;
-    
-    // Fetch unlocked items separately
-    const fetchUnlockedItems = async () => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("unlocked_items")
-        .eq("user_id", user.id)
-        .maybeSingle();
-      
-      if (data) {
-        const items = (data as any).unlocked_items;
-        if (Array.isArray(items)) {
-            setUnlockedItems(items);
-        } else {
-            setUnlockedItems([]);
-        }
-      } else {
-        setUnlockedItems([]);
-      }
-    };
-
-    fetchUnlockedItems();
-
-    // Fetch Coins (User provided logic)
-    const fetchCoins = async () => {
-       const { data } = await supabase.from("profiles").select("divine_coins").eq("user_id", user.id).single();
-       if(data) setCoins(data.divine_coins || 0);
-    };
-    fetchCoins();
-    
     // Subscribe to coin changes (User provided logic)
-    const channel = supabase
-      .channel("profile-coins-shop")
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'profiles',
-          filter: `user_id=eq.${user.id}`
-        },
-        (payload: any) => {
-          if (payload.new?.divine_coins !== undefined) {
-            setCoins(payload.new.divine_coins);
-          }
-          // Also update unlocked items if they changed
-          if (payload.new?.unlocked_items !== undefined) {
-             setUnlockedItems(payload.new.unlocked_items);
-          }
-        }
-      )
-      .subscribe();
+    // The hook handles subscriptions and fetching now.
     
     // Random Quote
     const quotes = language === "tr" ? TAVERNER_QUOTES.tr : TAVERNER_QUOTES.en;
     setQuote(quotes[Math.floor(Math.random() * quotes.length)]);
     
-    return () => {
-      supabase.removeChannel(channel);
-    };
   }, [user, language]);
 
   const handlePurchaseClick = (item: ShopItem) => {
@@ -113,30 +58,14 @@ export default function Shop() {
       return;
     }
 
-    // Mock Transaction (Optimistic)
-    const newCoins = coins - item.price;
-    const newUnlocked = [...unlockedItems, item.id];
+    // Use hook to purchase
+    const success = await purchaseItem(item.id, item.price);
 
-    // Optimistic UI
-    setCoins(newCoins);
-    setUnlockedItems(newUnlocked);
-    setSelectedItem(null); // Close dialog
-    toast.success(language === "tr" ? "Satın alma başarılı!" : "Purchase successful!");
-
-    // Real DB Update
-    if (user) {
-        // We need to update both coins and the array.
-        // Supabase basic update:
-        const { error } = await supabase.from("profiles").update({
-            divine_coins: newCoins,
-            unlocked_items: newUnlocked
-        } as any).eq("user_id", user.id);
-        
-        if (error) {
-            console.error("Purchase failed", error);
-            toast.error("Bağlantı hatası: İşlem kaydedilemedi.");
-            // Revert state if needed, but for now just warn
-        }
+    if (success) {
+        toast.success(language === "tr" ? "Satın alma başarılı!" : "Purchase successful!");
+        setSelectedItem(null); // Close dialog
+    } else {
+        toast.error(language === "tr" ? "Satın alma başarısız." : "Purchase failed.");
     }
   };
 
