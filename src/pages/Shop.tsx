@@ -24,18 +24,14 @@ export default function Shop() {
   const [quote, setQuote] = useState("");
   const { coins, unlockedItems, purchaseItem } = useInventory(); // Use the hook
   const [activeTab, setActiveTab] = useState<"cardback" | "hero">("cardback");
-  const [activeTab, setActiveTab] = useState<"cardback" | "hero">("cardback");
   const [selectedItem, setSelectedItem] = useState<ShopItem | null>(null);
   const [showInsufficientFunds, setShowInsufficientFunds] = useState(false);
 
-    // Subscribe to coin changes (User provided logic)
-    // The hook handles subscriptions and fetching now.
-    
+  useEffect(() => {
     // Random Quote
     const quotes = language === "tr" ? TAVERNER_QUOTES.tr : TAVERNER_QUOTES.en;
     setQuote(quotes[Math.floor(Math.random() * quotes.length)]);
-    
-  }, [user, language]);
+  }, [language]);
 
   const handlePurchaseClick = (item: ShopItem) => {
       if (unlockedItems.includes(item.id)) return;
