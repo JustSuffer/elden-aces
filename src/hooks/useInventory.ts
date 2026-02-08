@@ -40,35 +40,48 @@ export function useInventory() {
       setCoins(currentCoins);
 
       // 2. Load from Supabase (Source of Truth)
+      // We fetch separately because 'unlocked_items' column might not exist yet, 
+      // and we don't want that to break the coin fetching.
+      
+      // A. Fetch Coins
       try {
-        const { data, error } = await supabase
+        const { data: coinData, error: coinError } = await supabase
           .from("profiles")
-          .select("unlocked_items, divine_coins")
+          .select("divine_coins")
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        if (coinData && typeof coinData.divine_coins === 'number') {
+           currentCoins = coinData.divine_coins;
+           setCoins(currentCoins);
+           localStorage.setItem(coinsKey, currentCoins.toString());
+        } else if (coinError) {
+            console.error("Error fetching coins:", coinError);
+        }
+      } catch (e) {
+        console.error("Exception fetching coins:", e);
+      }
+
+      // B. Fetch Items
+      let dbItems: string[] = [];
+      try {
+        const { data: itemData, error: itemError } = await supabase
+          .from("profiles")
+          .select("unlocked_items")
           .eq("user_id", user.id)
           .maybeSingle() as any;
 
-        if (data) {
-          // Update Coins
-           if (typeof data.divine_coins === 'number') {
-             currentCoins = data.divine_coins;
-             setCoins(currentCoins);
-             localStorage.setItem(coinsKey, currentCoins.toString());
-          }
-
-          // Update Inventory
-          const rawItems = data.unlocked_items;
-          let dbItems: string[] = [];
+        if (itemData) {
+          const rawItems = itemData.unlocked_items;
           if (Array.isArray(rawItems)) {
             dbItems = rawItems;
           }
-          
-          // Merge & Dedup
-          const allItems = Array.from(new Set([...localItems, ...dbItems]));
-          setUnlockedItems(allItems);
-          localStorage.setItem(localKey, JSON.stringify(allItems));
+        } else if (itemError) {
+            // This is expected if column is missing
+             console.warn("Could not fetch unlocked_items (column might be missing):", itemError);
         }
       } catch (e) {
-        console.error("Failed to load inventory from Supabase:", e);
+         console.warn("Exception fetching unlocked_items:", e);
       }
       
       setIsLoading(false);
