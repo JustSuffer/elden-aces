@@ -152,22 +152,34 @@ export function useInventory() {
     localStorage.setItem(`coins_${user.id}`, newCoins.toString());
 
     // 2. Persist to Supabase
+    // We split updates because 'unlocked_items' might not exist.
+    
+    // A. Update Coins (Critical)
     try {
-      const { error } = await supabase
+      const { error: coinError } = await supabase
         .from("profiles")
-        .update({ 
-            divine_coins: newCoins,
-            unlocked_items: newItems 
-        } as any)
+        .update({ divine_coins: newCoins })
         .eq("user_id", user.id);
 
-      if (error) {
-        console.error("Supabase purchase update failed:", error);
-        // We don't revert here to avoid bad UX, we trust local storage as fallback
-        // Maybe toast a warning: "Saved locally only."
+      if (coinError) {
+        console.error("Supabase coin update failed:", coinError);
       }
     } catch (e) {
-      console.error("Supabase purchase error:", e);
+      console.error("Exception updating coins:", e);
+    }
+
+    // B. Update Items (Optional - if column exists)
+    try {
+      const { error: itemError } = await supabase
+        .from("profiles")
+        .update({ unlocked_items: newItems } as any)
+        .eq("user_id", user.id);
+
+      if (itemError) {
+        console.warn("Supabase item update failed (expected if column missing):", itemError);
+      }
+    } catch (e) {
+      console.warn("Exception updating items:", e);
     }
 
     return true;
