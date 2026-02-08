@@ -34,10 +34,12 @@ export function useInventory() {
       const coinsKey = `coins_${user.id}`;
       const savedCoins = localStorage.getItem(coinsKey);
       let currentCoins = savedCoins ? parseInt(savedCoins) : 0;
+      
+      // Initial set from local storage
+      setUnlockedItems(localItems);
+      setCoins(currentCoins);
 
       // 2. Load from Supabase (Source of Truth)
-      let dbItems: string[] = [];
-      
       try {
         const { data, error } = await supabase
           .from("profiles")
@@ -46,35 +48,69 @@ export function useInventory() {
           .maybeSingle() as any;
 
         if (data) {
-          // If DB has data, use it (and merge possibly)
-          // Note: `unlocked_items` is not in official types yet, so cast as any
-          const rawItems = (data as any).unlocked_items;
+          // Update Coins
+           if (typeof data.divine_coins === 'number') {
+             currentCoins = data.divine_coins;
+             setCoins(currentCoins);
+             localStorage.setItem(coinsKey, currentCoins.toString());
+          }
+
+          // Update Inventory
+          const rawItems = data.unlocked_items;
+          let dbItems: string[] = [];
           if (Array.isArray(rawItems)) {
             dbItems = rawItems;
           }
           
-          if (typeof data.divine_coins === 'number') {
-             currentCoins = data.divine_coins;
-             // Update local storage to match DB
-             localStorage.setItem(coinsKey, currentCoins.toString());
-          }
+          // Merge & Dedup
+          const allItems = Array.from(new Set([...localItems, ...dbItems]));
+          setUnlockedItems(allItems);
+          localStorage.setItem(localKey, JSON.stringify(allItems));
         }
       } catch (e) {
         console.error("Failed to load inventory from Supabase:", e);
       }
-
-      // Merge unique items
-      const allItems = Array.from(new Set([...localItems, ...dbItems]));
-      setUnlockedItems(allItems);
-      setCoins(currentCoins);
-      
-      // Sync merged back to local storage
-      localStorage.setItem(localKey, JSON.stringify(allItems));
       
       setIsLoading(false);
     };
 
     loadInventory();
+
+    // 3. Subscribe to Realtime Changes (Crucial for Coin Updates)
+    const channel = supabase
+      .channel("inventory-updates")
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload: any) => {
+          if (payload.new) {
+             // Update Coins
+             if (typeof payload.new.divine_coins === 'number') {
+                 setCoins(payload.new.divine_coins);
+                 localStorage.setItem(`coins_${user.id}`, payload.new.divine_coins.toString());
+             }
+             // Update Items
+             if (Array.isArray(payload.new.unlocked_items)) {
+                 const newItems = payload.new.unlocked_items;
+                 setUnlockedItems(prev => {
+                     const merged = Array.from(new Set([...prev, ...newItems]));
+                     localStorage.setItem(`inventory_${user.id}`, JSON.stringify(merged));
+                     return merged;
+                 });
+             }
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+        supabase.removeChannel(channel);
+    };
   }, [user]);
 
   const purchaseItem = async (itemId: string, price: number): Promise<boolean> => {
