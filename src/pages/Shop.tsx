@@ -164,13 +164,20 @@ export default function Shop() {
                         {/* Glow Effect */}
                         <div className="absolute inset-0 bg-amber-500/5 opacity-0 group-hover:opacity-20 transition-opacity duration-500" />
                         
-                        <div className={`w-56 h-80 rounded-xl shadow-2xl transform group-hover:scale-105 transition-transform duration-500 ${isUnlocked ? 'grayscale-0' : 'grayscale-[0.3]'} border border-amber-900/30`}
-                             style={{ 
-                                 backgroundImage: item.type === 'cardback' ? `url(/assets/decks/${item.image})` : `url(/assets/avatars/${item.image})`,
-                                 backgroundPosition: 'center',
-                                 backgroundSize: 'contain',
-                                 backgroundRepeat: 'no-repeat'
-                             }}>
+                        <div className={`w-56 h-80 rounded-xl shadow-2xl transform group-hover:scale-105 transition-transform duration-500 bg-stone-900 border border-amber-900/30 flex items-center justify-center overflow-hidden relative`}>
+                            <img 
+                                src={item.type === 'cardback' ? `/assets/decks/${item.image}` : `/assets/avatars/${item.image}`}
+                                alt={language === "tr" ? item.name.tr : item.name.en}
+                                className={cn(
+                                    "w-full h-full object-contain transition-all duration-500",
+                                    isUnlocked ? "grayscale-0" : "grayscale-[0.3]"
+                                )}
+                                onError={(e) => {
+                                    console.error(`Image failed to load: ${e.currentTarget.src}`);
+                                    e.currentTarget.style.display = 'none'; 
+                                    // Fallback could be added here if needed
+                                }}
+                            />
                         </div>
                         
                         {isUnlocked && (
