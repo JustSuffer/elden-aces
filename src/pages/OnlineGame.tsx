@@ -14,6 +14,8 @@ import { ReadyPopup } from "@/components/game/ReadyPopup";
 import { NextRoundWaitingPopup } from "@/components/game/NextRoundWaitingPopup";
 import { VictoryPopup } from "@/components/game/VictoryPopup";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useDailyMissions } from "@/hooks/useDailyMissions";
+import { GameState } from "@/types/game";
 
 interface Match {
   id: string;
@@ -736,8 +738,9 @@ const OnlineGame = () => {
     }
   }, [match, user, isPlayer1, gameEnded]);
 
+  const { updateProgress } = useDailyMissions();
   // Handle generic game end from GameMatch (Concede OR Normal)
-  const handleMatchEnd = useCallback((result: "win" | "lose" | "draw", isSurrender: boolean = false) => {
+  const handleMatchEnd = useCallback((result: "win" | "lose" | "draw", isSurrender: boolean = false, stats?: GameState['stats']) => {
      if (!match || !user) return;
      const opponentId = isPlayer1 ? match.player2_id : match.player1_id;
      
@@ -747,10 +750,32 @@ const OnlineGame = () => {
      // result="draw" -> No winner
      const winnerId = result === "win" ? user.id : (result === "lose" ? opponentId : null);
      
+     // Mission Updates
+     const playerDeck = isPlayer1 ? match.player1_deck : match.player2_deck;
+     const playerClass = playerDeck?.mainClass;
+     const isWin = result === "win";
+
+     updateProgress({ type: 'play_games', amount: 1, className: playerClass, isWin });
+
+     if (isWin) {
+          updateProgress({ type: 'win_games', amount: 1, className: playerClass, isWin });
+          updateProgress({ type: 'win_class', amount: 1, className: playerClass, isWin });
+     }
+
+     if (stats) {
+         if (stats.cardsStolen > 0) updateProgress({ type: 'steal_cards', amount: stats.cardsStolen, className: playerClass, isWin });
+         if (stats.cardsFrozen > 0) updateProgress({ type: 'freeze_cards', amount: stats.cardsFrozen, className: playerClass, isWin });
+         if (stats.cardsBurned > 0) updateProgress({ type: 'burn_cards', amount: stats.cardsBurned, className: playerClass, isWin });
+         if (stats.hpHealed > 0) updateProgress({ type: 'heal_points', amount: stats.hpHealed, className: playerClass, isWin });
+         if (stats.damageDealt > 0) updateProgress({ type: 'deal_damage', amount: stats.damageDealt, className: playerClass, isWin });
+         if (stats.specialCardsPlayed > 0) updateProgress({ type: 'play_special', amount: stats.specialCardsPlayed, className: playerClass, isWin });
+         if (stats.roundsPlayed >= 7) updateProgress({ type: 'reach_round_7', amount: 1, className: playerClass, isWin });
+     }
+
      // For HP, we might want real values, but if not available we use 40/0 or 0/40.
      // GameMatch doesn't pass HP in onGameEnd yet. We can assume 0 for loser.
      handleGameEnd(winnerId, result === "win" ? 40 : 0, result === "win" ? 0 : 40, isSurrender);
-  }, [match, user, isPlayer1, handleGameEnd]);
+  }, [match, user, isPlayer1, handleGameEnd, updateProgress]);
 
   // Navigate to new rematch
   useEffect(() => {

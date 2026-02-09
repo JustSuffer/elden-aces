@@ -46,7 +46,7 @@ interface GameMatchProps {
   opponentDeckCount?: number; // Real-time opponent deck count for online mode
   onMovesReady?: (moves: (Card | null)[]) => Promise<void>;
   onRoundChange?: (newRound: number) => Promise<void>;
-  onGameEnd?: (result: "win" | "lose" | "draw", isSurrender?: boolean) => void;
+  onGameEnd?: (result: "win" | "lose" | "draw", isSurrender?: boolean, stats?: GameState['stats']) => void;
   // Online ELO Changes
   lpChange?: { win: number; lose: number; draw: number } | null;
   // Tutorial Props
@@ -460,7 +460,7 @@ export const GameMatch = ({
           // GameArena and OnlineGame handleGameEnd seem relatively safe (stats update might separate, but usually handled by status checks).
           // Actually, OnlineGame checks `if (gameEnded) return;` so it is idempotent locally.
           const myResult = gameState.winner === "p1" ? "win" : "lose";
-          onGameEnd(myResult, false);
+          onGameEnd(myResult, false, gameState.stats);
       }
 
     }

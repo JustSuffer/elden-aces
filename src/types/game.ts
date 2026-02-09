@@ -133,6 +133,15 @@ export interface GameState {
   mimicCounter?: { p1: number; p2: number };
   winReason?: string;
   winner?: "p1" | "p2" | "draw"; // p1 = player, p2 = opponent
+  stats: {
+    cardsStolen: number;
+    cardsFrozen: number;
+    cardsBurned: number;
+    hpHealed: number;
+    damageDealt: number;
+    specialCardsPlayed: number;
+    roundsPlayed: number;
+  };
 }
 
 export interface ClassAbilityResult {

@@ -4,6 +4,8 @@ import { useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { useDailyMissions } from "@/hooks/useDailyMissions";
+import { GameState } from "@/types/game";
 
 
 export default function GameArena() {
@@ -31,10 +33,32 @@ export default function GameArena() {
   }, []);
 
   const { user } = useAuth();
+  const { updateProgress } = useDailyMissions();
 
-  const handleGameEnd = useCallback(async (result: "win" | "lose" | "draw", isSurrender?: boolean) => {
+  const handleGameEnd = useCallback(async (result: "win" | "lose" | "draw", isSurrender?: boolean, stats?: GameState['stats']) => {
       if (!user) return;
       
+      // Mission Updates
+      const playerClass = deck?.mainClass;
+      const isWin = result === "win";
+
+      updateProgress({ type: 'play_games', amount: 1, className: playerClass, isWin });
+
+      if (isWin) {
+           updateProgress({ type: 'win_games', amount: 1, className: playerClass, isWin });
+           updateProgress({ type: 'win_class', amount: 1, className: playerClass, isWin });
+      }
+
+      if (stats) {
+          if (stats.cardsStolen > 0) updateProgress({ type: 'steal_cards', amount: stats.cardsStolen, className: playerClass, isWin });
+          if (stats.cardsFrozen > 0) updateProgress({ type: 'freeze_cards', amount: stats.cardsFrozen, className: playerClass, isWin });
+          if (stats.cardsBurned > 0) updateProgress({ type: 'burn_cards', amount: stats.cardsBurned, className: playerClass, isWin });
+          if (stats.hpHealed > 0) updateProgress({ type: 'heal_points', amount: stats.hpHealed, className: playerClass, isWin });
+          if (stats.damageDealt > 0) updateProgress({ type: 'deal_damage', amount: stats.damageDealt, className: playerClass, isWin });
+          if (stats.specialCardsPlayed > 0) updateProgress({ type: 'play_special', amount: stats.specialCardsPlayed, className: playerClass, isWin });
+          if (stats.roundsPlayed >= 7) updateProgress({ type: 'reach_round_7', amount: 1, className: playerClass, isWin });
+      }
+
       // Bot Match Rewards:
       // Win = 50 DC, Draw = 25 DC, Lose = 10 DC, Surrender = 0 DC
       let reward = 0;
@@ -80,7 +104,7 @@ export default function GameArena() {
       }
       
       // Do NOT navigate automatically. Wait for user to click "Return to Menu" on the Defeat screen.
-  }, [user]);
+  }, [user, deck, updateProgress]);
 
   if (!deck || !opponentClass) return null;
 
@@ -89,7 +113,7 @@ export default function GameArena() {
       key={`${deck.id}-${opponentClass}-${Date.now()}`}
       playerDeck={deck}
       opponentClass={opponentClass}
-      onGameEnd={(result, isSurrender) => handleGameEnd(result, isSurrender)} 
+      onGameEnd={(result, isSurrender, stats) => handleGameEnd(result, isSurrender, stats)} 
     />
   );
 }

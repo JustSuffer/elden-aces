@@ -512,6 +512,10 @@ export function resolveGameRound(
   // SPEED TIE? "Specify specified order?"
   // Usually simultaneous. We need to count FIRST, then Exec.
 
+  // We count freeze here and add to effects
+  let p1Freeze = 0;
+  let p2Freeze = 0;
+
   const p1CryoCount = p1Class === "Cryomancer"
     ? p1Cards.filter(c => c.symbol === MASTER_CLASSES.Cryomancer.symbol || c.classSymbol === MASTER_CLASSES.Cryomancer.symbol).length
     : 0;
@@ -535,6 +539,8 @@ export function resolveGameRound(
       // Shuffle
       indices.sort(() => Math.random() - 0.5);
       const targets = indices.slice(0, Math.min(freezeCount, p2Cards.length));
+      p1Freeze = targets.length;
+      
       targets.forEach(i => {
         const c = p2Cards[i];
         if (c.specialType) {
@@ -562,6 +568,8 @@ export function resolveGameRound(
       const indices = Array.from({ length: p1Cards.length }, (_, i) => i);
       indices.sort(() => Math.random() - 0.5);
       const targets = indices.slice(0, Math.min(freezeCount, p1Cards.length));
+      p2Freeze = targets.length;
+
       targets.forEach(i => {
         const c = p1Cards[i];
         if (c.specialType) {
@@ -575,6 +583,9 @@ export function resolveGameRound(
       });
     }
   }
+  
+  if (p1Freeze > 0) effects.p1FreezeCount = p1Freeze;
+  if (p2Freeze > 0) effects.p2FreezeCount = p2Freeze;
 
   // --- STEP 1: Deflate (Pre-Calculation) ---
   const p1HasDeflate = p1Cards.some(c => c.specialType === "deflate");

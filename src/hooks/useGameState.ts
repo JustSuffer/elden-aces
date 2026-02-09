@@ -237,6 +237,15 @@ export function useGameState(initParams?: GameInitParams) {
       mimicCounter: { p1: 0, p2: 0 },
       timeLeft: initParams?.isOnline ? 60 : 45,
       isOnline: !!initParams?.isOnline,
+      stats: {
+        cardsStolen: 0,
+        cardsFrozen: 0,
+        cardsBurned: 0,
+        hpHealed: 0,
+        damageDealt: 0,
+        specialCardsPlayed: 0,
+        roundsPlayed: 0
+      }
     };
   });
 
@@ -688,6 +697,18 @@ export function useGameState(initParams?: GameInitParams) {
           else if (newMimicP1 >= 12 && newMimicP2 >= 12) specialWinner = "draw";
       }
 
+      const p1SpecialCardsCount = p1Cards.filter(c => c.type === "special" || !!c.specialType).length;
+
+      const newStats = {
+          cardsStolen: (prev.stats.cardsStolen || 0) + (result.sideEffects.p1SirenSteal || 0),
+          cardsFrozen: (prev.stats.cardsFrozen || 0) + (result.sideEffects.p1FreezeCount || 0),
+          cardsBurned: (prev.stats.cardsBurned || 0) + (result.sideEffects.p1BurnCount || 0),
+          hpHealed: (prev.stats.hpHealed || 0) + (result.abilityResults.p1.hpChange > 0 ? result.abilityResults.p1.hpChange : 0),
+          damageDealt: (prev.stats.damageDealt || 0) + result.p2DamageTaken,
+          specialCardsPlayed: (prev.stats.specialCardsPlayed || 0) + p1SpecialCardsCount,
+          roundsPlayed: prev.round
+      };
+
       return {
         ...prev,
         playerHP: newPlayerHP,
@@ -706,6 +727,7 @@ export function useGameState(initParams?: GameInitParams) {
             p1: newMimicP1,
             p2: newMimicP2
         },
+        stats: newStats,
         damageResult: {
           playerDamage: result.p1DamageTaken,
           opponentDamage: result.p2DamageTaken,

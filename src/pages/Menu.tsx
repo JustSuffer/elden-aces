@@ -11,6 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { ACHIEVEMENTS } from "@/data/achievementsData";
 import { useStoryProgress } from "@/hooks/useStoryProgress";
+import { DailyMissions } from "@/components/DailyMissions";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -337,6 +338,7 @@ const Menu = () => {
         >
           {t("common.version")}
         </motion.div>
+        <DailyMissions />
       </div>
 
       {/* Decorative Elements */}
