@@ -699,27 +699,39 @@ const OnlineGame = () => {
        const oppElo = oppStats.elo_rating || 1000;
        
        let newMyElo: number, newOppElo: number;
-       let wins = myStats.wins, losses = myStats.losses;
+       let myWins = myStats.wins, myLosses = myStats.losses;
+       // We need to fetch opponent's win/loss stats too
+       const { data: fullOppStats } = await supabase
+          .from("game_stats")
+          .select("wins, losses, total_games")
+          .eq("user_id", opponentId)
+          .single();
        
+       let oppWins = fullOppStats?.wins || 0;
+       let oppLosses = fullOppStats?.losses || 0;
+       let oppTotalGames = fullOppStats?.total_games || 0;
+
        if (winnerId === user.id) {
          const result = calculateNewRatings(myElo, oppElo);
          newMyElo = result.winnerNewRating;
          newOppElo = result.loserNewRating;
-         wins++;
+         myWins++;
+         oppLosses++;
        } else if (winnerId === opponentId) {
          const result = calculateNewRatings(oppElo, myElo);
          newMyElo = result.loserNewRating;
          newOppElo = result.winnerNewRating;
-         losses++;
+         myLosses++;
+         oppWins++;
        } else {
          const result = calculateDrawRatings(myElo, oppElo);
          newMyElo = result.player1NewRating;
          newOppElo = result.player2NewRating;
        }
        
-       // Update ELO & Wins
-       await supabase.from("game_stats").update({ elo_rating: newMyElo, wins, losses, total_games: myStats.total_games + 1 }).eq("user_id", user.id);
-       await supabase.from("game_stats").update({ elo_rating: newOppElo }).eq("user_id", opponentId);
+       // Update ELO & Wins for both players
+       await supabase.from("game_stats").update({ elo_rating: newMyElo, wins: myWins, losses: myLosses, total_games: myStats.total_games + 1 }).eq("user_id", user.id);
+       await supabase.from("game_stats").update({ elo_rating: newOppElo, wins: oppWins, losses: oppLosses, total_games: oppTotalGames + 1 }).eq("user_id", opponentId);
     }
     
     // Award coins for ALL online matches (ranked + private)
