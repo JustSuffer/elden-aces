@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils";
 
 export default function StoryMode() {
   const navigate = useNavigate();
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const { isRegionUnlocked, isLevelCompleted } = useStoryProgress();
   const [selectedRegion, setSelectedRegion] = useState<Region | null>(null);
 
