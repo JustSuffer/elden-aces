@@ -64,7 +64,9 @@ export const DeckSelectionScreen = ({ onStartGame }: DeckSelectionScreenProps) =
 
   const handleStartGame = () => {
     if (selectedDeck && opponentClass) {
-      onStartGame(selectedDeck, opponentClass);
+      // If opponent is Mimic, they copy the player's class
+      const effectiveOpponentClass = opponentClass === "Mimic" ? selectedDeck.mainClass : opponentClass;
+      onStartGame(selectedDeck, effectiveOpponentClass);
     }
   };
 
