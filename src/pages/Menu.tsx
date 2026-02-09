@@ -339,7 +339,7 @@ const Menu = () => {
              <MenuButton onClick={() => navigate("/how-to-play")} className="h-10 text-xs px-1 border-white/20 hover:border-white/40">{t("menu.howToPlay")}</MenuButton>
              <MenuButton onClick={() => navigate("/tutorial")} className="h-10 text-xs px-1 border-white/20 hover:border-white/40">{t("menu.tutorial")}</MenuButton>
              <MenuButton onClick={() => navigate("/friends")} className="h-10 text-xs px-1 border-green-500/30 hover:border-green-500/60 flex items-center justify-center gap-1">
-               <Users className="w-3 h-3" />
+               
                {t("menu.friends")}
              </MenuButton>
              <MenuButton onClick={() => navigate("/leaderboard")} className="h-10 text-xs px-1 border-primary/30 hover:border-primary/60 flex items-center justify-center gap-1">
