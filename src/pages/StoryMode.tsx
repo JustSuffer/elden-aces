@@ -92,7 +92,7 @@ export default function StoryMode() {
       </div>
 
       {/* Header (Top-Left Absolute) */}
-      <div className="absolute top-0 left-0 z-10 p-4 md:p-6 pointer-events-none w-full flex justify-between">
+      <div className="absolute top-0 left-0 z-10 p-4 md:p-6 pointer-events-none w-full flex flex-col gap-2 items-start">
         <Button 
           variant="outline" 
           className="pointer-events-auto bg-black/50 border-gold/50 text-gold hover:bg-gold/20 backdrop-blur-sm"
@@ -101,6 +101,11 @@ export default function StoryMode() {
           <ArrowLeft className="w-5 h-5 mr-2" />
           {language === "tr" ? "Ana Menü" : "Main Menu"}
         </Button>
+        <div className="bg-red-900/80 text-white px-4 py-1 rounded border border-red-500/50 backdrop-blur-sm shadow-lg animate-pulse pointer-events-auto">
+             <span className="text-xs md:text-sm font-bold tracking-widest">
+                 {t("common.development")}
+             </span>
+        </div>
       </div>
 
       {/* Region Detail Modal */}

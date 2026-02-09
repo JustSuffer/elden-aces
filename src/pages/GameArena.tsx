@@ -110,7 +110,6 @@ export default function GameArena() {
 
   return (
     <GameMatch 
-      key={`${deck.id}-${opponentClass}`}
       playerDeck={deck}
       opponentClass={opponentClass}
       onGameEnd={(result, isSurrender, stats) => handleGameEnd(result, isSurrender, stats)} 

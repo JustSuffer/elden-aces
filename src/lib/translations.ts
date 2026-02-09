@@ -11,6 +11,7 @@ export const translations = {
     "menu.library": "Library",
     "menu.deckBuilder": "Deck Builder",
     "menu.settings": "Settings",
+    "menu.storyMode": "Story Mode", // Added
     "menu.team": "Credits",
     "menu.howToPlay": "How to Play",
     "menu.tutorial": "Tutorial",
@@ -44,6 +45,7 @@ export const translations = {
 
     // Common
     "common.version": "ALPHA VERSION 0.1",
+    "common.development": "UNDER DEVELOPMENT - COMING SOON", // Added
     "common.loading": "Loading...",
 
     // Landing
@@ -340,7 +342,8 @@ export const translations = {
     "game.timer": "Time Remaining",
     "game.opponent": "Opponent",
     "game.dice.fateweaver": "Fate Dice",
-    "game.dice.standard": "Dice Π",
+    "menu.dice.standard": "Dice Π",
+    "menu.friends": "Friends", // Added
     "game.action.finish": "Finish Placement",
     "game.action.next": "Next Round",
     "game.action.menu": "Back to Menu",
@@ -408,6 +411,7 @@ export const translations = {
     "menu.library": "Kütüphane",
     "menu.deckBuilder": "Deste Oluşturucu",
     "menu.settings": "Ayarlar",
+    "menu.storyMode": "Hikaye Modu", // Added
     "menu.team": "Ekip",
     "menu.howToPlay": "Nasıl Oynanır",
     "menu.tutorial": "Eğitim",
@@ -441,6 +445,7 @@ export const translations = {
 
     // Common
     "common.version": "ALFA SÜRÜM 0.1",
+    "common.development": "GELİŞTİRME AŞAMASINDA - ÇOK YAKINDA", // Added
     "common.loading": "Yükleniyor...",
 
     // Landing
@@ -717,6 +722,7 @@ export const translations = {
     "game.opponent": "Rakip",
     "game.dice.fateweaver": "Kader Zarı",
     "game.dice.standard": "Zar Π",
+    "menu.friends": "Arkadaşlar", // Added
     "game.action.finish": "Yerleşimi Bitir",
     "game.action.next": "Sonraki Round",
     "game.action.menu": "Menüye Dön",

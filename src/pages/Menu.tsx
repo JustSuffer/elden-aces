@@ -288,7 +288,7 @@ const Menu = () => {
                className="w-full h-16 text-xl tracking-widest shadow-lg shadow-purple-900/40 bg-gradient-to-r from-purple-950 to-indigo-950 border-purple-500/50 text-purple-200 mb-4 hover:shadow-purple-500/20 hover:scale-[1.02] transition-all"
              >
                <Map className="mr-2 h-6 w-6 animate-pulse" />
-               STORY MODE
+               {t("menu.storyMode")}
              </MenuButton>
           </motion.div>
           <motion.div variants={itemVariants}>
@@ -340,7 +340,7 @@ const Menu = () => {
              <MenuButton onClick={() => navigate("/tutorial")} className="h-10 text-xs px-1 border-white/20 hover:border-white/40">{t("menu.tutorial")}</MenuButton>
              <MenuButton onClick={() => navigate("/friends")} className="h-10 text-xs px-1 border-green-500/30 hover:border-green-500/60 flex items-center justify-center gap-1">
                <Users className="w-3 h-3" />
-               Friends
+               {t("menu.friends")}
              </MenuButton>
              <MenuButton onClick={() => navigate("/leaderboard")} className="h-10 text-xs px-1 border-primary/30 hover:border-primary/60 flex items-center justify-center gap-1">
                <Trophy className="w-3 h-3" />
