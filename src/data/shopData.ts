@@ -60,13 +60,13 @@ export interface ShopItem {
 // "son atacağım dışında hepsi sadece shoptan alınabilecek"
 export const CARD_BACKS: ShopItem[] = [
     // Premium (Locked) Backs - Reverted to Original Names with Updated Price (10000)
-    { id: "cb_arid", type: "cardback", price: 10000, name: { tr: "Arid", en: "Arid" }, desc: { tr: "Kurak toprakların gücü.", en: "Power of the arid lands." }, image: "Arid.jpg", isDefault: false },
-    { id: "cb_noty", type: "cardback", price: 10000, name: { tr: "Noty", en: "Noty" }, desc: { tr: "Gizemli semboller.", en: "Mysterious symbols." }, image: "Noty.jpg", isDefault: false },
-    { id: "cb_reniur", type: "cardback", price: 10000, name: { tr: "Reniur", en: "Reniur" }, desc: { tr: "Kadim büyü.", en: "Ancient magic." }, image: "Reniur.jpg", isDefault: false },
-    { id: "cb_perol", type: "cardback", price: 10000, name: { tr: "Perol", en: "Perol" }, desc: { tr: "İhtişamlı.", en: "Magnificent." }, image: "Perol.jpg", isDefault: false },
-    { id: "cb_ctrix", type: "cardback", price: 10000, name: { tr: "Ctrix", en: "Ctrix" }, desc: { tr: "Teknolojik.", en: "Technological." }, image: "Ctrix.jpg", isDefault: false },
-    { id: "cb_prxyla", type: "cardback", price: 10000, name: { tr: "Prxyla", en: "Prxyla" }, desc: { tr: "Kristalize enerji.", en: "Crystallized energy." }, image: "Prxyla.jpg", isDefault: false },
-    { id: "cb_lrot", type: "cardback", price: 10000, name: { tr: "Lrot", en: "Lrot" }, desc: { tr: "Doğanın öfkesi.", en: "Nature's wrath." }, image: "Lrot.jpg", isDefault: false },
+    { id: "cb_arid", type: "cardback", price: 15000, name: { tr: "Arid", en: "Arid" }, desc: { tr: "Kurak toprakların gücü.", en: "Power of the arid lands." }, image: "Arid.jpg", isDefault: false },
+    { id: "cb_noty", type: "cardback", price: 15000, name: { tr: "Noty", en: "Noty" }, desc: { tr: "Gizemli semboller.", en: "Mysterious symbols." }, image: "Noty.jpg", isDefault: false },
+    { id: "cb_reniur", type: "cardback", price: 15000, name: { tr: "Reniur", en: "Reniur" }, desc: { tr: "Kadim büyü.", en: "Ancient magic." }, image: "Reniur.jpg", isDefault: false },
+    { id: "cb_perol", type: "cardback", price: 15000, name: { tr: "Perol", en: "Perol" }, desc: { tr: "İhtişamlı.", en: "Magnificent." }, image: "Perol.jpg", isDefault: false },
+    { id: "cb_ctrix", type: "cardback", price: 15000, name: { tr: "Ctrix", en: "Ctrix" }, desc: { tr: "Teknolojik.", en: "Technological." }, image: "Ctrix.jpg", isDefault: false },
+    { id: "cb_prxyla", type: "cardback", price: 15000, name: { tr: "Prxyla", en: "Prxyla" }, desc: { tr: "Kristalize enerji.", en: "Crystallized energy." }, image: "Prxyla.jpg", isDefault: false },
+    { id: "cb_lrot", type: "cardback", price: 15000, name: { tr: "Lrot", en: "Lrot" }, desc: { tr: "Doğanın öfkesi.", en: "Nature's wrath." }, image: "Lrot.jpg", isDefault: false },
     
     // Story Reward (Not in Shop)
 
@@ -76,9 +76,9 @@ export const CARD_BACKS: ShopItem[] = [
 ];
 
 export const HEROES: ShopItem[] = [
-    { id: "hero_yorxy", type: "hero", price: 15000, name: { tr: "Yorxy", en: "Yorxy" }, desc: { tr: "Buzul Kraliçe.", en: "Glacial Queen." }, image: "yorxy.jpeg", className: "Cryomancer" },
-    { id: "hero_notkhell", type: "hero", price: 15000, name: { tr: "Notkhell", en: "Notkhell" }, desc: { tr: "Soğuk Savaşçı.", en: "Cold Warrior." }, image: "notkhell.jpeg", className: "Cryomancer" },
-    { id: "hero_ciel", type: "hero", price: 15000, name: { tr: "Ciel", en: "Ciel" }, desc: { tr: "Kristal Muhafız.", en: "Crystal Guardian." }, image: "ciel.jpeg", className: "Cryomancer" },
+    { id: "hero_yorxy", type: "hero", price: 20000, name: { tr: "Yorxy", en: "Yorxy" }, desc: { tr: "Buzul Kraliçe.", en: "Glacial Queen." }, image: "yorxy.jpeg", className: "Cryomancer" },
+    { id: "hero_notkhell", type: "hero", price: 20000, name: { tr: "Notkhell", en: "Notkhell" }, desc: { tr: "Soğuk Savaşçı.", en: "Cold Warrior." }, image: "notkhell.jpeg", className: "Cryomancer" },
+    { id: "hero_ciel", type: "hero", price: 20000, name: { tr: "Ciel", en: "Ciel" }, desc: { tr: "Kristal Muhafız.", en: "Crystal Guardian." }, image: "ciel.jpeg", className: "Cryomancer" },
 ];
 
 export const ALL_SHOP_ITEMS = [...CARD_BACKS.filter(i => !i.isDefault), ...HEROES];
