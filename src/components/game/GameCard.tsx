@@ -75,7 +75,21 @@ export function GameCard({ card, onClick, isPlaceholder = false, className, face
         {faceDown ? (
           <div className="absolute inset-0 flex items-center justify-center bg-black">
              {backImage ? (
-               <img src={`/assets/decks/${backImage}.jpg`} className="w-full h-full object-cover opacity-80" alt="Card Back" />
+               <img 
+                 src={backImage.includes(".") ? `/assets/decks/${backImage}` : `/assets/decks/${backImage}.jpg`} 
+                 className="w-full h-full object-cover opacity-80" 
+                 alt="Card Back"
+                 onError={(e) => {
+                    const target = e.currentTarget;
+                    if (target.src.endsWith(".jpg")) {
+                        target.src = target.src.replace(".jpg", ".jpeg");
+                    } else if (target.src.endsWith(".jpeg")) {
+                        target.src = "/assets/decks/Slayer.jpg";
+                    } else {
+                         target.src = "/assets/decks/Slayer.jpg";
+                    }
+                 }}
+               />
              ) : (
                 <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800">
                   <div className="text-4xl opacity-30 animate-pulse">ΦΩ</div>

@@ -18,9 +18,12 @@ export function DeckCounter({ count, isOpponent = false, className, customImage 
   const [imageError, setImageError] = React.useState(false);
 
   // Determine image source
+  // Check if it already has an extension
+  const formatPath = (name: string) => name.includes(".") ? `/assets/decks/${name}` : `/assets/decks/${name}.jpg`;
+
   const imagePath = customImage 
-      ? `/assets/decks/${customImage}.jpg` 
-      : (className ? `/assets/decks/${className}.jpg` : null);
+      ? formatPath(customImage)
+      : (className ? formatPath(className) : null);
 
   return (
     <TooltipProvider>
@@ -38,7 +41,16 @@ export function DeckCounter({ count, isOpponent = false, className, customImage 
                 src={imagePath} 
                 alt={`${className} Deck`}
                 className="absolute inset-0 w-full h-full object-cover"
-                onError={() => setImageError(true)}
+                onError={(e) => {
+                   const target = e.currentTarget;
+                    if (target.src.endsWith(".jpg")) {
+                        target.src = target.src.replace(".jpg", ".jpeg");
+                    } else if (target.src.endsWith(".jpeg")) {
+                        setImageError(true);
+                    } else {
+                        setImageError(true);
+                    }
+                }}
               />
             ) : (
               /* Minimal card back visual (Fallback) */

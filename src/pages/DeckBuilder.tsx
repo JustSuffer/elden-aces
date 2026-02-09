@@ -140,7 +140,7 @@ const DeckBuilder = () => {
     setMainClass(className);
     setIsHeroSelected(false);
     setSecondaryClasses([]);
-    setCardBack(className); // Default to class card back
+    setCardBack(`${className}.jpg`); // Default to class card back with extension
     
     // Scroll to next step after a brief delay
     setTimeout(() => {
@@ -187,7 +187,7 @@ const DeckBuilder = () => {
     setSelectedHeroId(null);
     setSecondaryClasses([]);
     setDeckName("");
-    setCardBack("Slayer");
+    setCardBack("Slayer.jpg");
     setEditingDeckId(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
     toast.success("Deste oluşturucu sıfırlandı!");
@@ -199,7 +199,14 @@ const DeckBuilder = () => {
     setIsHeroSelected(true); 
     setSecondaryClasses(deck.secondaryClasses);
     setDeckName(deck.name);
-    setCardBack(typeof deck.cardBack === 'string' ? deck.cardBack : "Slayer");
+    
+    // Handle legacy saves that might not have extension
+    let savedBack = typeof deck.cardBack === 'string' ? deck.cardBack : "Slayer.jpg";
+    if (!savedBack.includes(".")) {
+        savedBack = `${savedBack}.jpg`;
+    }
+    setCardBack(savedBack);
+    
     setEditingDeckId(deck.id);
     window.scrollTo({ top: 0, behavior: 'smooth' });
     toast.info("Deste düzenleme moduna alındı.");
@@ -268,7 +275,7 @@ const DeckBuilder = () => {
       const classBacks = ALL_CLASSES.map(c => ({
           id: `default_${c}`,
           name: { tr: c, en: c }, // Match structure
-          image: c,
+          image: `${c}.jpg`, // Add extension explicitly
           isLocked: false
       }));
       
@@ -577,8 +584,16 @@ const DeckBuilder = () => {
                          alt={back.name[language as "tr" | "en"] || back.name["en"]} 
                          className="w-full h-full object-cover"
                          onError={(e) => {
-                           e.currentTarget.src = "/assets/decks/default_back.jpg"; // This might need verification if default_back exists
-                           e.currentTarget.style.filter = "grayscale(100%)"; 
+                           const target = e.currentTarget;
+                           // Fallback logic for jpg/jpeg
+                           if (target.src.endsWith(".jpg")) {
+                               target.src = target.src.replace(".jpg", ".jpeg");
+                           } else if (target.src.endsWith(".jpeg")) {
+                               target.src = "/assets/decks/Slayer.jpg";
+                               target.style.filter = "grayscale(100%)";
+                           } else {
+                                target.src = "/assets/decks/Slayer.jpg";
+                           }
                          }} 
                        />
                        <div className={cn("absolute inset-0 transition-all", back.isLocked ? "bg-black/30" : "bg-black/20 group-hover:bg-transparent")} />
@@ -666,8 +681,20 @@ const DeckBuilder = () => {
                      Seçilen Kart Arkası
                    </h3>
                    <div className="w-16 h-24 rounded border border-gold/50 overflow-hidden">
-                      <img src={`/assets/decks/${cardBack || "Default"}.jpg`} className="w-full h-full object-cover" />
-                   </div>
+                       <img 
+                          src={`/assets/decks/${cardBack || "Default.jpg"}`} 
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                           const target = e.currentTarget;
+                           // Fallback logic for jpg/jpeg
+                           if (target.src.endsWith(".jpg")) {
+                               target.src = target.src.replace(".jpg", ".jpeg");
+                           } else if (target.src.endsWith(".jpeg")) {
+                               target.src = "/assets/decks/Slayer.jpg";
+                           }
+                         }}
+                       />
+                    </div>
                    <div className="text-sm text-yellow-500/80 font-mono tracking-wider mt-1">
                      {cardBack}
                    </div>
