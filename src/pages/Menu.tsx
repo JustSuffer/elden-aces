@@ -2,7 +2,7 @@ import { MenuButton } from "@/components/ui/menu-button";
 import logo from "@/assets/acoria-logo.png";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { LogOut, Trophy, X, Monitor, Map, Users, Coins, Store, Award } from "lucide-react";
+import { LogOut, Trophy, X, Monitor, Map, Users, Coins, Store, Award, Scroll } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -38,6 +38,7 @@ const Menu = () => {
   const { signOut } = useAuth();
   const { t, language } = useLanguage();
   const [showPopup, setShowPopup] = useState(false);
+  const [showMissions, setShowMissions] = useState(false);
   const [dontShowAgain, setDontShowAgain] = useState(false);
 
   useEffect(() => {
@@ -66,6 +67,7 @@ const Menu = () => {
   const { user } = useAuth();
   const [coins, setCoins] = useState<number | null>(null);
   const [unclaimedAchievements, setUnclaimedAchievements] = useState(0);
+  const [unclaimedMissions, setUnclaimedMissions] = useState(false);
   const { isLevelCompleted, isRegionUnlocked } = useStoryProgress();
   
   // Fetch and subscribe to data
@@ -140,6 +142,23 @@ const Menu = () => {
     };
     fetchData();
     
+    // Check for claimable missions for notification
+    const checkMissionNotifications = () => {
+         const stored = localStorage.getItem("acoria_daily_missions");
+         if (stored) {
+             try {
+                 const parsed = JSON.parse(stored);
+                 if (parsed.missions && Array.isArray(parsed.missions)) {
+                     const hasClaimable = parsed.missions.some((m: any) => m.progress >= m.targetCount && !m.isClaimed);
+                     setUnclaimedMissions(hasClaimable);
+                 }
+             } catch (e) { console.error("Error parsing missions for notification", e); }
+         }
+    };
+    checkMissionNotifications();
+    // Re-check periodically or on focus? Simple interval for now.
+    const missionInterval = setInterval(checkMissionNotifications, 5000);
+    
     // Subscribe to coin changes
     const channel = supabase
       .channel("profile-coins")
@@ -161,6 +180,7 @@ const Menu = () => {
     
     return () => {
       supabase.removeChannel(channel);
+      clearInterval(missionInterval);
     };
   }, [user, isLevelCompleted, isRegionUnlocked, coins]); // Added coins to dependency for achievement calc update
 
@@ -189,6 +209,17 @@ const Menu = () => {
       
       {/* Coin Display */}
       <div className="absolute top-4 right-4 z-50 flex items-center gap-3 animate-in fade-in slide-in-from-top-4">
+          <button
+              onClick={() => setShowMissions(true)}
+              className="w-9 h-9 flex items-center justify-center rounded-full bg-black/60 border border-amber-500/30 text-amber-500 hover:bg-amber-500/10 hover:text-amber-300 hover:border-amber-500/60 transition-all shadow-lg relative hvr-pulse"
+              title={language === "tr" ? "Günlük Görevler" : "Daily Missions"}
+          >
+              <Scroll className="w-5 h-5" />
+              {unclaimedMissions && (
+                  <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-green-500 border border-black animate-pulse shadow-md shadow-green-500/50" />
+              )}
+          </button>
+
           <button
               onClick={() => navigate("/achievements")}
               className="w-9 h-9 flex items-center justify-center rounded-full bg-black/60 border border-amber-500/30 text-amber-500 hover:bg-amber-500/10 hover:text-amber-300 hover:border-amber-500/60 transition-all shadow-lg relative hvr-pulse"
@@ -338,7 +369,7 @@ const Menu = () => {
         >
           {t("common.version")}
         </motion.div>
-        <DailyMissions />
+        <DailyMissions isOpen={showMissions} onClose={() => setShowMissions(false)} />
       </div>
 
       {/* Decorative Elements */}
