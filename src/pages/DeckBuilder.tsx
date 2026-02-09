@@ -580,19 +580,23 @@ const DeckBuilder = () => {
                       )}
                     >
                        <img 
-                         src={`/assets/decks/${back.image}`} 
+                         src={`/assets/decks/${back.image}?v=2`} 
                          alt={back.name[language as "tr" | "en"] || back.name["en"]} 
                          className="w-full h-full object-cover"
                          onError={(e) => {
                            const target = e.currentTarget;
                            // Fallback logic for jpg/jpeg
-                           if (target.src.endsWith(".jpg")) {
-                               target.src = target.src.replace(".jpg", ".jpeg");
-                           } else if (target.src.endsWith(".jpeg")) {
-                               target.src = "/assets/decks/Slayer.jpg";
+                           // Try removing query param or switching extension
+                           const currentSrc = target.src.split('?')[0]; // Remove query param for logic
+                           
+                           if (currentSrc.endsWith(".jpg")) {
+                               target.src = currentSrc.replace(".jpg", ".jpeg");
+                           } else if (currentSrc.endsWith(".jpeg")) {
+                               // Fallback to a KNOWN WORKING shop image to verify path logic
+                               target.src = "/assets/decks/Arid.jpg"; 
                                target.style.filter = "grayscale(100%)";
                            } else {
-                                target.src = "/assets/decks/Slayer.jpg";
+                                target.src = "/assets/decks/Arid.jpg";
                            }
                          }} 
                        />
@@ -682,7 +686,7 @@ const DeckBuilder = () => {
                    </h3>
                    <div className="w-16 h-24 rounded border border-gold/50 overflow-hidden">
                        <img 
-                          src={`/assets/decks/${cardBack || "Default.jpg"}`} 
+                          src={`/assets/decks/${cardBack || "Default.jpg"}?v=2`} 
                           className="w-full h-full object-cover"
                           onError={(e) => {
                            const target = e.currentTarget;
@@ -690,7 +694,7 @@ const DeckBuilder = () => {
                            if (target.src.endsWith(".jpg")) {
                                target.src = target.src.replace(".jpg", ".jpeg");
                            } else if (target.src.endsWith(".jpeg")) {
-                               target.src = "/assets/decks/Slayer.jpg";
+                               target.src = "/assets/decks/Arid.jpg";
                            }
                          }}
                        />
