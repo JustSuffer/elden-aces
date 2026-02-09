@@ -11,6 +11,7 @@ import { GameMenuModal } from "@/components/game/GameMenuModal";
 import { Button } from "@/components/ui/button";
 import { useGameState } from "@/hooks/useGameState";
 import { useNavigate } from "react-router-dom";
+import { GameState } from "@/types/game"; // Added import
 import { cn } from "@/lib/utils";
 
 import { toast } from "sonner";
@@ -112,6 +113,7 @@ export const GameMatch = ({
   const [requestedNextRoundFor, setRequestedNextRoundFor] = useState<number | null>(null);
 
   const timeoutHandledRoundRef = useRef<number | null>(null);
+  const gameEndHandled = useRef(false);
 
   // Tutorial State
   const [tutorialStepIndex, setTutorialStepIndex] = useState(0);
@@ -450,15 +452,8 @@ export const GameMatch = ({
       
       // Trigger onGameEnd for normal win/loss if not already surrendered
       // We check !isSurrendered to avoid double calling if surrender logic handled it
-      if (!isSurrendered && onGameEnd) {
-          // Prevent repeated calls (useEffect might fire multiple times)
-          // We might need a ref or checking if we already called it. 
-          // For now, rely on parent to handle idempotency or simple boolean ref?
-          // But effects fire on deps. gameState.phase stays 'end'.
-          // Let's assume onGameEnd handles it or we guard it.
-          // Since we don't have a 'gameEndCalled' ref, let's just call it.
-          // GameArena and OnlineGame handleGameEnd seem relatively safe (stats update might separate, but usually handled by status checks).
-          // Actually, OnlineGame checks `if (gameEnded) return;` so it is idempotent locally.
+      if (!isSurrendered && onGameEnd && !gameEndHandled.current) {
+          gameEndHandled.current = true;
           const myResult = gameState.winner === "p1" ? "win" : "lose";
           onGameEnd(myResult, false, gameState.stats);
       }

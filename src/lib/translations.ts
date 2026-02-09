@@ -342,8 +342,8 @@ export const translations = {
     "game.timer": "Time Remaining",
     "game.opponent": "Opponent",
     "game.dice.fateweaver": "Fate Dice",
-    "menu.dice.standard": "Dice Π",
-    "menu.friends": "Friends", // Added
+    "game.dice.standard": "Dice Π",
+    "menu.friends": "Friends",
     "game.action.finish": "Finish Placement",
     "game.action.next": "Next Round",
     "game.action.menu": "Back to Menu",

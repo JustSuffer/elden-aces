@@ -47,6 +47,15 @@ export interface GameState {
   winReason?: string;
   timeLeft: number; // 60s Timer
   isOnline: boolean;
+  stats: {
+    cardsStolen: number;
+    cardsFrozen: number;
+    cardsBurned: number;
+    hpHealed: number;
+    damageDealt: number;
+    specialCardsPlayed: number;
+    roundsPlayed: number;
+  };
 }
 
 interface GameInitParams {
