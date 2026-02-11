@@ -326,11 +326,12 @@ All colors MUST be HSL.
 .mobile-landscape-scale {
     transform: scale(0.65);
     transform-origin: top center;
-    height: 153%; /* 1 / 0.65 = 1.53 */
-    width: 153%;
+    height: 153.8%; /* 1 / 0.65 = 1.538 */
+    width: 153.8%;
     position: absolute; /* Lock to top */
     top: 0;
     left: 50%; /* Center horizontally */
-    margin-left: -76.5%; /* Half of 153% */
-    overflow-y: hidden; /* Prevent double scroll */
+    margin-left: -76.9%; /* Half of 153.8% */
+    overflow-x: hidden;
+    overflow-y: auto; /* Allow scrolling if needed */
 }
