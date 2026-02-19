@@ -16,7 +16,10 @@ export const ClassInfoPanel = ({ className }: ClassInfoPanelProps) => {
   const data = MASTER_CLASSES[className];
   const { t } = useLanguage();
 
-  if (!data) return null;
+  if (!data) {
+    console.warn(`[ClassInfoPanel] Missing data for class: ${className}`);
+    return null;
+  }
 
   return (
     <div 

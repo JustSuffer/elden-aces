@@ -68,6 +68,13 @@ interface GameInitParams {
 // Generate bot deck based on class
 function createBotDeck(className: ClassName): Card[] {
   const classData = MASTER_CLASSES[className];
+  
+  // Defensive check: If classData is missing, fallback or throw safe error
+  if (!classData) {
+      console.error(`[createBotDeck] Critical Error: Class data not found for ${className}`);
+      return [];
+  }
+
   const deck: Card[] = [];
   
   // 6 Main class cards (1-6)

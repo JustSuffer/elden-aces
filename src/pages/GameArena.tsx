@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { useDailyMissions } from "@/hooks/useDailyMissions";
 import { GameState } from "@/types/game";
+import { SafeErrorBoundary } from "@/components/game/SafeErrorBoundary";
 
 
 export default function GameArena() {
@@ -14,7 +15,9 @@ export default function GameArena() {
   const { deck, opponentClass } = location.state || {};
 
   useEffect(() => {
+    console.log("[GameArena] Init. State:", location.state);
     if (!deck || !opponentClass) {
+      console.warn("[GameArena] Missing deck or opponentClass. Redirecting to /game");
       navigate("/game");
     }
   }, [deck, opponentClass, navigate]);
@@ -109,10 +112,12 @@ export default function GameArena() {
   if (!deck || !opponentClass) return null;
 
   return (
-    <GameMatch 
-      playerDeck={deck}
-      opponentClass={opponentClass}
-      onGameEnd={(result, isSurrender, stats) => handleGameEnd(result, isSurrender, stats)} 
-    />
+    <SafeErrorBoundary>
+      <GameMatch 
+        playerDeck={deck}
+        opponentClass={opponentClass}
+        onGameEnd={(result, isSurrender, stats) => handleGameEnd(result, isSurrender, stats)} 
+      />
+    </SafeErrorBoundary>
   );
 }
