@@ -466,7 +466,6 @@ export const GameMatch = ({
 
     // Game Start Greeting
     if (gameState.round === 1 && gameState.phase === "placement" && prevRoundRef.current === 1) {
-      // Simple check to ensure it only runs once at start
       // We might need a stricter check or a 'hasGreeted' state, but effect dependency on phase helps.
       // Actually, let's use a timeout on mount or just check strict equality
       const timer = setTimeout(() => sendMessage("GREETING"), 1000);
@@ -879,7 +878,7 @@ export const GameMatch = ({
                         id={`card-${i}`}
                         disabled={!canPlaceCards || gameState.phase !== "placement"}
                         onTap={() => handleTapToPlace(i)}
-                        dragEnabled={!isMobileLandscape && gameState.phase === "placement"}
+                        dragEnabled={gameState.phase === "placement"}
                       />
                     ))}
                   </div>

@@ -29,7 +29,7 @@ import PrivateLobby from "./pages/PrivateLobby";
 import Checkout from "./pages/Checkout";
 import Achievements from "./pages/Achievements";
 
-import { MobileLandscapeWrapper } from "./components/layout/MobileLandscapeWrapper";
+// Removed MobileLandscapeWrapper import
 import { BackgroundMusic } from "./components/BackgroundMusic";
 
 const queryClient = new QueryClient();
@@ -41,7 +41,6 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <MobileLandscapeWrapper>
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/auth" element={<Auth />} />
@@ -68,7 +67,6 @@ const App = () => (
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
             </Routes>
-          </MobileLandscapeWrapper>
           <BackgroundMusic />
         </BrowserRouter>
       </TooltipProvider>
