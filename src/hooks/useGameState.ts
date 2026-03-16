@@ -767,7 +767,7 @@ export function useGameState(initParams?: GameInitParams) {
 
   // Timer Logic
   useEffect(() => {
-    let timer: NodeJS.Timeout;
+    let timer: ReturnType<typeof setInterval>;
     if (gameState.phase === "placement" && gameState.timeLeft > 0) {
       timer = setInterval(() => {
         setGameState(prev => {
