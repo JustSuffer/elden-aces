@@ -260,6 +260,22 @@ export default function Achievements() {
     }
   };
 
+  const handleClaimAll = async () => {
+    const claimable = ACHIEVEMENTS.filter(a => {
+      const s = achievementStatus[a.id];
+      return s?.isUnlocked && !s?.isClaimed;
+    });
+    if (claimable.length === 0) {
+      toast.info(language === "tr" ? "Toplanacak başarım yok." : "Nothing to collect.");
+      return;
+    }
+    for (const a of claimable) {
+      // sequential to keep coin updates consistent
+      // eslint-disable-next-line no-await-in-loop
+      await handleClaim(a);
+    }
+  };
+
   const categories: (AchievementCategory | "All")[] = ["All", "Combat", "Mastery", "Story", "Collection", "Social"];
 
   return (
