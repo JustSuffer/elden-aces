@@ -260,6 +260,22 @@ export default function Achievements() {
     }
   };
 
+  const handleClaimAll = async () => {
+    const claimable = ACHIEVEMENTS.filter(a => {
+      const s = achievementStatus[a.id];
+      return s?.isUnlocked && !s?.isClaimed;
+    });
+    if (claimable.length === 0) {
+      toast.info(language === "tr" ? "Toplanacak başarım yok." : "Nothing to collect.");
+      return;
+    }
+    for (const a of claimable) {
+      // sequential to keep coin updates consistent
+      // eslint-disable-next-line no-await-in-loop
+      await handleClaim(a);
+    }
+  };
+
   const categories: (AchievementCategory | "All")[] = ["All", "Combat", "Mastery", "Story", "Collection", "Social"];
 
   return (
@@ -320,6 +336,14 @@ export default function Achievements() {
 
       {/* Main List */}
       <main className="container mx-auto px-4 py-8 max-w-5xl">
+         <div className="flex justify-end mb-4">
+           <button
+             onClick={handleClaimAll}
+             className="px-6 py-2.5 rounded-full font-bold tracking-widest uppercase text-black bg-gradient-to-b from-amber-400 to-amber-600 border border-amber-300 shadow-[0_0_20px_rgba(245,158,11,0.7)] hover:shadow-[0_0_30px_rgba(245,158,11,0.9)] hover:from-amber-300 hover:to-amber-500 transition-all animate-pulse"
+           >
+             {language === "tr" ? "TÜMÜNÜ TOPLA" : "COLLECT ALL"}
+           </button>
+         </div>
          {loading ? (
              <div className="text-center py-20 text-gold/50 animate-pulse">
                  {language === "tr" ? "Veriler analiz ediliyor..." : "Analyzing data..."}
