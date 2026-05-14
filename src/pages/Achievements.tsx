@@ -261,6 +261,7 @@ export default function Achievements() {
   };
 
   const handleClaimAll = async () => {
+    if (!user) return;
     const claimable = ACHIEVEMENTS.filter(a => {
       const s = achievementStatus[a.id];
       return s?.isUnlocked && !s?.isClaimed;
@@ -269,10 +270,51 @@ export default function Achievements() {
       toast.info(language === "tr" ? "Toplanacak başarım yok." : "Nothing to collect.");
       return;
     }
-    for (const a of claimable) {
-      // sequential to keep coin updates consistent
-      // eslint-disable-next-line no-await-in-loop
-      await handleClaim(a);
+
+    const totalReward = claimable.reduce((sum, a) => sum + a.reward, 0);
+    const newItems = Array.from(new Set([...unlockedItems, ...claimable.map(a => a.id)]));
+    const prevItems = unlockedItems;
+    const prevCoins = coins;
+
+    // Optimistic UI: tek seferde hepsi
+    setUnlockedItems(newItems);
+    setCoins(prev => prev + totalReward);
+    toast.success(
+      language === "tr"
+        ? `${claimable.length} başarım toplandı! +${totalReward} Divine Coin`
+        : `Collected ${claimable.length} achievements! +${totalReward} Divine Coins`
+    );
+
+    try {
+      const { data: profileData, error: fetchError } = await supabase
+        .from("profiles")
+        .select("divine_coins")
+        .eq("user_id", user.id)
+        .single();
+      if (fetchError) throw new Error(fetchError.message);
+
+      const newCoins = (profileData.divine_coins || 0) + totalReward;
+      const { error: coinError } = await supabase
+        .from("profiles")
+        .update({ divine_coins: newCoins } as any)
+        .eq("user_id", user.id);
+      if (coinError) throw new Error(coinError.message);
+
+      const { error: itemError } = await supabase
+        .from("profiles")
+        .update({ unlocked_items: newItems } as any)
+        .eq("user_id", user.id);
+      if (itemError) {
+        console.warn("DB items update failed, fallback to localStorage", itemError);
+        localStorage.setItem(`achievements_${user.id}`, JSON.stringify(newItems));
+      }
+
+      setCoins(newCoins);
+    } catch (err: any) {
+      console.error("Claim all failed:", err);
+      toast.error(`Error: ${err.message || "Unknown"}`);
+      setUnlockedItems(prevItems);
+      setCoins(prevCoins);
     }
   };
 
