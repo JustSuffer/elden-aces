@@ -74,20 +74,12 @@ export const DeckSelectionScreen = ({ onStartGame }: DeckSelectionScreenProps) =
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-8">
         <div className="bg-card/50 backdrop-blur-sm border border-primary/30 rounded-lg p-8 max-w-md text-center">
-          <h2 className="text-2xl font-bold text-primary glow-gold mb-4 font-cinzel">
-            Deste Bulunamadı
-          </h2>
-          <p className="text-muted-foreground mb-6">
-            Oyuna başlamadan önce Deste Oluşturucu'da bir deste kaydetmelisiniz.
-          </p>
+          <h2 className="text-2xl font-bold text-primary glow-gold mb-4 font-cinzel">{t("deckSelection.noDeck")}</h2>
+          <p className="text-muted-foreground mb-6">{t("deckSelection.noDeckDesc")}</p>
           <div className="flex gap-4 justify-center">
             <Button variant="outline" onClick={() => navigate("/")}>
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Menü
-            </Button>
-            <Button onClick={() => navigate("/deck-builder")}>
-              Deste Oluştur
-            </Button>
+              <ArrowLeft className="w-4 h-4 mr-2" />{t("deckSelection.menu")}</Button>
+            <Button onClick={() => navigate("/deck-builder")}>{t("deckSelection.createDeck")}</Button>
           </div>
         </div>
       </div>
@@ -99,19 +91,15 @@ export const DeckSelectionScreen = ({ onStartGame }: DeckSelectionScreenProps) =
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-border">
         <Button variant="ghost" onClick={() => navigate("/")} className="gap-2">
-          <ArrowLeft className="w-4 h-4" />
-          Menü
-        </Button>
-        <div className="text-xl font-bold text-primary glow-gold font-cinzel">Savaşa Hazırlan</div>
+          <ArrowLeft className="w-4 h-4" />{t("deckSelection.menu")}</Button>
+        <div className="text-xl font-bold text-primary glow-gold font-cinzel">{t("deckSelection.prepare")}</div>
         <div className="w-24" />
       </div>
 
       <div className="flex-1 container mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8 items-stretch">
         {/* Player Deck Selection */}
         <div className="flex-1 bg-card/50 backdrop-blur-sm border border-primary/30 rounded-lg p-6">
-          <h2 className="text-2xl font-bold text-primary glow-gold mb-6 font-cinzel text-center">
-            Desteni Seç
-          </h2>
+          <h2 className="text-2xl font-bold text-primary glow-gold mb-6 font-cinzel text-center">{t("deckSelection.chooseDeck")}</h2>
           
           <div className="space-y-3 max-h-[400px] overflow-y-auto acoria-scrollbar pr-2">
             {savedDecks.map((deck) => {
@@ -158,13 +146,13 @@ export const DeckSelectionScreen = ({ onStartGame }: DeckSelectionScreenProps) =
 
           {selectedDeck && (
             <div className="mt-6 p-4 bg-background/50 rounded-lg border border-border">
-              <h4 className="text-sm font-bold text-primary mb-2">Kazanma Koşulu:</h4>
+              <h4 className="text-sm font-bold text-primary mb-2">{t("deckSelection.winCon")}</h4>
               <p className="text-sm text-muted-foreground">
                 {MASTER_CLASSES[selectedDeck.mainClass].winCondition}
               </p>
               {MASTER_CLASSES[selectedDeck.mainClass].loseCondition && (
                 <>
-                  <h4 className="text-sm font-bold text-destructive mt-3 mb-2">Kaybetme Koşulu:</h4>
+                  <h4 className="text-sm font-bold text-destructive mt-3 mb-2">{t("deckSelection.loseCon")}</h4>
                   <p className="text-sm text-muted-foreground">
                     {MASTER_CLASSES[selectedDeck.mainClass].loseCondition}
                   </p>
@@ -174,11 +162,20 @@ export const DeckSelectionScreen = ({ onStartGame }: DeckSelectionScreenProps) =
           )}
         </div>
 
-        {/* VS Divider */}
-        <div className="flex items-center justify-center">
-          <div className="bg-primary/20 border border-primary/50 rounded-full p-4">
+                {/* VS Divider & Start Button */}
+        <div className="flex flex-col items-center justify-center gap-6 my-4 lg:my-0">
+          <div className="bg-primary/20 border border-primary/50 rounded-full p-4 shadow-[0_0_20px_rgba(251,191,36,0.3)]">
             <Swords className="w-8 h-8 text-primary" />
           </div>
+          <Button
+            size="lg"
+            onClick={handleStartGame}
+            disabled={!selectedDeck || !opponentClass}
+            className="text-xl px-8 py-6 font-cinzel shadow-lg shadow-primary/20 hover:scale-105 transition-all whitespace-nowrap"
+          >
+            <Swords className="w-6 h-6 mr-3" />
+            {t("deckSelection.start")}
+          </Button>
         </div>
 
         {/* Opponent Class Display */}
@@ -188,9 +185,7 @@ export const DeckSelectionScreen = ({ onStartGame }: DeckSelectionScreenProps) =
               {t("game.opponent")} (Bot)
             </h2>
             <Button variant="outline" size="sm" onClick={handleRandomizeOpponent}>
-              <Shuffle className="w-4 h-4 mr-2" />
-              Değiştir
-            </Button>
+              <Shuffle className="w-4 h-4 mr-2" />{t("deckSelection.change")}</Button>
           </div>
 
           {opponentClass && (
@@ -214,7 +209,7 @@ export const DeckSelectionScreen = ({ onStartGame }: DeckSelectionScreenProps) =
               </div>
 
               <div className="mt-6 p-4 bg-background/50 rounded-lg border border-border w-full max-w-sm">
-                <h4 className="text-sm font-bold text-destructive mb-2">Rakip Kazanma Koşulu:</h4>
+                <h4 className="text-sm font-bold text-destructive mb-2">{t("deckSelection.oppWinCon")}</h4>
                 <p className="text-sm text-muted-foreground">
                   {MASTER_CLASSES[opponentClass].winCondition}
                 </p>
@@ -222,7 +217,7 @@ export const DeckSelectionScreen = ({ onStartGame }: DeckSelectionScreenProps) =
 
               {selectedDeck && MASTER_CLASSES[selectedDeck.mainClass].counterLogic?.[opponentClass] && (
                 <div className="mt-4 p-4 bg-yellow-500/10 rounded-lg border border-yellow-500/30 w-full max-w-sm">
-                  <h4 className="text-sm font-bold text-yellow-500 mb-2">⚠️ Özel Eşleşme Kuralı:</h4>
+                  <h4 className="text-sm font-bold text-yellow-500 mb-2">{t("deckSelection.specialRule")}</h4>
                   <p className="text-sm text-yellow-200">
                     {MASTER_CLASSES[selectedDeck.mainClass].counterLogic![opponentClass]}
                   </p>
@@ -232,9 +227,7 @@ export const DeckSelectionScreen = ({ onStartGame }: DeckSelectionScreenProps) =
               <div className="w-full border-t border-border/50 my-6" />
               
               <div className="w-full">
-                <h3 className="text-xs font-bold text-muted-foreground mb-3 text-center uppercase tracking-widest">
-                    Veya Listeden Seçin
-                </h3>
+                <h3 className="text-xs font-bold text-muted-foreground mb-3 text-center uppercase tracking-widest">{t("deckSelection.orChoose")}</h3>
                 <div className="grid grid-cols-4 gap-2 max-h-[200px] overflow-y-auto acoria-scrollbar p-1">
                     {ALL_CLASSES.map((cls) => (
                         <button
@@ -270,20 +263,7 @@ export const DeckSelectionScreen = ({ onStartGame }: DeckSelectionScreenProps) =
         </div>
       </div>
 
-      {/* Start Button */}
-      <div className="p-6 border-t border-border">
-        <div className="container mx-auto flex justify-center">
-          <Button
-            size="lg"
-            onClick={handleStartGame}
-            disabled={!selectedDeck || !opponentClass}
-            className="text-xl px-12 py-6 font-cinzel"
-          >
-            <Swords className="w-6 h-6 mr-3" />
-            Savaşı Başlat
-          </Button>
-        </div>
-      </div>
+      
     </div>
   );
 };

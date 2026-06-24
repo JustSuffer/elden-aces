@@ -293,7 +293,10 @@ const Menu = () => {
              >
                <div className="flex items-center justify-center relative w-full">
                  <Link className="absolute left-4 h-6 w-6 opacity-30" />
-                 <span>{t("menu.storyMode")} <span className="text-xs md:text-sm block text-gray-600 mt-1">({t("common.comingSoon")})</span></span>
+                 <span className="flex flex-col items-center text-center w-full">
+                   <span>{t("menu.storyMode")}</span>
+                   <span className="text-xs md:text-sm text-gray-600 mt-1">({t("common.comingSoon")})</span>
+                 </span>
                  <Link className="absolute right-4 h-6 w-6 opacity-30" />
                </div>
              </MenuButton>
