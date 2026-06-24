@@ -1,3 +1,4 @@
+import { useLanguage } from "@/hooks/useLanguage";
 import { cn } from "@/lib/utils";
 import React from "react";
 import {
@@ -15,6 +16,7 @@ interface DeckCounterProps {
 }
 
 export function DeckCounter({ count, isOpponent = false, className, customImage }: DeckCounterProps) {
+  const { t } = useLanguage();
   const [imageError, setImageError] = React.useState(false);
 
   // Determine image source

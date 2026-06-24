@@ -1,3 +1,4 @@
+import { useLanguage } from "@/hooks/useLanguage";
 import { useState, useRef, useEffect } from "react";
 import {
   Volume2,
@@ -27,6 +28,7 @@ const PLAYLIST = [
 ];
 
 export function BackgroundMusic() {
+  const { t } = useLanguage();
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(() => {
     return localStorage.getItem("bg_music_muted") === "true";

@@ -85,6 +85,7 @@ export const GameMatch = ({
   customReturnLabel,
   opponentSurrendered = false
 }: GameMatchProps) => {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const { t, language } = useLanguage();
 

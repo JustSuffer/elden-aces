@@ -1,3 +1,4 @@
+import { useLanguage } from "@/hooks/useLanguage";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2, CheckCircle, Users } from "lucide-react";
@@ -20,6 +21,7 @@ export const ReadyPopup = ({
   opponentClass,
   onReady,
 }: ReadyPopupProps) => {
+  const { t } = useLanguage();
   const [countdown, setCountdown] = useState<number | null>(null);
 
   // Start countdown when both are ready
