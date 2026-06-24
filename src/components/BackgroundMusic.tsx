@@ -1,14 +1,20 @@
-
 import { useState, useRef, useEffect } from "react";
-import { Volume2, VolumeX, SkipForward, Play, Pause, Music } from "lucide-react";
+import {
+  Volume2,
+  VolumeX,
+  SkipForward,
+  Play,
+  Pause,
+  Music,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
 
 const PLAYLIST = [
   {
-    title: "Acoria of the Tartarus",
-    src: "/audio/Acoria of the Tartarus.mp3",
+    title: "Acorıa of the Tartarus",
+    src: "/audio/Acorıa of the Tartarus.mp3",
   },
   {
     title: "Blades Above the Alehouse",
@@ -62,7 +68,7 @@ export function BackgroundMusic() {
       const playPromise = audio.play();
       if (playPromise !== undefined) {
         playPromise.catch((error) => {
-           // Autoplay errors are common, just log it.
+          // Autoplay errors are common, just log it.
           console.log("Autoplay prevented:", error);
           setIsPlaying(false);
         });
@@ -143,13 +149,15 @@ export function BackgroundMusic() {
     <div
       className={cn(
         "fixed bottom-4 right-4 z-50 flex flex-col items-end gap-2 transition-all duration-300",
-        isMinimized ? "w-auto" : "w-64"
+        isMinimized ? "w-auto" : "w-64",
       )}
     >
-      <div className={cn(
-        "bg-background/80 backdrop-blur-md border border-border rounded-lg shadow-lg overflow-hidden transition-all duration-300",
-        isMinimized ? "p-2" : "p-4 w-full"
-      )}>
+      <div
+        className={cn(
+          "bg-background/80 backdrop-blur-md border border-border rounded-lg shadow-lg overflow-hidden transition-all duration-300",
+          isMinimized ? "p-2" : "p-4 w-full",
+        )}
+      >
         {/* Minimized View */}
         {isMinimized ? (
           <Button
@@ -158,7 +166,12 @@ export function BackgroundMusic() {
             onClick={() => setIsMinimized(false)}
             className="rounded-full hover:bg-primary/20"
           >
-            <Music className={cn("h-5 w-5", isPlaying && "animate-pulse text-primary")} />
+            <Music
+              className={cn(
+                "h-5 w-5",
+                isPlaying && "animate-pulse text-primary",
+              )}
+            />
           </Button>
         ) : (
           /* Maximized View */
@@ -216,7 +229,10 @@ export function BackgroundMusic() {
                 variant="ghost"
                 size="icon"
                 onClick={toggleMute}
-                className={cn("h-6 w-6 shrink-0", isMuted && "text-destructive")}
+                className={cn(
+                  "h-6 w-6 shrink-0",
+                  isMuted && "text-destructive",
+                )}
                 title={isMuted ? "Sesi aç" : "Sessize al"}
               >
                 {isMuted || volume[0] === 0 ? (
