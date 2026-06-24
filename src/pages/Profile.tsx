@@ -36,7 +36,6 @@ interface ClassStat {
 }
 
 const Profile = () => {
-  const { t } = useLanguage();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { t, language } = useLanguage();
