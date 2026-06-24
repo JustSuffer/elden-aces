@@ -305,7 +305,7 @@ const Profile = () => {
                           <div className="text-xl font-bold text-amber-500">
                             {profile?.divine_coins || 0}
                           </div>
-                          <div className="text-xs text-muted-foreground">Divine Coins</div>
+                          <div className="text-xs text-muted-foreground">{t("profile.coins")}</div>
                         </div>
                       </div>
                     </div>
@@ -353,7 +353,7 @@ const Profile = () => {
                   <div>Sınıf</div>
                   <div className="text-center">Maç</div>
                   <div className="text-center">K / K</div>
-                  <div className="text-right">Oran</div>
+                  <div className="text-right">{t("profile.ratio")}</div>
                 </div>
                 {Object.keys(botStats).length === 0 ? (
                   <div className="text-center text-muted-foreground py-8 italic">Henüz bot maçı verisi yok.</div>

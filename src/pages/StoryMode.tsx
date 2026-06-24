@@ -193,7 +193,7 @@ export default function StoryMode() {
                                        <span className="text-white/80">{getLoc(level.opponentName)}</span> <span className="text-gold/40">({level.opponentClass})</span>
                                     </div>
                                     {level.difficulty === "boss" && !isCompleted && (
-                                        <span className="text-[10px] font-bold text-red-400 border border-red-500/30 px-1 rounded">BOSS</span>
+                                        <span className="text-[10px] font-bold text-red-400 border border-red-500/30 px-1 rounded">{t("story.boss")}</span>
                                     )}
                                   </div>
                                   

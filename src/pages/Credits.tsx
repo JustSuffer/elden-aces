@@ -2,9 +2,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Sparkles, Heart, Code } from "lucide-react";
+import { useLanguage } from "@/hooks/useLanguage";
 
 const Credits = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -14,7 +16,7 @@ const Credits = () => {
           <ArrowLeft className="w-4 h-4" />
           Back
         </Button>
-        <div className="text-xl font-bold text-primary glow-gold">Credits</div>
+        <div className="text-xl font-bold text-primary glow-gold">{t("credits.title")}</div>
         <div className="w-20" />
       </div>
 
@@ -24,7 +26,7 @@ const Credits = () => {
           {/* Game Title */}
           <div className="text-center space-y-4 mb-12">
             <h1 className="text-6xl font-bold text-primary glow-gold">ACORIA</h1>
-            <p className="text-xl text-muted-foreground">A Strategic Card Battle Experience</p>
+            <p className="text-xl text-muted-foreground">{t("credits.subtitle")}</p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">
@@ -38,16 +40,16 @@ const Credits = () => {
               </CardHeader>
               <CardContent className="space-y-3">
                 <div>
-                  <p className="font-semibold text-primary">Game Design</p>
-                  <p className="text-sm text-muted-foreground">Core mechanics & balancing</p>
+                  <p className="font-semibold text-primary">{t("credits.design")}</p>
+                  <p className="text-sm text-muted-foreground">{t("credits.designDesc")}</p>
                 </div>
                 <div>
-                  <p className="font-semibold text-primary">Programming</p>
-                  <p className="text-sm text-muted-foreground">React, TypeScript, Tailwind CSS</p>
+                  <p className="font-semibold text-primary">{t("credits.programming")}</p>
+                  <p className="text-sm text-muted-foreground">{t("credits.programmingDesc")}</p>
                 </div>
                 <div>
-                  <p className="font-semibold text-primary">UI/UX Design</p>
-                  <p className="text-sm text-muted-foreground">Interface & visual design</p>
+                  <p className="font-semibold text-primary">{t("credits.uiux")}</p>
+                  <p className="text-sm text-muted-foreground">{t("credits.uiuxDesc")}</p>
                 </div>
               </CardContent>
             </Card>
@@ -62,16 +64,16 @@ const Credits = () => {
               </CardHeader>
               <CardContent className="space-y-3">
                 <div>
-                  <p className="font-semibold text-primary">Card Artwork</p>
-                  <p className="text-sm text-muted-foreground">Original card designs</p>
+                  <p className="font-semibold text-primary">{t("credits.art")}</p>
+                  <p className="text-sm text-muted-foreground">{t("credits.artDesc")}</p>
                 </div>
                 <div>
-                  <p className="font-semibold text-primary">Visual Effects</p>
-                  <p className="text-sm text-muted-foreground">Animations & transitions</p>
+                  <p className="font-semibold text-primary">{t("credits.vfx")}</p>
+                  <p className="text-sm text-muted-foreground">{t("credits.vfxDesc")}</p>
                 </div>
                 <div>
-                  <p className="font-semibold text-primary">Branding</p>
-                  <p className="text-sm text-muted-foreground">Logo & identity</p>
+                  <p className="font-semibold text-primary">{t("credits.branding")}</p>
+                  <p className="text-sm text-muted-foreground">{t("credits.brandingDesc")}</p>
                 </div>
               </CardContent>
             </Card>
@@ -99,7 +101,7 @@ const Credits = () => {
           {/* Technology Stack */}
           <Card>
             <CardHeader>
-              <CardTitle>Technology</CardTitle>
+              <CardTitle>{t("credits.tech")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-3 justify-center">
@@ -117,8 +119,8 @@ const Credits = () => {
 
           {/* Footer */}
           <div className="text-center text-sm text-muted-foreground pt-8">
-            <p>© 2025 ACORIA. All rights reserved.</p>
-            <p className="mt-2">Built with passion for strategic card game enthusiasts</p>
+            <p>{t("settings.copyright")}</p>
+            <p className="mt-2">{t("credits.builtWith")}</p>
           </div>
         </div>
       </div>

@@ -384,11 +384,11 @@ const Play = () => {
                         sizeClass="w-24 h-24"
                       />
                     </div>
-                    <p className="text-lg font-bold text-foreground">Sen</p>
+                    <p className="text-lg font-bold text-foreground">{t("play.you")}</p>
                     <p className="text-sm text-muted-foreground">{selectedDeck?.mainClass}</p>
                   </div>
                   
-                  <div className="text-3xl text-primary font-bold">VS</div>
+                  <div className="text-3xl text-primary font-bold">{t("play.vs")}</div>
                   
                   {/* Opponent */}
                   <div className="text-center">
@@ -533,7 +533,7 @@ const Play = () => {
           <div className="w-full max-w-2xl text-center">
             <div className="flex items-center gap-4 my-4">
               <div className="flex-1 h-px bg-border/50" />
-              <span className="text-muted-foreground text-sm">veya</span>
+              <span className="text-muted-foreground text-sm">{t("play.or")}</span>
               <div className="flex-1 h-px bg-border/50" />
             </div>
             <Button

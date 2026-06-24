@@ -300,6 +300,7 @@ export const translations = {
     "howToPlay.tips.mid": "Mid Game: Watch for combo opportunities.",
     "howToPlay.tips.late": "Late Game: Position special cards carefully.",
     "howToPlay.tips.dice": "Dice Usage: Save for desperate moments.",
+    "howToPlay.ready": "I AM READY",
     // Victory
     "victory.title.win": "VICTORY!",
     "victory.title.loss": "DEFEAT",
@@ -437,7 +438,44 @@ export const translations = {
     "deckBuilder.deleteConfirm": "Are you sure you want to delete this deck?",
     "deckBuilder.completeSteps": "Please complete all steps!",
     "deckBuilder.maxDecks": "You have reached the maximum deck limit (18)! Delete one to create a new deck.",
-    "deckBuilder.nameRequired": "You must enter a deck name!"
+    "deckBuilder.nameRequired": "You must enter a deck name!",
+    // New Additions
+    "common.comingSoon": "COMING SOON",
+    "game.cardsRemaining": "CARDS REMAINING",
+    "library.role": "Role",
+    "library.philosophy": "Philosophy",
+    "library.battleCry": "Battle Cry",
+    "library.gammaRule": "Only obtainable via Dice during gameplay",
+    "credits.title": "Credits",
+    "credits.subtitle": "A Strategic Card Battle Experience",
+    "credits.design": "Game Design",
+    "credits.dev": "Development",
+    "credits.designDesc": "Core mechanics & balancing",
+    "credits.programmingDesc": "React, TypeScript, Tailwind CSS",
+    "credits.uiux": "UI/UX Design",
+    "credits.uiuxDesc": "Interface & visual design",
+    "credits.artTitle": "Art & Design",
+    "credits.vfxDesc": "Animations & transitions",
+    "credits.brandingDesc": "Logo & identity",
+    "credits.specialThanks": "Special Thanks",
+    "credits.thanksDesc": "To all players who embark on this strategic journey through the ancient realms of ACORIA. May your cards be ever in your favor, and your strategy unmatched.",
+
+    "credits.programming": "Programming",
+    "credits.art": "Card Artwork",
+    "credits.artDesc": "Original card designs",
+    "credits.vfx": "Visual Effects",
+    "credits.branding": "Branding",
+    "credits.tech": "Technology",
+    "credits.builtWith": "Built with passion for strategic card game enthusiasts",
+    "play.or": "or",
+    "play.you": "You",
+    "play.vs": "VS",
+    "profile.coins": "Divine Coins",
+    "profile.ratio": "Ratio",
+    "story.boss": "BOSS",
+    "settings.minimize": "Minimize",
+    "checkout.mostPopular": "Most Popular",
+    "checkout.bestValue": "Best Value"
   },
   tr: {
     // Menu
@@ -737,6 +775,7 @@ export const translations = {
     "howToPlay.tips.mid": "Orta Oyun: Kombo fırsatlarını kolla.",
     "howToPlay.tips.late": "Geç Oyun: Özel kartları sakla.",
     "howToPlay.tips.dice": "Zar: Son çare olarak kullan.",
+    "howToPlay.ready": "ARTIK HAZIRIM",
 
 
     // Game

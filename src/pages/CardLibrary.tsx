@@ -199,7 +199,7 @@ const CardLibrary = () => {
                         <li>• <span className="text-primary font-bold">Main Class:</span> 6 cards (values 1-6)</li>
                         <li>• <span className="text-primary font-bold">Special Cards:</span> 6 cards (2× Twisted α, 2× Deflate β, 1× Delta Δ, 1× Sigma Σ)</li>
                         <li>• <span className="text-primary font-bold">Secondary Classes:</span> 3 classes × 6 cards = 18 cards</li>
-                        <li>• <span className="text-primary font-bold">Gamma (γ):</span> Only obtainable via Dice during gameplay</li>
+                        <li>• <span className="text-primary font-bold">Gamma (γ):</span> {t("library.gammaRule")}</li>
                         <li>• <span className="text-primary font-bold">The Die (Π):</span> Fateweaver exclusive, Round 3+</li>
                     </ul>
                 </div>
@@ -289,7 +289,7 @@ const CardLibrary = () => {
                                     </h3>
                                 </div>
                                 <div className="text-right">
-                                    <div className="text-sm text-muted-foreground uppercase tracking-widest">Role</div>
+                                    <div className="text-sm text-muted-foreground uppercase tracking-widest">{t("library.role")}</div>
                                     <div className="text-lg font-bold">{classData.role}</div>
                                 </div>
                             </div>
@@ -309,7 +309,7 @@ const CardLibrary = () => {
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                      <div className="bg-card/30 p-4 rounded-lg border border-primary/10">
-                                        <h4 className="text-xs font-bold text-muted-foreground uppercase mb-1">Philosophy</h4>
+                                        <h4 className="text-xs font-bold text-muted-foreground uppercase mb-1">{t("library.philosophy")}</h4>
                                         <p className="text-sm font-medium text-foreground">
                                             "{
                                                 // @ts-ignore
@@ -318,13 +318,13 @@ const CardLibrary = () => {
                                         </p>
                                      </div>
                                      <div className="bg-card/30 p-4 rounded-lg border border-primary/10">
-                                        <h4 className="text-xs font-bold text-muted-foreground uppercase mb-1">Battle Cry</h4>
+                                        <h4 className="text-xs font-bold text-muted-foreground uppercase mb-1">{t("library.battleCry")}</h4>
                                         <p className="text-sm font-medium text-destructive">"{classData.threatenQuote}"</p>
                                      </div>
                                 </div>
 
                                 <div>
-                                    <h4 className="text-sm font-bold text-primary uppercase tracking-wider mb-2">Win Condition</h4>
+                                    <h4 className="text-sm font-bold text-primary uppercase tracking-wider mb-2">{t("ui.winCondition")}</h4>
                                     <div className="bg-primary/5 border border-primary/20 p-3 rounded text-sm text-foreground">
                                         {classData.winCondition}
                                     </div>

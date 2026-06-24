@@ -189,7 +189,7 @@ export function BackgroundMusic() {
                 className="h-6 w-6"
                 onClick={() => setIsMinimized(true)}
               >
-                <span className="sr-only">Minimize</span>
+                <span className="sr-only">{t("settings.minimize")}</span>
                 <span className="text-xs">_</span>
               </Button>
             </div>

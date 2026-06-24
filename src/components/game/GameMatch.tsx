@@ -632,8 +632,8 @@ export const GameMatch = ({
               <div className="w-full max-w-[380px] text-center pointer-events-none z-50 mb-4">
                 <div className="bg-black/80 p-2.5 rounded-xl border border-primary/30 backdrop-blur-xl animate-in slide-in-from-bottom-10 fade-in duration-500 shadow-[0_0_20px_rgba(0,0,0,0.5)]">
                   <div className="flex justify-center gap-4 text-base font-bold mb-1.5 border-b border-primary/20 pb-1">
-                    <span className="text-theta shadow-black drop-shadow-md">-{gameState.damageResult.playerDamage} <span className="text-[10px]">YOU</span></span>
-                    <span className="text-omega shadow-black drop-shadow-md">-{gameState.damageResult.opponentDamage} <span className="text-[10px]">OPP</span></span>
+                    <span className="text-theta shadow-black drop-shadow-md">-{gameState.damageResult.playerDamage} <span className="text-[10px]">{t("game.damage.you").toUpperCase()}</span></span>
+                    <span className="text-omega shadow-black drop-shadow-md">-{gameState.damageResult.opponentDamage} <span className="text-[10px]">{t("game.damage.opponent").substring(0,3).toUpperCase()}</span></span>
                   </div>
                   <div className="space-y-0.5">
                     {gameState.damageResult.details.map((detail, i) => (

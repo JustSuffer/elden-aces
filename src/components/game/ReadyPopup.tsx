@@ -78,7 +78,7 @@ export const ReadyPopup = ({
                   ) : (
                     <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
                   )}
-                  <span className="font-semibold">Sen</span>
+                  <span className="font-semibold">{t("game.damage.you")}</span>
                 </div>
                 <span className={`text-sm ${isPlayerReady ? "text-green-500" : "text-muted-foreground"}`}>
                   {isPlayerReady ? "Hazır!" : "Bekleniyor..."}
@@ -96,7 +96,7 @@ export const ReadyPopup = ({
                   ) : (
                     <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
                   )}
-                  <span className="font-semibold">Rakip</span>
+                  <span className="font-semibold">{t("game.damage.opponent")}</span>
                 </div>
                 <span className={`text-sm ${isOpponentReady ? "text-green-500" : "text-muted-foreground"}`}>
                   {isOpponentReady ? "Hazır!" : "Bekleniyor..."}

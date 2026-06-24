@@ -67,7 +67,7 @@ export function DeckCounter({ count, isOpponent = false, className, customImage 
         <TooltipContent side="top" className="bg-black/95 border-gold/50 text-gold font-cinzel p-4 shadow-2xl">
           <div className="flex flex-col items-center gap-1">
             <span className="text-3xl font-bold glow-gold">{count}</span>
-            <span className="text-xs tracking-widest opacity-80">CARDS REMAINING</span>
+            <span className="text-xs tracking-widest opacity-80">{t("game.cardsRemaining")}</span>
           </div>
         </TooltipContent>
       </Tooltip>

@@ -59,7 +59,7 @@ const HowToPlay = () => {
         <motion.section variants={itemVariants} className="text-center space-y-6 pt-10">
           <Sparkles className="w-12 h-12 text-amber-400 mx-auto animate-pulse" />
           <h1 className="text-5xl md:text-6xl font-bold font-cinzel bg-gradient-to-br from-amber-200 via-amber-400 to-amber-600 text-transparent bg-clip-text drop-shadow-sm pb-2">
-            {language === 'tr' ? 'ACORIA\'YA HOŞ GELDİN' : 'WELCOME TO ACORIA'}
+            {t("howToPlay.intro.title")}
           </h1>
           <p className="text-xl text-purple-200/80 leading-relaxed max-w-3xl mx-auto font-light">
             {t("howToPlay.intro.text")}
@@ -182,31 +182,55 @@ const HowToPlay = () => {
               <div className="flex gap-4 items-start bg-blue-950/30 p-5 rounded-xl border border-blue-900/50">
                 <div className="mt-1 bg-blue-500/20 p-2 rounded-lg"><AlertTriangle className="w-5 h-5 text-blue-400"/></div>
                 <div>
-                  <h4 className="font-bold text-blue-300 text-lg mb-1">{language === 'tr' ? 'Erken Oyun' : 'Early Game'}</h4>
+                  <h4 className="font-bold text-blue-300 text-lg mb-1">{t("howToPlay.tips.early").split(":")[0]}</h4>
                   <p className="text-blue-100/70">{t("howToPlay.tips.early")}</p>
                 </div>
               </div>
               <div className="flex gap-4 items-start bg-indigo-950/30 p-5 rounded-xl border border-indigo-900/50">
                 <div className="mt-1 bg-indigo-500/20 p-2 rounded-lg"><Shield className="w-5 h-5 text-indigo-400"/></div>
                 <div>
-                  <h4 className="font-bold text-indigo-300 text-lg mb-1">{language === 'tr' ? 'Orta Oyun' : 'Mid Game'}</h4>
+                  <h4 className="font-bold text-indigo-300 text-lg mb-1">{t("howToPlay.tips.mid").split(":")[0]}</h4>
                   <p className="text-indigo-100/70">{t("howToPlay.tips.mid")}</p>
                 </div>
               </div>
               <div className="flex gap-4 items-start bg-purple-950/30 p-5 rounded-xl border border-purple-900/50">
                 <div className="mt-1 bg-purple-500/20 p-2 rounded-lg"><Skull className="w-5 h-5 text-purple-400"/></div>
                 <div>
-                  <h4 className="font-bold text-purple-300 text-lg mb-1">{language === 'tr' ? 'Geç Oyun' : 'Late Game'}</h4>
+                  <h4 className="font-bold text-purple-300 text-lg mb-1">{t("howToPlay.tips.late").split(":")[0]}</h4>
                   <p className="text-purple-100/70">{t("howToPlay.tips.late")}</p>
                 </div>
               </div>
               <div className="flex gap-4 items-start bg-amber-950/30 p-5 rounded-xl border border-amber-900/50">
                 <div className="mt-1 bg-amber-500/20 p-2 rounded-lg"><Dices className="w-5 h-5 text-amber-400"/></div>
                 <div>
-                  <h4 className="font-bold text-amber-300 text-lg mb-1">{language === 'tr' ? 'Zar Şansı' : 'Dice Luck'}</h4>
+                  <h4 className="font-bold text-amber-300 text-lg mb-1">{t("howToPlay.tips.dice").split(":")[0]}</h4>
                   <p className="text-amber-100/70">{t("howToPlay.tips.dice")}</p>
                 </div>
               </div>
+            </div>
+          </div>
+        </motion.section>
+
+        {/* 5. Class Roster */}
+        <motion.section variants={itemVariants} className="relative group">
+          <div className="absolute -inset-4 bg-gradient-to-r from-emerald-900/20 to-teal-900/20 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+          <div className="relative bg-black/40 border border-emerald-500/30 rounded-2xl p-8 md:p-10 backdrop-blur-sm shadow-[0_8px_32px_0_rgba(0,0,0,0.3)]">
+            <h2 className="text-3xl font-bold font-cinzel text-emerald-400 flex items-center gap-4 mb-8 border-b border-emerald-500/20 pb-4">
+              <BookOpen className="w-8 h-8 text-emerald-500" />
+              5. {t("howToPlay.section.classes")}
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {['vitalist', 'slayer', 'fateweaver', 'oracle', 'chronokeeper', 'cryomancer', 'decay', 'siren', 'augmentor', 'vessel', 'mimic'].map((cls) => (
+                <div key={cls} className="bg-black/50 border border-white/10 rounded-xl p-5 hover:border-emerald-500/50 transition-all shadow-lg hover:shadow-emerald-500/10">
+                  <div className="text-lg font-bold font-cinzel text-emerald-300 capitalize mb-2">{cls}</div>
+                  <div className="text-xs text-muted-foreground uppercase tracking-widest mb-4">{t(`classes.${cls}.role` as any)}</div>
+                  <div className="space-y-3 text-sm">
+                    <div><span className="text-emerald-400 font-bold">{t("classes.logic")}:</span> <span className="text-white/80">{t(`classes.${cls}.logic` as any)}</span></div>
+                    <div><span className="text-emerald-400 font-bold">{t("classes.mechanic")}:</span> <span className="text-white/80">{t(`classes.${cls}.mechanic` as any)}</span></div>
+                    <div><span className="text-emerald-400 font-bold">{t("ui.winCondition")}:</span> <span className="text-white/80">{t(`classes.${cls}.winCon` as any)}</span></div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </motion.section>
@@ -218,7 +242,7 @@ const HowToPlay = () => {
             className="group relative inline-flex items-center justify-center gap-3 px-12 py-5 text-lg md:text-xl font-bold tracking-[0.2em] uppercase text-amber-300 bg-black border-2 border-amber-500/50 rounded-full overflow-hidden transition-transform hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(251,191,36,0.2)] hover:shadow-[0_0_50px_rgba(251,191,36,0.4)]"
           >
             <div className="absolute inset-0 bg-gradient-to-r from-amber-600/20 via-amber-400/20 to-amber-600/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-            <span>{language === 'tr' ? 'ARTIK HAZIRIM' : 'I AM READY'}</span>
+            <span>{t("howToPlay.ready")}</span>
             <Sword className="w-6 h-6 animate-bounce" />
           </button>
         </motion.div>

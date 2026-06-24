@@ -293,7 +293,7 @@ const Menu = () => {
              >
                <div className="flex items-center justify-center relative w-full">
                  <Link className="absolute left-4 h-6 w-6 opacity-30" />
-                 <span>{t("menu.storyMode")} <span className="text-xs md:text-sm block text-gray-600 mt-1">(COMING SOON)</span></span>
+                 <span>{t("menu.storyMode")} <span className="text-xs md:text-sm block text-gray-600 mt-1">({t("common.comingSoon")})</span></span>
                  <Link className="absolute right-4 h-6 w-6 opacity-30" />
                </div>
              </MenuButton>
@@ -343,9 +343,9 @@ const Menu = () => {
           </div>
 
           <motion.div variants={itemVariants} className="flex flex-wrap justify-center items-center gap-3 pt-2">
-             <MenuButton disabled={!hasSeenHowToPlay} onClick={() => navigate("/credits")} className={`h-10 text-xs px-2 border-white/20 hover:border-white/40 ${!hasSeenHowToPlay ? 'opacity-50 pointer-events-none' : ''}`}>{t("menu.team")}</MenuButton>
+             <MenuButton disabled={!hasSeenHowToPlay} onClick={() => navigate("/credits")} className={`flex items-center justify-center h-10 text-xs px-2 border-white/20 hover:border-white/40 ${!hasSeenHowToPlay ? 'opacity-50 pointer-events-none' : ''}`}>{t("menu.team")}</MenuButton>
              
-             <div className="relative">
+             <div className="relative flex items-center justify-center">
                {!hasSeenHowToPlay && (
                  <div className="absolute -inset-2 bg-amber-500/20 rounded-lg blur-xl animate-pulse" />
                )}
@@ -355,13 +355,13 @@ const Menu = () => {
                    setHasSeenHowToPlay(true);
                    navigate("/how-to-play");
                  }} 
-                 className={`h-10 text-xs px-4 border-white/20 transition-all duration-300 ${!hasSeenHowToPlay ? 'border-amber-400 bg-amber-900/40 text-amber-300 scale-110 shadow-[0_0_15px_rgba(251,191,36,0.6)] relative z-50 hover:bg-amber-800/60' : 'hover:border-white/40'}`}
+                 className={`flex items-center justify-center h-10 text-xs px-4 border-white/20 transition-all duration-300 ${!hasSeenHowToPlay ? 'border-amber-400 bg-amber-900/40 text-amber-300 scale-110 shadow-[0_0_15px_rgba(251,191,36,0.6)] relative z-50 hover:bg-amber-800/60' : 'hover:border-white/40'}`}
                >
                  {t("menu.howToPlay")}
                </MenuButton>
              </div>
 
-             <MenuButton disabled={!hasSeenHowToPlay} onClick={() => navigate("/tutorial")} className={`h-10 text-xs px-2 border-white/20 hover:border-white/40 ${!hasSeenHowToPlay ? 'opacity-50 pointer-events-none' : ''}`}>{t("menu.tutorial")}</MenuButton>
+             <MenuButton disabled={!hasSeenHowToPlay} onClick={() => navigate("/tutorial")} className={`flex items-center justify-center h-10 text-xs px-2 border-white/20 hover:border-white/40 ${!hasSeenHowToPlay ? 'opacity-50 pointer-events-none' : ''}`}>{t("menu.tutorial")}</MenuButton>
              <MenuButton disabled={!hasSeenHowToPlay} onClick={() => navigate("/friends")} className={`h-10 text-xs px-2 border-green-500/30 hover:border-green-500/60 flex items-center justify-center gap-1 ${!hasSeenHowToPlay ? 'opacity-50 pointer-events-none' : ''}`}>
                {t("menu.friends")}
              </MenuButton>
