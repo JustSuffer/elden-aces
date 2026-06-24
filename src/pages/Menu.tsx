@@ -289,16 +289,16 @@ const Menu = () => {
              <MenuButton 
                disabled={true}
                variant="primary" 
-               className="w-full h-16 text-xl tracking-widest shadow-lg bg-gradient-to-r from-gray-800 to-gray-950 border-gray-700 text-gray-500 mb-4 cursor-not-allowed opacity-80"
+               className="w-full min-h-[4rem] py-3 text-xl tracking-widest shadow-lg bg-gradient-to-r from-gray-800 to-gray-950 border-gray-700 text-gray-500 mb-4 cursor-not-allowed opacity-80"
              >
-               <div className="flex items-center justify-center relative w-full">
-                 <Link className="absolute left-4 h-6 w-6 opacity-30" />
-                 <span className="flex flex-col items-center text-center w-full">
-                   <span>{t("menu.storyMode")}</span>
-                   <span className="text-xs md:text-sm text-gray-600 mt-1">({t("common.comingSoon")})</span>
-                 </span>
-                 <Link className="absolute right-4 h-6 w-6 opacity-30" />
+               <div className="absolute inset-0 flex items-center justify-between px-6">
+                 <Link className="h-6 w-6 opacity-30" />
+                 <Link className="h-6 w-6 opacity-30" />
                </div>
+               <span className="flex flex-col items-center justify-center text-center w-full z-10 py-1">
+                 <span className="leading-tight">{t("menu.storyMode")}</span>
+                 <span className="text-xs md:text-sm text-gray-600 mt-0.5 leading-tight">({t("common.comingSoon")})</span>
+               </span>
              </MenuButton>
           </motion.div>
           <motion.div variants={itemVariants}>
