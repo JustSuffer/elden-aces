@@ -324,7 +324,7 @@ export default function Achievements() {
     <div className="min-h-screen bg-black text-orange relative overflow-x-hidden font-cinzel selection:bg-gold/30 pb-20">
       {/* Background */}
       <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-900/20 via-black to-black -z-50" />
-      <div className="fixed inset-0 bg-[url('/assets/hex-pattern.png')] opacity-5 -z-40" />
+      <div className="fixed inset-0 bg-[url('./assets/hex-pattern.png')] opacity-5 -z-40" />
 
       {/* Header */}
       <header className="sticky top-0 z-50 backdrop-blur-md border-b border-gold/10 bg-black/80">

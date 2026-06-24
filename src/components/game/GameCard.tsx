@@ -76,7 +76,7 @@ export function GameCard({ card, onClick, isPlaceholder = false, className, face
           <div className="absolute inset-0 flex items-center justify-center bg-black">
              {backImage ? (
                <img 
-                 src={backImage.includes(".") ? `/assets/decks/${backImage}` : `/assets/decks/${backImage}.jpg`} 
+                 src={backImage.includes(".") ? `./assets/decks/${backImage}` : `./assets/decks/${backImage}.jpg`} 
                  className="w-full h-full object-cover opacity-80" 
                  alt="Card Back"
                  onError={(e) => {
@@ -84,9 +84,9 @@ export function GameCard({ card, onClick, isPlaceholder = false, className, face
                     if (target.src.endsWith(".jpg")) {
                         target.src = target.src.replace(".jpg", ".jpeg");
                     } else if (target.src.endsWith(".jpeg")) {
-                        target.src = "/assets/decks/Slayer.jpg";
+                        target.src = "./assets/decks/Slayer.jpg";
                     } else {
-                         target.src = "/assets/decks/Slayer.jpg";
+                         target.src = "./assets/decks/Slayer.jpg";
                     }
                  }}
                />

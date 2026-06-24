@@ -468,7 +468,7 @@ const DeckBuilder = () => {
                                   />
                               ) : (
                                   <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-primary/50">
-                                      <img src={`/assets/avatars/${hero.image}`} className="w-full h-full object-cover" />
+                                      <img src={`./assets/avatars/${hero.image}`} className="w-full h-full object-cover" />
                                   </div>
                               )}
                            </div>
@@ -580,7 +580,7 @@ const DeckBuilder = () => {
                       )}
                     >
                        <img 
-                         src={`/assets/decks/${back.image}?v=2`} 
+                         src={`./assets/decks/${back.image}?v=2`} 
                          alt={back.name[language as "tr" | "en"] || back.name["en"]} 
                          className="w-full h-full object-cover"
                          onError={(e) => {
@@ -593,10 +593,10 @@ const DeckBuilder = () => {
                                target.src = currentSrc.replace(".jpg", ".jpeg");
                            } else if (currentSrc.endsWith(".jpeg")) {
                                // Fallback to a KNOWN WORKING shop image to verify path logic
-                               target.src = "/assets/decks/Arid.jpg"; 
+                               target.src = "./assets/decks/Arid.jpg"; 
                                target.style.filter = "grayscale(100%)";
                            } else {
-                                target.src = "/assets/decks/Arid.jpg";
+                                target.src = "./assets/decks/Arid.jpg";
                            }
                          }} 
                        />
@@ -686,7 +686,7 @@ const DeckBuilder = () => {
                    </h3>
                    <div className="w-16 h-24 rounded border border-gold/50 overflow-hidden">
                        <img 
-                          src={`/assets/decks/${cardBack || "Default.jpg"}?v=2`} 
+                          src={`./assets/decks/${cardBack || "Default.jpg"}?v=2`} 
                           className="w-full h-full object-cover"
                           onError={(e) => {
                            const target = e.currentTarget;
@@ -694,7 +694,7 @@ const DeckBuilder = () => {
                            if (target.src.endsWith(".jpg")) {
                                target.src = target.src.replace(".jpg", ".jpeg");
                            } else if (target.src.endsWith(".jpeg")) {
-                               target.src = "/assets/decks/Arid.jpg";
+                               target.src = "./assets/decks/Arid.jpg";
                            }
                          }}
                        />

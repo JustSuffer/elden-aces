@@ -82,7 +82,7 @@ export function GameMenuModal({ open, onOpenChange, onConcede, onResume }: GameM
         <div className="p-8 flex flex-col gap-4 items-center justify-center min-h-[300px] relative">
            
            {/* Background Art */}
-           <div className="absolute inset-0 bg-[url('/assets/card-back-default.png')] opacity-5 pointer-events-none bg-center bg-no-repeat bg-contain" />
+           <div className="absolute inset-0 bg-[url('./assets/card-back-default.png')] opacity-5 pointer-events-none bg-center bg-no-repeat bg-contain" />
 
            {!showOptions ? (
              /* Main Menu */

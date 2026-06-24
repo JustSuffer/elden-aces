@@ -43,7 +43,7 @@ export default function StoryMode() {
         {/* Relative Container matching image size */}
         <div className="relative w-full max-w-[1920px] shadow-2xl border border-gold/20 rounded-lg overflow-hidden group/map">
            <img 
-             src="/assets/world_map.jpg" 
+             src="./assets/world_map.jpg" 
              alt="World Map" 
              className="w-full h-auto block"
            />
@@ -116,7 +116,7 @@ export default function StoryMode() {
               {/* Modal Header with Image/Lore */}
               <div className="relative h-40 md:h-60 border-b border-gold/30 shrink-0">
                  <div className="absolute inset-0 bg-cover bg-center opacity-40 grayscale group-hover:grayscale-0 transition-all"
-                      style={{ backgroundImage: `url('/assets/world_map.jpg')` }} // region specific art would be better
+                      style={{ backgroundImage: `url('./assets/world_map.jpg')` }} // region specific art would be better
                  />
                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/60 to-black" />
                  

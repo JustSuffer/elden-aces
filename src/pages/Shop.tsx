@@ -71,7 +71,7 @@ export default function Shop() {
     <div className="min-h-screen bg-stone-950 flex flex-col md:flex-row font-cinzel text-amber-500 overflow-hidden relative">
       
       {/* Background Texture */}
-      <div className="absolute inset-0 bg-[url('/assets/texture_paper.png')] opacity-20 pointer-events-none mix-blend-overlay" />
+      <div className="absolute inset-0 bg-[url('./assets/texture_paper.png')] opacity-20 pointer-events-none mix-blend-overlay" />
       <div className="absolute inset-0 bg-gradient-to-r from-black via-transparent to-black opacity-80" />
 
       {/* LEFT: Taverner Section */}
@@ -104,7 +104,7 @@ export default function Shop() {
         <div className="relative w-full max-w-sm aspect-square">
             <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-stone-950 to-transparent z-10" />
             <img 
-              src="/assets/taverner.jpg" 
+              src="./assets/taverner.jpg" 
               onError={(e) => e.currentTarget.src = "https://via.placeholder.com/400x400?text=Taverner"}
               alt="Taverner" 
               className="w-full h-full object-cover object-top mask-image-gradient-b drop-shadow-[0_0_50px_rgba(200,100,0,0.2)]"
@@ -166,7 +166,7 @@ export default function Shop() {
                         
                         <div className={`w-56 h-80 rounded-xl shadow-2xl transform group-hover:scale-105 transition-transform duration-500 bg-stone-900 border border-amber-900/30 flex items-center justify-center overflow-hidden relative`}>
                             <img 
-                                src={item.type === 'cardback' ? `/assets/decks/${item.image}` : `/assets/avatars/${item.image}`}
+                                src={item.type === 'cardback' ? `./assets/decks/${item.image}` : `./assets/avatars/${item.image}`}
                                 alt={language === "tr" ? item.name.tr : item.name.en}
                                 className={cn(
                                     "w-full h-full object-contain transition-all duration-500",

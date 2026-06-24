@@ -171,7 +171,7 @@ export default function StoryGame() {
           <DialogHeader className="text-center">
             <div className="w-20 h-20 mx-auto rounded-full bg-slate-800 border-2 border-gold mb-4 overflow-hidden">
               {/* Opponent Avatar */}
-              <img src={`/assets/avatars/${level.opponentClass.toLowerCase()}.jpg`} className="w-full h-full object-cover" />
+              <img src={`./assets/avatars/${level.opponentClass.toLowerCase()}.jpg`} className="w-full h-full object-cover" />
             </div>
             <DialogTitle className="text-2xl text-gold">{getLoc(level.opponentName)}</DialogTitle>
             <DialogDescription className="text-gold/60 text-lg uppercase tracking-widest">{level.opponentClass}</DialogDescription>

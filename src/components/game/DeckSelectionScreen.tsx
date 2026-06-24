@@ -249,11 +249,11 @@ export const DeckSelectionScreen = ({ onStartGame }: DeckSelectionScreenProps) =
                         >
                             <span className="text-xl font-bold flex items-center gap-2" style={{ color: MASTER_CLASSES[cls].color }}>
                                 <img 
-                                  src={`/assets/avatars/${cls.toLowerCase()}.jpg`}
+                                  src={`./assets/avatars/${cls.toLowerCase()}.jpg`}
                                   alt={cls}
                                   className="w-8 h-8 rounded-full border border-current object-cover shadow-sm"
                                   onError={(e) => {
-                                    (e.target as HTMLImageElement).src = "/assets/avatars/vitalist.jpg";
+                                    (e.target as HTMLImageElement).src = "./assets/avatars/vitalist.jpg";
                                   }}
                                 />
                                 {MASTER_CLASSES[cls].symbol}

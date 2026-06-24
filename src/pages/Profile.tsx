@@ -142,7 +142,7 @@ const Profile = () => {
 
   const handleAvatarUpdate = async (className: string) => {
     if (!user) return;
-    const avatarUrl = `/assets/avatars/${className.toLowerCase()}.jpg`;
+    const avatarUrl = `./assets/avatars/${className.toLowerCase()}.jpg`;
 
     const { error } = await supabase
       .from("profiles")
@@ -395,7 +395,7 @@ const Profile = () => {
                 onClick={() => handleAvatarUpdate(cls)}
               >
                 <img
-                  src={`/assets/avatars/${cls.toLowerCase()}.jpg`}
+                  src={`./assets/avatars/${cls.toLowerCase()}.jpg`}
                   alt={cls}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                 />

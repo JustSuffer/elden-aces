@@ -41,7 +41,7 @@ export const CharacterAvatar = ({
       "Augmentor": "augmentor.jpg",
       "Mimic": "mimic.jpg",
     };
-    return `/assets/avatars/${map[c] || "vitalist.jpg"}`;
+    return `./assets/avatars/${map[c] || "vitalist.jpg"}`;
   };
 
   return (

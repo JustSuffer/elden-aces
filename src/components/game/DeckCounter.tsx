@@ -19,7 +19,7 @@ export function DeckCounter({ count, isOpponent = false, className, customImage 
 
   // Determine image source
   // Check if it already has an extension
-  const formatPath = (name: string) => name.includes(".") ? `/assets/decks/${name}` : `/assets/decks/${name}.jpg`;
+  const formatPath = (name: string) => name.includes(".") ? `./assets/decks/${name}` : `./assets/decks/${name}.jpg`;
 
   const imagePath = customImage 
       ? formatPath(customImage)
