@@ -52,7 +52,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 const DeckBuilder = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const { decks: savedDecks, isLoading, isSyncing, saveDeck: cloudSaveDeck, deleteDeck: cloudDeleteDeck } = useCloudDecks();
   
   const [deckName, setDeckName] = useState("");
@@ -190,7 +190,7 @@ const DeckBuilder = () => {
     setCardBack("Slayer.jpg");
     setEditingDeckId(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    toast.success("Deste oluşturucu sıfırlandı!");
+    toast.success(t("deckBuilder.resetToast" as any));
   };
 
   const handleEditDeck = (deck: SavedDeck) => {
@@ -209,11 +209,11 @@ const DeckBuilder = () => {
     
     setEditingDeckId(deck.id);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    toast.info("Deste düzenleme moduna alındı.");
+    toast.info(t("deckBuilder.editToast" as any));
   };
 
   const handleDeleteDeck = async (deckId: string) => {
-    if (confirm("Bu desteyi silmek istediğinize emin misiniz?")) {
+    if (confirm(t("deckBuilder.deleteConfirm" as any))) {
         const success = await cloudDeleteDeck(deckId);
         if (success && editingDeckId === deckId) {
             handleResetDeck();
@@ -224,17 +224,17 @@ const DeckBuilder = () => {
   const handleSaveDeck = async () => {
     const requiredCount = mainClass === "Vessel" ? 4 : 3;
     if (!mainClass || !isHeroSelected || secondaryClasses.length !== requiredCount) {
-      toast.error(`Lütfen tüm adımları tamamlayın!`);
+      toast.error(t("deckBuilder.completeSteps" as any));
       return;
     }
 
     if (savedDecks.length >= 18 && !editingDeckId) {
-        toast.error("Maksimum deste sınırına (18) ulaştınız! Yeni deste oluşturmak için birini silin.");
+        toast.error(t("deckBuilder.maxDecks" as any));
         return;
     }
     
     if (!deckName.trim()) {
-      toast.error("Deste ismi girmelisiniz!");
+      toast.error(t("deckBuilder.nameRequired" as any));
       return;
     }
     
@@ -297,27 +297,27 @@ const DeckBuilder = () => {
        <div className="flex items-center justify-between p-4 border-b border-border sticky top-0 bg-background/95 backdrop-blur z-50">
         <Button variant="ghost" onClick={() => navigate("/")} className="gap-2">
           <ArrowLeft className="w-4 h-4" />
-          Menü
+          {t("deckBuilder.menu" as any)}
         </Button>
         <div className="flex items-center gap-3">
-          <div className="text-xl font-bold text-primary glow-gold font-cinzel">Deste Oluşturucu</div>
+          <div className="text-xl font-bold text-primary glow-gold font-cinzel">{t("deckBuilder.title" as any)}</div>
           {isSyncing && (
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
               <Loader2 className="w-3 h-3 animate-spin" />
-              Syncing...
+              {t("deckBuilder.syncing" as any)}
             </div>
           )}
           {user && !isSyncing && (
             <div className="flex items-center gap-1 text-xs text-green-500">
               <Cloud className="w-3 h-3" />
-              Cloud
+              {t("deckBuilder.cloud" as any)}
             </div>
           )}
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={handleResetDeck} className="gap-2">
             <RotateCcw className="w-4 h-4" />
-            Sıfırla
+            {t("deckBuilder.reset" as any)}
           </Button>
         </div>
       </div>
@@ -327,7 +327,7 @@ const DeckBuilder = () => {
         {savedDecks.length > 0 && (
           <section className="bg-card/50 backdrop-blur-sm border border-primary/30 rounded-lg p-6">
             <h2 className="text-2xl font-bold text-primary glow-gold mb-4 font-cinzel">
-              Kayıtlı Desteler ({savedDecks.length}/18)
+              {t("deckBuilder.savedDecks" as any)} ({savedDecks.length}/18)
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {savedDecks.map((deck) => {
@@ -390,10 +390,10 @@ const DeckBuilder = () => {
          {/* Step 1: Main Class - Unchanged */}
          <section className="bg-card/50 backdrop-blur-sm border border-primary/30 rounded-lg p-6 animate-in slide-in-from-left duration-500">
            <h2 className="text-2xl font-bold text-primary glow-gold mb-4 font-cinzel">
-             1. ANA SINIF SEÇ
+             {t("deckBuilder.step1" as any)}
            </h2>
            <p className="text-muted-foreground mb-4">
-             Ana sınıfın yeteneklerini, kazanma koşullarını ve başlangıç HP'ni belirler.
+             {t("deckBuilder.step1Desc" as any)}
            </p>
            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
              {ALL_CLASSES.map((className) => {
@@ -432,7 +432,7 @@ const DeckBuilder = () => {
                className="bg-card/50 backdrop-blur-sm border border-primary/30 rounded-lg p-6 animate-in fade-in zoom-in duration-500 scroll-mt-24"
              >
                <h2 className="text-2xl font-bold text-primary glow-gold mb-4 font-cinzel">
-                 2. KAHRAMAN SEÇ
+                 {t("deckBuilder.step2" as any)}
                </h2>
                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                   {availableHeroes.map(hero => {
@@ -442,8 +442,8 @@ const DeckBuilder = () => {
                          <button 
                            key={hero.id}
                            onClick={() => {
-                               if (hero.isLocked) {
-                                   toast.error(language === "tr" ? "Bu kahramanı Mağaza'dan açmalısınız!" : "You must unlock this hero in the Shop!");
+                                if (hero.isLocked) {
+                                    toast.error(t("deckBuilder.heroLockedToast" as any));
                                    return;
                                }
                                setSelectedHeroId(hero.id);
@@ -503,7 +503,7 @@ const DeckBuilder = () => {
              className="bg-card/50 backdrop-blur-sm border border-primary/30 rounded-lg p-6 animate-in slide-in-from-bottom duration-500 scroll-mt-24"
            >
              <h2 className="text-2xl font-bold text-primary glow-gold mb-4 font-cinzel">
-               3. YARDIMCI SINIFLAR ({mainClass === "Vessel" ? "4" : "3"} ADET)
+               {t("deckBuilder.step3" as any)} ({mainClass === "Vessel" ? "4" : "3"})
              </h2>
              <div className="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-5 gap-3">
                {availableSecondary.map((className) => {
@@ -538,7 +538,7 @@ const DeckBuilder = () => {
                        {classData.symbol}
                      </div>
                      <div className="text-sm font-bold text-foreground">{className}</div>
-                     <div className="text-xs text-muted-foreground">6 kart (1-6)</div>
+                      <div className="text-xs text-muted-foreground">{t("deckBuilder.cardsLabel" as any)}</div>
                    </button>
                  );
                })}
@@ -550,10 +550,10 @@ const DeckBuilder = () => {
          {mainClass && isHeroSelected && secondaryClasses.length === (mainClass === "Vessel" ? 4 : 3) && (
            <section className="bg-card/50 backdrop-blur-sm border border-primary/30 rounded-lg p-6 animate-in slide-in-from-bottom duration-500 delay-200">
               <h2 className="text-2xl font-bold text-primary glow-gold mb-4 font-cinzel">
-                4. KART ARKASI SEÇ
+                 {t("deckBuilder.step4" as any)}
               </h2>
               <p className="text-muted-foreground mb-4">
-                Destenizde kullanılacak kart arkası görünümünü seçin. Kilitli olanları <span className="text-amber-500">Shop</span>'tan satın alabilirsiniz.
+                 {t("deckBuilder.step4Desc" as any)} <span className="text-amber-500">{t("deckBuilder.shop" as any)}</span>.
               </p>
               
               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
@@ -562,7 +562,7 @@ const DeckBuilder = () => {
                       key={back.id}
                       onClick={() => {
                         if (back.isLocked) {
-                          toast.error(language === "tr" ? "Bu kart arkasını Mağaza'dan satın almalısınız!" : "You must purchase this card back from the Shop!");
+                          toast.error(t("deckBuilder.backLockedToast" as any));
                           return;
                         }
                         setCardBack(back.image);
@@ -630,15 +630,15 @@ const DeckBuilder = () => {
               {/* Save Area */}
              <section className="bg-card/90 backdrop-blur border border-primary rounded-lg p-6 shadow-2xl shadow-primary/10 sticky bottom-4 z-40">
                <h2 className="text-2xl font-bold text-primary glow-gold mb-4 font-cinzel">
-                 {editingDeckId ? "DESTE YENİLE" : "DESTEYİ KAYDET"}
+                  {editingDeckId ? t("deckBuilder.updateDeck" as any) : t("deckBuilder.saveDeck" as any)}
                </h2>
                <div className="flex flex-col md:flex-row gap-4 items-end">
                  <div className="flex-1 w-full">
-                   <label className="text-sm text-yellow-500/80 mb-2 block uppercase tracking-wider font-bold">Deste İsmi</label>
+                    <label className="text-sm text-yellow-500/80 mb-2 block uppercase tracking-wider font-bold">{t("deckBuilder.deckName" as any)}</label>
                    <Input
                      value={deckName}
                      onChange={(e) => setDeckName(e.target.value)}
-                     placeholder="Örn: Efsanevi Deste"
+                      placeholder={t("deckBuilder.deckNamePlaceholder" as any)}
                      className="bg-black/50 border-gold/30 text-lg h-12"
                    />
                  </div>
@@ -649,7 +649,7 @@ const DeckBuilder = () => {
                    disabled={isLoading}
                  >
                    <Save className="w-5 h-5" />
-                   {isLoading ? "KAYDEDİLİYOR..." : (editingDeckId ? "GÜNCELLE" : "KAYDET")}
+                    {isLoading ? t("deckBuilder.saving" as any) : (editingDeckId ? t("deckBuilder.update" as any) : t("deckBuilder.save" as any))}
                  </Button>
                </div>
              </section>
@@ -661,10 +661,10 @@ const DeckBuilder = () => {
                      {MASTER_CLASSES[mainClass].symbol}
                    </div>
                    <h3 className="text-lg font-bold font-cinzel text-foreground">
-                     {mainClass} Kartları
+                      {t("deckBuilder.classCards" as any, { className: mainClass })}
                    </h3>
                    <div className="text-sm text-yellow-500/80 font-mono tracking-wider">
-                     {mainClass === "Mimic" ? "12 Adet (Çift)" : "6 Adet (1-6)"}
+                      {mainClass === "Mimic" ? t("deckBuilder.mimicCount" as any) : t("deckBuilder.normalCount" as any)}
                    </div>
                 </section>
 
@@ -673,16 +673,16 @@ const DeckBuilder = () => {
                      ★
                    </div>
                    <h3 className="text-lg font-bold font-cinzel text-foreground">
-                     Özel Kartlar
+                      {t("deckBuilder.specialCards" as any)}
                    </h3>
                    <div className="text-sm text-yellow-500/80 font-mono tracking-wider">
-                     6 Adet (Twisted, Deflate, Delta, Sigma)
+                      {t("deckBuilder.specialCount" as any)}
                    </div>
                 </section>
                 
                 <section className="bg-black/40 border border-primary/30 p-4 rounded-lg text-center flex flex-col items-center justify-center gap-2 group hover:border-primary transition-colors">
                    <h3 className="text-lg font-bold font-cinzel text-foreground mb-1">
-                     Seçilen Kart Arkası
+                      {t("deckBuilder.selectedBack" as any)}
                    </h3>
                    <div className="w-16 h-24 rounded border border-gold/50 overflow-hidden">
                        <img 
@@ -715,7 +715,7 @@ const DeckBuilder = () => {
                       {className}
                    </h3>
                    <div className="text-xs text-muted-foreground font-mono">
-                     6 Adet (1-6)
+                      {t("deckBuilder.cardsLabel" as any)}
                    </div>
                  </section>
                ))}
