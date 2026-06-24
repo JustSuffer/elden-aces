@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { translations, Language } from "@/lib/translations";
 
 export function useLanguage() {
-  const [language, setLanguage] = useState<Language>("tr"); // Default to Turkish
+  const [language, setLanguage] = useState<Language>("en"); // Default to English for first-time users
 
   useEffect(() => {
     const stored = localStorage.getItem("acoria-lang") as Language;
