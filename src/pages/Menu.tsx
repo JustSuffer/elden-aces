@@ -2,7 +2,7 @@ import { MenuButton } from "@/components/ui/menu-button";
 import logo from "@/assets/acoria-logo.png";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { LogOut, Trophy, X, Monitor, Map, Users, Coins, Store, Award, Scroll } from "lucide-react";
+import { LogOut, Trophy, X, Monitor, Map, Users, Coins, Store, Award, Scroll, Link } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -40,6 +40,9 @@ const Menu = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [showMissions, setShowMissions] = useState(false);
   const [dontShowAgain, setDontShowAgain] = useState(false);
+  const [hasSeenHowToPlay, setHasSeenHowToPlay] = useState(
+    localStorage.getItem("acoria_has_seen_how_to_play") === "true"
+  );
 
   useEffect(() => {
     const saved = localStorage.getItem("acoria_f11_reminder_hidden");
@@ -281,14 +284,18 @@ const Menu = () => {
             animate="show"
             className="flex flex-col space-y-4 w-full max-w-lg"
         >
+          <div className={!hasSeenHowToPlay ? "opacity-50 pointer-events-none grayscale transition-all duration-500" : "transition-all duration-500"}>
           <motion.div variants={itemVariants}>
              <MenuButton 
-               onClick={() => navigate("/story-mode")} 
+               disabled={true}
                variant="primary" 
-               className="w-full h-16 text-xl tracking-widest shadow-lg shadow-purple-900/40 bg-gradient-to-r from-purple-950 to-indigo-950 border-purple-500/50 text-purple-200 mb-4 hover:shadow-purple-500/20 hover:scale-[1.02] transition-all"
+               className="w-full h-16 text-xl tracking-widest shadow-lg bg-gradient-to-r from-gray-800 to-gray-950 border-gray-700 text-gray-500 mb-4 cursor-not-allowed opacity-80"
              >
-               <Map className="mr-2 h-6 w-6 animate-pulse" />
-               {t("menu.storyMode")}
+               <div className="flex items-center justify-center relative w-full">
+                 <Link className="absolute left-4 h-6 w-6 opacity-30" />
+                 <span>{t("menu.storyMode")} <span className="text-xs md:text-sm block text-gray-600 mt-1">(COMING SOON)</span></span>
+                 <Link className="absolute right-4 h-6 w-6 opacity-30" />
+               </div>
              </MenuButton>
           </motion.div>
           <motion.div variants={itemVariants}>
@@ -333,16 +340,32 @@ const Menu = () => {
                  </MenuButton>
               </motion.div>
           </div>
+          </div>
 
-          <motion.div variants={itemVariants} className="grid grid-cols-5 gap-3 pt-2">
-             <MenuButton onClick={() => navigate("/credits")} className="h-10 text-xs px-1 border-white/20 hover:border-white/40">{t("menu.team")}</MenuButton>
-             <MenuButton onClick={() => navigate("/how-to-play")} className="h-10 text-xs px-1 border-white/20 hover:border-white/40">{t("menu.howToPlay")}</MenuButton>
-             <MenuButton onClick={() => navigate("/tutorial")} className="h-10 text-xs px-1 border-white/20 hover:border-white/40">{t("menu.tutorial")}</MenuButton>
-             <MenuButton onClick={() => navigate("/friends")} className="h-10 text-xs px-1 border-green-500/30 hover:border-green-500/60 flex items-center justify-center gap-1">
-               
+          <motion.div variants={itemVariants} className="flex flex-wrap justify-center items-center gap-3 pt-2">
+             <MenuButton disabled={!hasSeenHowToPlay} onClick={() => navigate("/credits")} className={`h-10 text-xs px-2 border-white/20 hover:border-white/40 ${!hasSeenHowToPlay ? 'opacity-50 pointer-events-none' : ''}`}>{t("menu.team")}</MenuButton>
+             
+             <div className="relative">
+               {!hasSeenHowToPlay && (
+                 <div className="absolute -inset-2 bg-amber-500/20 rounded-lg blur-xl animate-pulse" />
+               )}
+               <MenuButton 
+                 onClick={() => {
+                   localStorage.setItem("acoria_has_seen_how_to_play", "true");
+                   setHasSeenHowToPlay(true);
+                   navigate("/how-to-play");
+                 }} 
+                 className={`h-10 text-xs px-4 border-white/20 transition-all duration-300 ${!hasSeenHowToPlay ? 'border-amber-400 bg-amber-900/40 text-amber-300 scale-110 shadow-[0_0_15px_rgba(251,191,36,0.6)] relative z-50 hover:bg-amber-800/60' : 'hover:border-white/40'}`}
+               >
+                 {t("menu.howToPlay")}
+               </MenuButton>
+             </div>
+
+             <MenuButton disabled={!hasSeenHowToPlay} onClick={() => navigate("/tutorial")} className={`h-10 text-xs px-2 border-white/20 hover:border-white/40 ${!hasSeenHowToPlay ? 'opacity-50 pointer-events-none' : ''}`}>{t("menu.tutorial")}</MenuButton>
+             <MenuButton disabled={!hasSeenHowToPlay} onClick={() => navigate("/friends")} className={`h-10 text-xs px-2 border-green-500/30 hover:border-green-500/60 flex items-center justify-center gap-1 ${!hasSeenHowToPlay ? 'opacity-50 pointer-events-none' : ''}`}>
                {t("menu.friends")}
              </MenuButton>
-             <MenuButton onClick={() => navigate("/leaderboard")} className="h-10 text-xs px-1 border-primary/30 hover:border-primary/60 flex items-center justify-center gap-1">
+             <MenuButton disabled={!hasSeenHowToPlay} onClick={() => navigate("/leaderboard")} className={`h-10 text-xs px-2 border-primary/30 hover:border-primary/60 flex items-center justify-center gap-1 ${!hasSeenHowToPlay ? 'opacity-50 pointer-events-none' : ''}`}>
                <Trophy className="w-3 h-3" />
                ELO
              </MenuButton>
