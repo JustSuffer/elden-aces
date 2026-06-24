@@ -284,7 +284,7 @@ const Menu = () => {
             animate="show"
             className="flex flex-col space-y-4 w-full max-w-lg"
         >
-          <div className={!hasSeenHowToPlay ? "opacity-50 pointer-events-none grayscale transition-all duration-500" : "transition-all duration-500"}>
+          <div className={!hasSeenHowToPlay ? "flex flex-col space-y-4 w-full opacity-50 pointer-events-none grayscale transition-all duration-500" : "flex flex-col space-y-4 w-full transition-all duration-500"}>
           <motion.div variants={itemVariants}>
              <MenuButton 
                disabled={true}
