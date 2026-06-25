@@ -8,6 +8,7 @@ import { ArrowLeft } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
+import { lovable } from "@/integrations/lovable";
 import logo from "@/assets/acoria-logo.png";
 
 const Auth = () => {
@@ -15,6 +16,20 @@ const Auth = () => {
   const [searchParams] = useSearchParams();
   const { user, signIn, signUp, loading: authLoading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+
+  const handleGoogleSignIn = async () => {
+    setIsLoading(true);
+    const result = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin,
+    });
+    if (result.error) {
+      setIsLoading(false);
+      toast.error(result.error.message || "Google ile giriş başarısız");
+      return;
+    }
+    if (result.redirected) return;
+    navigate("/menu");
+  };
 
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
