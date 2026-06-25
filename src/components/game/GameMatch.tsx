@@ -295,19 +295,28 @@ export const GameMatch = ({
     console.log("[GameMatch] Placement timeout -> auto submit", { round: gameState.round });
     toast.warning("Süre doldu! Hamlen otomatik gönderiliyor.");
 
-    const placed = gameState.playerField.filter((c) => c !== null).length;
+    // Build the final field synchronously so we don't read stale state.
+    // If nothing was placed, auto-place the first card from hand into the first empty slot
+    // (so the opponent doesn't have to wait forever for a player who AFK'd).
+    const finalField: (Card | null)[] = [...gameState.playerField];
+    const placed = finalField.filter((c) => c !== null).length;
     if (placed < 1 && gameState.playerHand.length > 0) {
-      const empty = gameState.playerField.findIndex((c) => c === null);
+      const empty = finalField.findIndex((c) => c === null);
       if (empty !== -1) {
+        finalField[empty] = gameState.playerHand[0];
+        // Mirror in local game state for the visual reveal animation
         placeCard(0, empty);
-        setTimeout(() => {
-          void handleEndPlacement();
-        }, 150);
-        return;
       }
     }
 
-    void handleEndPlacement();
+    // Bypass handleEndPlacement's "minCards" guard — on timeout we MUST submit
+    // whatever the player currently has on the field (even if empty) so the
+    // round can resolve and the match doesn't hang on the other client.
+    endPlacement();
+    AudioManager.play("card-flip", 0.7);
+    if (onMovesReady) {
+      void onMovesReady(finalField);
+    }
   }, [
     isOnline,
     gameState.phase,
@@ -316,6 +325,8 @@ export const GameMatch = ({
     gameState.playerField,
     gameState.playerHand.length,
     placeCard,
+    endPlacement,
+    onMovesReady,
   ]);
 
   const addVfx = (type: "gamma" | "twisted" | "delta-sigma-transform", slotIndex: number) => {
