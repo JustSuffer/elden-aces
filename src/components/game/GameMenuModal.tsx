@@ -5,16 +5,25 @@ import { Settings, Maximize, Minimize, Sun, Flag, Play, X } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/hooks/useLanguage";
+import { getTrixEnabled, setTrixEnabled as persistTrix } from "@/hooks/useTrixAdvisor";
+import trixAsset from "@/assets/trix-mascot.png.asset.json";
 
 interface GameMenuModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConcede: () => void;
   onResume: () => void; // Usually same as closing
+  showTrixToggle?: boolean;
 }
 
-export function GameMenuModal({ open, onOpenChange, onConcede, onResume }: GameMenuModalProps) {
+export function GameMenuModal({ open, onOpenChange, onConcede, onResume, showTrixToggle = false }: GameMenuModalProps) {
   const { language } = useLanguage();
+  const [trixOn, setTrixOnState] = useState<boolean>(() => getTrixEnabled());
+  const toggleTrix = () => {
+    const next = !trixOn;
+    setTrixOnState(next);
+    persistTrix(next);
+  };
   
   const strings = {
     title: {tr: "OYUN MENÜSÜ", en: "GAME MENU"},
@@ -101,7 +110,28 @@ export function GameMenuModal({ open, onOpenChange, onConcede, onResume }: GameM
                 />
                 
                 <div className="w-full h-[1px] bg-amber-600/20 my-2" />
-                
+
+                {showTrixToggle && (
+                  <Button
+                    variant="outline"
+                    onClick={toggleTrix}
+                    className="w-full h-14 justify-between px-6 border-2 bg-black/40 border-amber-600/30 hover:bg-amber-600/10 hover:border-amber-500 text-amber-300 font-cinzel"
+                  >
+                    <span className="flex items-center gap-3">
+                      <img src={trixAsset.url} alt="Trix" className="w-7 h-7 rounded-full object-cover border border-amber-500/70" />
+                      <span className="text-sm md:text-base font-bold tracking-wider">
+                        {language === "tr" ? "Öğretici Modu: Trix" : "Tutorial: Trix"}
+                      </span>
+                    </span>
+                    <span className={cn(
+                      "px-3 py-1 rounded-full text-xs font-bold tracking-widest border",
+                      trixOn ? "bg-amber-500/20 border-amber-400 text-amber-200 shadow-[0_0_10px_rgba(245,158,11,0.5)]" : "bg-stone-800/60 border-stone-600 text-stone-400"
+                    )}>
+                      {trixOn ? "ON" : "OFF"}
+                    </span>
+                  </Button>
+                )}
+
                 <MenuButton 
                   icon={<Flag className="w-5 h-5" />} 
                   label={txt("concede")} 
