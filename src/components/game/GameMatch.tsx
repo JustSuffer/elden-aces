@@ -1180,6 +1180,7 @@ export const GameMatch = ({
         <GameMenuModal 
           open={showMenu} 
           onOpenChange={setShowMenu}
+          showTrixToggle={enableTrix}
           onResume={() => setShowMenu(false)}
           onConcede={async () => {
              setShowMenu(false);
