@@ -42,6 +42,8 @@ interface Match {
     player1_deck_count?: number;
     player2_deck_count?: number;
   };
+  player1_state?: any | null;
+  player2_state?: any | null;
 }
 
 // Basic Error Boundary for catching render crashes
@@ -119,6 +121,10 @@ const OnlineGame = () => {
   
   // Opponent deck count for real-time tracking
   const [opponentDeckCount, setOpponentDeckCount] = useState<number | undefined>(undefined);
+
+  // Snapshot restoration for refresh/reconnect (online)
+  const [restoredState, setRestoredState] = useState<any | null>(null);
+  const restoreLoadedRef = useRef(false);
   
   // Stats for ELO calculation
   const [potentialLpChange, setPotentialLpChange] = useState<{win: number, lose: number, draw: number} | null>(null);
@@ -185,10 +191,21 @@ const OnlineGame = () => {
       setMatch(data);
       setCurrentRound(data.current_round || 1);
       
+      const isP1 = user.id === data.player1_id;
+
+      // ---- Restore my snapshot if present (refresh / reconnect) ----
+      if (!restoreLoadedRef.current) {
+        const mySnapshot = isP1 ? (data as any).player1_state : (data as any).player2_state;
+        if (mySnapshot && typeof mySnapshot === "object") {
+          console.log("[OnlineGame] Restoring local game state from snapshot for round:", mySnapshot.round);
+          setRestoredState(mySnapshot);
+        }
+        restoreLoadedRef.current = true;
+      }
+
       // Initialize opponent deck count based on their deck size and current round
       // Standard deck is 36 cards, initial hand is 6, so deck starts at 30
       // Each round draws 5 cards (approximately)
-      const isP1 = user.id === data.player1_id;
       const oppDeck = isP1 ? data.player2_deck : data.player1_deck;
       const initialDeckCount = (oppDeck?.cards?.length || 36) - 6; // After initial hand
       const estimatedCardsUsed = ((data.current_round || 1) - 1) * 5;
@@ -789,6 +806,21 @@ const OnlineGame = () => {
      handleGameEnd(winnerId, result === "win" ? 40 : 0, result === "win" ? 0 : 40, isSurrender);
   }, [match, user, isPlayer1, handleGameEnd, updateProgress]);
 
+  // Persist a per-round snapshot of local GameState (online refresh/reconnect support).
+  // We write only OUR side; opponent writes their own. Trigger does not validate this column.
+  const handleSnapshot = useCallback((state: any) => {
+    if (!match || !user) return;
+    const column = isPlayer1 ? "player1_state" : "player2_state";
+    // Fire-and-forget; never block the game loop on this.
+    void supabase
+      .from("matches" as any)
+      .update({ [column]: state } as any)
+      .eq("id", match.id)
+      .then(({ error }) => {
+        if (error) console.warn("[OnlineGame] Snapshot save failed:", error);
+      });
+  }, [match, user, isPlayer1]);
+
   // Navigate to new rematch
   useEffect(() => {
     if (rematchState.newMatchId) {
@@ -940,6 +972,8 @@ const OnlineGame = () => {
           onGameEnd={handleMatchEnd}
           lpChange={potentialLpChange}
           opponentSurrendered={opponentSurrendered}
+          restoredState={restoredState}
+          onSnapshot={handleSnapshot}
         />
       ) : gameStarted ? (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm z-40">

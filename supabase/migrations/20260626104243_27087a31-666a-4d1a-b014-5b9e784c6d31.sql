@@ -1,0 +1,3 @@
+ALTER TABLE public.matches
+  ADD COLUMN IF NOT EXISTS player1_state JSONB,
+  ADD COLUMN IF NOT EXISTS player2_state JSONB;

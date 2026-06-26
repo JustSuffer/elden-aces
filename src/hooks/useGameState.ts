@@ -63,6 +63,8 @@ interface GameInitParams {
   opponentClass: ClassName;
   opponentDeck?: Card[]; // For Online PvP
   isOnline?: boolean;
+  // Optional: restore from a previously-saved snapshot (online reconnect/refresh)
+  restoredState?: GameState | null;
 }
 
 // Generate bot deck based on class
@@ -130,6 +132,33 @@ function createBotDeck(className: ClassName): Card[] {
 
 export function useGameState(initParams?: GameInitParams) {
   const [gameState, setGameState] = useState<GameState>(() => {
+    // ---- Restore from snapshot (online refresh / reconnect) ----
+    if (initParams?.restoredState) {
+      try {
+        const r = initParams.restoredState;
+        // Defensive: ensure required arrays exist with correct shape
+        return {
+          ...r,
+          playerField: Array.isArray(r.playerField) && r.playerField.length === 5 ? r.playerField : [null, null, null, null, null],
+          opponentField: Array.isArray(r.opponentField) && r.opponentField.length === 5 ? r.opponentField : [null, null, null, null, null],
+          playerHand: Array.isArray(r.playerHand) ? r.playerHand : [],
+          opponentHand: Array.isArray(r.opponentHand) ? r.opponentHand : [],
+          playerDeck: Array.isArray(r.playerDeck) ? r.playerDeck : [],
+          opponentDeck: Array.isArray(r.opponentDeck) ? r.opponentDeck : [],
+          // On restore, always reset to placement so user can act on the current round
+          phase: "placement",
+          damageResult: null,
+          pendingDiceResult: null,
+          cardSelectionMode: false,
+          // Fresh timer on reconnect
+          timeLeft: initParams?.isOnline ? 60 : 45,
+          isOnline: !!initParams?.isOnline,
+        };
+      } catch (e) {
+        console.error("[useGameState] Failed to restore from snapshot, falling back to fresh init:", e);
+      }
+    }
+
     let pClass = initParams?.playerDeck.mainClass || "Vitalist";
     const oClass = initParams?.opponentClass || "Slayer";
 
