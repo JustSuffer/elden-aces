@@ -8,6 +8,8 @@ import { CardSelectionPopup } from "@/components/game/CardSelectionPopup";
 import { VfxLayer, VfxEffect } from "@/components/game/VfxLayer";
 import { KnifeBar } from "@/components/game/KnifeBar";
 import { GameMenuModal } from "@/components/game/GameMenuModal";
+import { TrixMascot } from "@/components/game/TrixMascot";
+import { useTrixAdvisor, getTrixEnabled } from "@/hooks/useTrixAdvisor";
 import { Button } from "@/components/ui/button";
 import { useGameState } from "@/hooks/useGameState";
 import { useNavigate } from "react-router-dom";
@@ -66,6 +68,9 @@ interface GameMatchProps {
   restoredState?: any | null;
   // Online: persist a per-round snapshot of local GameState
   onSnapshot?: (state: any) => void;
+
+  // Enables in-game tutorial mascot Trix (only used in bot/PvE arena)
+  enableTrix?: boolean;
 }
 
 import { TUTORIAL_SCRIPT, TutorialStep } from "@/data/tutorialData";
@@ -91,6 +96,7 @@ export const GameMatch = ({
   opponentSurrendered = false,
   restoredState,
   onSnapshot,
+  enableTrix = false,
 }: GameMatchProps) => {
   const navigate = useNavigate();
   const { t, language } = useLanguage();
@@ -103,6 +109,23 @@ export const GameMatch = ({
   const [winConAnimationType, setWinConAnimationType] = useState<string | null>(null);
   const [isSurrendered, setIsSurrendered] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+
+  // Trix tutorial mascot toggle (persisted in localStorage)
+  const [trixOn, setTrixOn] = useState<boolean>(() => getTrixEnabled());
+  useEffect(() => {
+    const onToggle = (e: Event) => setTrixOn(!!(e as CustomEvent).detail);
+    window.addEventListener("trix-toggle", onToggle as EventListener);
+    return () => window.removeEventListener("trix-toggle", onToggle as EventListener);
+  }, []);
+  const trixActive = enableTrix && trixOn;
+
+  const trixAdvice = useTrixAdvisor(
+    gameState ? gameState.playerHand : [],
+    gameState?.playerClass ?? ("Vitalist" as any),
+    gameState?.opponentClass ?? ("Slayer" as any),
+    gameState?.phase ?? "",
+    (language as "tr" | "en") || "en"
+  );
 
   // Online: prevent local round from advancing before server confirmation (fixes 1-round delay / wrong cards)
   const [requestedNextRoundFor, setRequestedNextRoundFor] = useState<number | null>(null);
