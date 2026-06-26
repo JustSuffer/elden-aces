@@ -221,6 +221,7 @@ export type Database = {
           player1_id: string
           player1_next_round_ready: boolean | null
           player1_ready: boolean | null
+          player1_state: Json | null
           player2_deck: Json
           player2_field: Json | null
           player2_field_round: number | null
@@ -228,6 +229,7 @@ export type Database = {
           player2_id: string
           player2_next_round_ready: boolean | null
           player2_ready: boolean | null
+          player2_state: Json | null
           status: string
           updated_at: string
           winner_id: string | null
@@ -247,6 +249,7 @@ export type Database = {
           player1_id: string
           player1_next_round_ready?: boolean | null
           player1_ready?: boolean | null
+          player1_state?: Json | null
           player2_deck: Json
           player2_field?: Json | null
           player2_field_round?: number | null
@@ -254,6 +257,7 @@ export type Database = {
           player2_id: string
           player2_next_round_ready?: boolean | null
           player2_ready?: boolean | null
+          player2_state?: Json | null
           status?: string
           updated_at?: string
           winner_id?: string | null
@@ -273,6 +277,7 @@ export type Database = {
           player1_id?: string
           player1_next_round_ready?: boolean | null
           player1_ready?: boolean | null
+          player1_state?: Json | null
           player2_deck?: Json
           player2_field?: Json | null
           player2_field_round?: number | null
@@ -280,6 +285,7 @@ export type Database = {
           player2_id?: string
           player2_next_round_ready?: boolean | null
           player2_ready?: boolean | null
+          player2_state?: Json | null
           status?: string
           updated_at?: string
           winner_id?: string | null
