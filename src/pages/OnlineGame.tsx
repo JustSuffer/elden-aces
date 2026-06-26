@@ -42,6 +42,8 @@ interface Match {
     player1_deck_count?: number;
     player2_deck_count?: number;
   };
+  player1_state?: any | null;
+  player2_state?: any | null;
 }
 
 // Basic Error Boundary for catching render crashes
@@ -119,6 +121,10 @@ const OnlineGame = () => {
   
   // Opponent deck count for real-time tracking
   const [opponentDeckCount, setOpponentDeckCount] = useState<number | undefined>(undefined);
+
+  // Snapshot restoration for refresh/reconnect (online)
+  const [restoredState, setRestoredState] = useState<any | null>(null);
+  const restoreLoadedRef = useRef(false);
   
   // Stats for ELO calculation
   const [potentialLpChange, setPotentialLpChange] = useState<{win: number, lose: number, draw: number} | null>(null);
@@ -185,10 +191,20 @@ const OnlineGame = () => {
       setMatch(data);
       setCurrentRound(data.current_round || 1);
       
+      // ---- Restore my snapshot if present (refresh / reconnect) ----
+      if (!restoreLoadedRef.current) {
+        const mySnapshot = isP1 ? (data as any).player1_state : (data as any).player2_state;
+        if (mySnapshot && typeof mySnapshot === "object") {
+          console.log("[OnlineGame] Restoring local game state from snapshot for round:", mySnapshot.round);
+          setRestoredState(mySnapshot);
+        }
+        restoreLoadedRef.current = true;
+      }
+
       // Initialize opponent deck count based on their deck size and current round
       // Standard deck is 36 cards, initial hand is 6, so deck starts at 30
       // Each round draws 5 cards (approximately)
-      const isP1 = user.id === data.player1_id;
+      // (isP1 already computed above)
       const oppDeck = isP1 ? data.player2_deck : data.player1_deck;
       const initialDeckCount = (oppDeck?.cards?.length || 36) - 6; // After initial hand
       const estimatedCardsUsed = ((data.current_round || 1) - 1) * 5;
