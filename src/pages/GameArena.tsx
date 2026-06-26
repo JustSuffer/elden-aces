@@ -116,6 +116,7 @@ export default function GameArena() {
       <GameMatch 
         playerDeck={deck}
         opponentClass={opponentClass}
+        enableTrix={true}
         onGameEnd={(result, isSurrender, stats) => handleGameEnd(result, isSurrender, stats)} 
       />
     </SafeErrorBoundary>
