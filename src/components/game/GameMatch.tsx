@@ -1201,6 +1201,10 @@ export const GameMatch = ({
         />
 
       </div>
+      {/* Trix Tutorial Mascot */}
+      {trixActive && (
+        <TrixMascot message={trixAdvice.message} hasSuggestion={gameState.phase === "placement" && trixAdvice.suggestedIds.size > 0} />
+      )}
       {/* Tutorial Overlay */}
       {isTutorial && currentTutorialStep && (
         <TutorialOverlay 
