@@ -445,6 +445,15 @@ export const GameMatch = ({
   const playerClassData = MASTER_CLASSES[gameState.playerClass];
   const opponentClassData = MASTER_CLASSES[gameState.opponentClass];
 
+  const trixActive = enableTrix && trixOn;
+  const trixAdvice = useTrixAdvisor(
+    gameState.playerHand,
+    gameState.playerClass,
+    gameState.opponentClass,
+    gameState.phase,
+    (language as "tr" | "en") || "en"
+  );
+
   // Check for win condition animations
   useEffect(() => {
     if (gameState.phase === "end") {
