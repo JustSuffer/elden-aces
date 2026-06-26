@@ -191,6 +191,8 @@ const OnlineGame = () => {
       setMatch(data);
       setCurrentRound(data.current_round || 1);
       
+      const isP1 = user.id === data.player1_id;
+
       // ---- Restore my snapshot if present (refresh / reconnect) ----
       if (!restoreLoadedRef.current) {
         const mySnapshot = isP1 ? (data as any).player1_state : (data as any).player2_state;
@@ -204,7 +206,6 @@ const OnlineGame = () => {
       // Initialize opponent deck count based on their deck size and current round
       // Standard deck is 36 cards, initial hand is 6, so deck starts at 30
       // Each round draws 5 cards (approximately)
-      // (isP1 already computed above)
       const oppDeck = isP1 ? data.player2_deck : data.player1_deck;
       const initialDeckCount = (oppDeck?.cards?.length || 36) - 6; // After initial hand
       const estimatedCardsUsed = ((data.current_round || 1) - 1) * 5;
