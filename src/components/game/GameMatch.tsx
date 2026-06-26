@@ -935,6 +935,7 @@ export const GameMatch = ({
                         disabled={!canPlaceCards || gameState.phase !== "placement"}
                         onTap={() => handleTapToPlace(i)}
                         dragEnabled={gameState.phase === "placement"}
+                        highlight={trixActive && trixAdvice.suggestedIds.has(card.id)}
                       />
                     ))}
                   </div>
