@@ -806,6 +806,21 @@ const OnlineGame = () => {
      handleGameEnd(winnerId, result === "win" ? 40 : 0, result === "win" ? 0 : 40, isSurrender);
   }, [match, user, isPlayer1, handleGameEnd, updateProgress]);
 
+  // Persist a per-round snapshot of local GameState (online refresh/reconnect support).
+  // We write only OUR side; opponent writes their own. Trigger does not validate this column.
+  const handleSnapshot = useCallback((state: any) => {
+    if (!match || !user) return;
+    const column = isPlayer1 ? "player1_state" : "player2_state";
+    // Fire-and-forget; never block the game loop on this.
+    void supabase
+      .from("matches" as any)
+      .update({ [column]: state } as any)
+      .eq("id", match.id)
+      .then(({ error }) => {
+        if (error) console.warn("[OnlineGame] Snapshot save failed:", error);
+      });
+  }, [match, user, isPlayer1]);
+
   // Navigate to new rematch
   useEffect(() => {
     if (rematchState.newMatchId) {
@@ -957,6 +972,8 @@ const OnlineGame = () => {
           onGameEnd={handleMatchEnd}
           lpChange={potentialLpChange}
           opponentSurrendered={opponentSurrendered}
+          restoredState={restoredState}
+          onSnapshot={handleSnapshot}
         />
       ) : gameStarted ? (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm z-40">
