@@ -61,6 +61,11 @@ interface GameMatchProps {
 
   // Opponent surrendered (online)
   opponentSurrendered?: boolean;
+
+  // Online: restore snapshot taken at start of a round (refresh/reconnect)
+  restoredState?: any | null;
+  // Online: persist a per-round snapshot of local GameState
+  onSnapshot?: (state: any) => void;
 }
 
 import { TUTORIAL_SCRIPT, TutorialStep } from "@/data/tutorialData";
@@ -83,7 +88,9 @@ export const GameMatch = ({
   onRetry,
   onReturnToMap,
   customReturnLabel,
-  opponentSurrendered = false
+  opponentSurrendered = false,
+  restoredState,
+  onSnapshot,
 }: GameMatchProps) => {
   const navigate = useNavigate();
   const { t, language } = useLanguage();
@@ -142,7 +149,22 @@ export const GameMatch = ({
     nextRound,
     handleCardSelection,
     syncOnlineRound
-  } = useGameState({ playerDeck, opponentClass, opponentDeck: opponentDeck?.cards, isOnline });
+  } = useGameState({ playerDeck, opponentClass, opponentDeck: opponentDeck?.cards, isOnline, restoredState: restoredState ?? null });
+
+  // Online snapshot: persist local game state at the start of each placement phase
+  // so a refresh/reconnect can rehydrate hand/deck/HP/round without losing progress.
+  const lastSnapshotRoundRef = useRef<number>(-1);
+  useEffect(() => {
+    if (!isOnline || !onSnapshot) return;
+    if (gameState.phase !== "placement") return;
+    if (lastSnapshotRoundRef.current === gameState.round) return;
+    lastSnapshotRoundRef.current = gameState.round;
+    try {
+      onSnapshot(gameState);
+    } catch (e) {
+      console.error("[GameMatch] onSnapshot failed:", e);
+    }
+  }, [isOnline, onSnapshot, gameState.phase, gameState.round, gameState]);
 
   useEffect(() => {
     AudioManager.init();
