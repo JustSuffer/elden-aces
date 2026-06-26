@@ -117,15 +117,6 @@ export const GameMatch = ({
     window.addEventListener("trix-toggle", onToggle as EventListener);
     return () => window.removeEventListener("trix-toggle", onToggle as EventListener);
   }, []);
-  const trixActive = enableTrix && trixOn;
-
-  const trixAdvice = useTrixAdvisor(
-    gameState ? gameState.playerHand : [],
-    gameState?.playerClass ?? ("Vitalist" as any),
-    gameState?.opponentClass ?? ("Slayer" as any),
-    gameState?.phase ?? "",
-    (language as "tr" | "en") || "en"
-  );
 
   // Online: prevent local round from advancing before server confirmation (fixes 1-round delay / wrong cards)
   const [requestedNextRoundFor, setRequestedNextRoundFor] = useState<number | null>(null);
