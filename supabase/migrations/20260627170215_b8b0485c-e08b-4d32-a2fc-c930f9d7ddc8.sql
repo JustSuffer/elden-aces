@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS has_seen_how_to_play boolean NOT NULL DEFAULT false;

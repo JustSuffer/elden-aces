@@ -372,6 +372,7 @@ export type Database = {
           avatar_url: string | null
           created_at: string
           divine_coins: number
+          has_seen_how_to_play: boolean
           id: string
           updated_at: string
           user_id: string
@@ -381,6 +382,7 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           divine_coins?: number
+          has_seen_how_to_play?: boolean
           id?: string
           updated_at?: string
           user_id: string
@@ -390,6 +392,7 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           divine_coins?: number
+          has_seen_how_to_play?: boolean
           id?: string
           updated_at?: string
           user_id?: string
