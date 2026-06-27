@@ -460,6 +460,13 @@ const Menu = () => {
                 onClick={() => {
                   localStorage.setItem("acoria_has_seen_how_to_play", "true");
                   setHasSeenHowToPlay(true);
+                  if (user) {
+                    supabase
+                      .from("profiles")
+                      .update({ has_seen_how_to_play: true } as any)
+                      .eq("user_id", user.id)
+                      .then(() => {});
+                  }
                   navigate("/how-to-play");
                 }}
                 className={`flex items-center justify-center h-10 text-xs px-4 border-white/20 transition-all duration-300 ${!hasSeenHowToPlay ? "border-amber-400 bg-amber-900/40 text-amber-300 scale-110 shadow-[0_0_15px_rgba(251,191,36,0.6)] relative z-50 hover:bg-amber-800/60" : "hover:border-white/40"}`}
