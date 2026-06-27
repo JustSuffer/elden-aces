@@ -94,10 +94,14 @@ const Menu = () => {
       try {
         const { data: coinData } = await supabase
           .from("profiles")
-          .select("divine_coins")
+          .select("divine_coins, has_seen_how_to_play")
           .eq("user_id", user.id)
           .single();
         if (coinData) setCoins(coinData.divine_coins || 0);
+        if (coinData && (coinData as any).has_seen_how_to_play) {
+          localStorage.setItem("acoria_has_seen_how_to_play", "true");
+          setHasSeenHowToPlay(true);
+        }
       } catch (e) {
         console.error("Error fetching coins:", e);
       }
