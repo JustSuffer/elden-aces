@@ -1,4 +1,4 @@
-import trixImg from "@/assets/trix-mascot.jpg";
+import trixIcon from "@/assets/trix-mascot-icon.jpg";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -35,7 +35,15 @@ export function TrixMascot({ message, hasSuggestion }: TrixMascotProps) {
           "bg-black/60 backdrop-blur-sm"
         )}
       >
-        <img src={trixImg} alt="Trix" className="w-full h-full object-cover object-center" draggable={false} loading="lazy" width={1024} height={1024} />
+        <img
+          src={trixIcon}
+          alt="Trix"
+          className="w-full h-full object-cover object-center scale-110"
+          draggable={false}
+          loading="eager"
+          width={768}
+          height={768}
+        />
         {hasSuggestion && (
           <span className="absolute inset-0 rounded-full ring-2 ring-amber-300/70 animate-ping opacity-60" />
         )}
