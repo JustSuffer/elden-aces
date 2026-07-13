@@ -6,7 +6,7 @@ import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/hooks/useLanguage";
 import { getTrixEnabled, setTrixEnabled as persistTrix } from "@/hooks/useTrixAdvisor";
-import trixIcon from "@/assets/trix-mascot-icon.png.asset.json";
+import trixIcon from "@/assets/trix-mascot-icon.jpg";
 
 interface GameMenuModalProps {
   open: boolean;
@@ -118,7 +118,7 @@ export function GameMenuModal({ open, onOpenChange, onConcede, onResume, showTri
                     className="w-full h-14 justify-between px-6 border-2 bg-black/40 border-amber-600/30 hover:bg-amber-600/10 hover:border-amber-500 text-amber-300 font-cinzel"
                   >
                     <span className="flex items-center gap-3">
-                      <img src={trixIcon.url} alt="Trix" className="w-7 h-7 rounded-full object-cover object-center border border-amber-500/70" />
+                      <img src={trixIcon} alt="Trix" className="w-7 h-7 rounded-full object-cover object-center border border-amber-500/70" />
                       <span className="text-sm md:text-base font-bold tracking-wider">
                         {language === "tr" ? "Öğretici Modu: Trix" : "Tutorial: Trix"}
                       </span>
