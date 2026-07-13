@@ -6,7 +6,8 @@ import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/hooks/useLanguage";
 import { getTrixEnabled, setTrixEnabled as persistTrix } from "@/hooks/useTrixAdvisor";
-import trixIcon from "@/assets/trix-mascot-icon.jpg";
+import trixIconAsset from "@/assets/trix-icon.asset.json";
+const trixIcon = trixIconAsset.url;
 
 interface GameMenuModalProps {
   open: boolean;

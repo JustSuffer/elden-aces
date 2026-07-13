@@ -1,4 +1,4 @@
-import trixIcon from "@/assets/trix-mascot-icon.jpg";
+import trixIconAsset from "@/assets/trix-icon.asset.json";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -36,7 +36,7 @@ export function TrixMascot({ message, hasSuggestion }: TrixMascotProps) {
         )}
       >
         <img
-          src={trixIcon}
+          src={trixIconAsset.url}
           alt="Trix"
           className="w-full h-full object-cover object-center scale-110"
           draggable={false}
