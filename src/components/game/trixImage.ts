@@ -31,12 +31,12 @@ export const TRIX_FALLBACK_IMAGE = `data:image/svg+xml;utf8,${encodeURIComponent
   <rect x="83" y="156" width="74" height="46" rx="8" fill="#111827" stroke="#fbbf24" stroke-width="5" filter="url(#glow)"/>
   <path d="M99 179h42" stroke="#fef3c7" stroke-width="6" stroke-linecap="round"/>
   <text x="120" y="45" text-anchor="middle" font-family="serif" font-size="28" font-weight="700" fill="#fef3c7">TRIX</text>
-</svg>`)} `;
+</svg>`)}`;
 
 export const getTrixImageSources = () => [
+  toRootAsset(localTrixIcon),
   toRootAsset(trixIconJpgAsset.url),
   toRootAsset(trixIconPngAsset.url),
   toRootAsset(trixFullPngAsset.url),
-  toRootAsset(localTrixIcon),
   TRIX_FALLBACK_IMAGE,
 ];
