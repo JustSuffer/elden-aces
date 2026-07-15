@@ -62,22 +62,22 @@ export function GameCard({ card, onClick, isPlaceholder = false, className, face
           onClick={handleCardClick}
           style={cardStyle}
           className={cn(
-            "w-24 h-36 border-2 rounded-lg relative overflow-hidden transition-all duration-300",
-            "cursor-pointer hover:-translate-y-2 hover:shadow-xl hover:scale-105",
+            "w-24 h-36 border-2 rounded-lg relative overflow-hidden transition-all duration-200",
+            "cursor-pointer hover:shadow-md",
             faceDown ? "bg-card border-border shadow-inner" : "",
-            card.type === "special" && !faceDown && "hover:shadow-primary/50",
-            card.isStolen && !faceDown && "ring-4 ring-yellow-400/80 shadow-[0_0_20px_rgba(250,204,21,0.8)] animate-pulse z-10",
-            card.isFrozen && !faceDown && "ring-4 ring-cyan-300 shadow-[0_0_20px_rgba(103,232,249,0.5)] bg-cyan-900/20 grayscale-[0.5] contrast-125 z-10",
-            card.specialType === "gamma" && !faceDown && "ring-4 ring-amber-500 shadow-[0_0_30px_rgba(245,158,11,0.8)] border-amber-300 bg-gradient-to-br from-amber-950/50 to-yellow-900/20 z-10 hover:shadow-amber-500/50",
+            card.type === "special" && !faceDown && "hover:shadow-primary/25",
+            card.isStolen && !faceDown && "ring-2 ring-yellow-400/50 shadow-[0_0_10px_rgba(250,204,21,0.4)] z-10",
+            card.isFrozen && !faceDown && "ring-2 ring-cyan-300/50 shadow-[0_0_10px_rgba(103,232,249,0.3)] bg-cyan-900/20 grayscale-[0.5] contrast-125 z-10",
+            card.specialType === "gamma" && !faceDown && "ring-2 ring-amber-500/60 shadow-[0_0_12px_rgba(245,158,11,0.45)] border-amber-300/80 bg-gradient-to-br from-amber-950/40 to-yellow-900/20 z-10",
             className
           )}
         >
         {faceDown ? (
           <div className="absolute inset-0 flex items-center justify-center bg-black">
              {backImage ? (
-               <img 
-                 src={backImage.includes(".") ? `./assets/decks/${backImage}` : `./assets/decks/${backImage}.jpg`} 
-                 className="w-full h-full object-cover opacity-80" 
+               <img
+                 src={backImage.includes(".") ? `./assets/decks/${backImage}` : `./assets/decks/${backImage}.jpg`}
+                 className="w-full h-full object-cover opacity-75"
                  alt="Card Back"
                  onError={(e) => {
                     const target = e.currentTarget;
@@ -92,7 +92,7 @@ export function GameCard({ card, onClick, isPlaceholder = false, className, face
                />
              ) : (
                 <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800">
-                  <div className="text-4xl opacity-30 animate-pulse">ΦΩ</div>
+                  <div className="text-4xl opacity-30">ΦΩ</div>
                 </div>
              )}
           </div>
@@ -101,7 +101,7 @@ export function GameCard({ card, onClick, isPlaceholder = false, className, face
             {/* Frozen Overlay */}
             {card.isFrozen && (
               <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none bg-cyan-500/10 backdrop-blur-[1px]">
-                 <Snowflake className="w-16 h-16 text-cyan-200/80 animate-spin-slow drop-shadow-[0_0_10px_rgba(34,211,238,0.8)]" style={{ animationDuration: "10s" }} />
+                 <Snowflake className="w-14 h-14 text-cyan-200/60 drop-shadow-[0_0_6px_rgba(34,211,238,0.5)]" />
               </div>
             )}
 
@@ -112,9 +112,9 @@ export function GameCard({ card, onClick, isPlaceholder = false, className, face
 
             {/* Value or special indicator in middle */}
             {card.type === "numeric" && (
-              <div className={cn("text-5xl font-bold text-foreground", 
-                  card.value === 0 && card.isFrozen && "text-cyan-200",
-                  card.isBuffed && "text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.8)]"
+              <div className={cn("text-5xl font-bold text-foreground",
+                  card.value === 0 && card.isFrozen && "text-cyan-200/90",
+                  card.isBuffed && "text-blue-300/90 drop-shadow-[0_0_4px_rgba(96,165,250,0.5)]"
               )}>
                   {card.value}
               </div>
