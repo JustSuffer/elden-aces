@@ -91,7 +91,7 @@ export function useTrixAdvisor(
 }
 
 // LocalStorage helper
-const KEY = "trix-tutorial-enabled";
+const KEY = "trix-tutorial-enabled-v2";
 export function getTrixEnabled(): boolean {
   if (typeof window === "undefined") return true;
   const v = window.localStorage.getItem(KEY);

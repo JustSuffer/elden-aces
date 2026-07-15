@@ -6,8 +6,7 @@ import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/hooks/useLanguage";
 import { getTrixEnabled, setTrixEnabled as persistTrix } from "@/hooks/useTrixAdvisor";
-import trixIconAsset from "@/assets/trix-icon.asset.json";
-const trixIcon = trixIconAsset.url;
+import { getTrixImageSources } from "@/components/game/trixImage";
 
 interface GameMenuModalProps {
   open: boolean;
@@ -20,6 +19,9 @@ interface GameMenuModalProps {
 export function GameMenuModal({ open, onOpenChange, onConcede, onResume, showTrixToggle = false }: GameMenuModalProps) {
   const { language } = useLanguage();
   const [trixOn, setTrixOnState] = useState<boolean>(() => getTrixEnabled());
+  const [trixImageIndex, setTrixImageIndex] = useState(0);
+  const trixSources = getTrixImageSources();
+  const trixIcon = trixSources[Math.min(trixImageIndex, trixSources.length - 1)];
   const toggleTrix = () => {
     const next = !trixOn;
     setTrixOnState(next);
@@ -119,7 +121,12 @@ export function GameMenuModal({ open, onOpenChange, onConcede, onResume, showTri
                     className="w-full h-14 justify-between px-6 border-2 bg-black/40 border-amber-600/30 hover:bg-amber-600/10 hover:border-amber-500 text-amber-300 font-cinzel"
                   >
                     <span className="flex items-center gap-3">
-                      <img src={trixIcon} alt="Trix" className="w-7 h-7 rounded-full object-cover object-center border border-amber-500/70" />
+                      <img
+                        src={trixIcon}
+                        alt="Trix"
+                        className="w-7 h-7 rounded-full object-cover object-center border border-amber-500/70"
+                        onError={() => setTrixImageIndex((index) => Math.min(index + 1, trixSources.length - 1))}
+                      />
                       <span className="text-sm md:text-base font-bold tracking-wider">
                         {language === "tr" ? "Öğretici Modu: Trix" : "Tutorial: Trix"}
                       </span>
