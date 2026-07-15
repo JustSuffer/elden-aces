@@ -1,6 +1,6 @@
-import trixIconAsset from "@/assets/trix-icon.asset.json";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import { getTrixImageSources } from "@/components/game/trixImage";
 
 interface TrixMascotProps {
   message: string;
@@ -9,6 +9,9 @@ interface TrixMascotProps {
 
 export function TrixMascot({ message, hasSuggestion }: TrixMascotProps) {
   const [open, setOpen] = useState(true);
+  const [imageIndex, setImageIndex] = useState(0);
+  const trixSources = getTrixImageSources();
+  const trixImage = trixSources[Math.min(imageIndex, trixSources.length - 1)];
 
   // Auto-pulse on new message
   const [pulseKey, setPulseKey] = useState(0);
@@ -36,13 +39,14 @@ export function TrixMascot({ message, hasSuggestion }: TrixMascotProps) {
         )}
       >
         <img
-          src={trixIconAsset.url}
+          src={trixImage}
           alt="Trix"
           className="w-full h-full object-cover object-center scale-110"
           draggable={false}
           loading="eager"
           width={768}
           height={768}
+          onError={() => setImageIndex((index) => Math.min(index + 1, trixSources.length - 1))}
         />
         {hasSuggestion && (
           <span className="absolute inset-0 rounded-full ring-2 ring-amber-300/70 animate-ping opacity-60" />
